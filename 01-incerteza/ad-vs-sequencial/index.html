@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arrow-Debreu vs. Mercados Sequenciais</title>
+<style>
+  :root{
+    --ivory:#FFFFF0;
+    --blue:#0072B2;
+    --orange:#D55E00;
+    --green:#009E73;
+    --yellow:#F0E442;
+    --ink:#1b1b16;
+    --line:#c9c6b0;
+    --card:#fffdf5;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--ivory);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    font-size:17px;
+    line-height:1.45;
+    padding:20px 28px 60px;
+  }
+  h1{font-size:1.7rem;color:var(--blue);margin:0 0 4px;}
+  h2{font-size:1.2rem;color:var(--blue);margin:0 0 10px;border-bottom:2px solid var(--blue);padding-bottom:4px;}
+  h3{font-size:1.02rem;color:var(--ink);margin:14px 0 6px;}
+  .subtitle{color:#555;margin:0 0 18px;font-size:1rem;max-width:1000px;}
+  .grid{
+    display:grid;
+    grid-template-columns: 340px 1fr;
+    gap:20px;
+    align-items:start;
+  }
+  .grid>*{min-width:0;}
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px 18px;
+    margin-bottom:20px;
+    min-width:0;
+  }
+  .full{grid-column:1 / -1;}
+  label{display:block;font-weight:600;font-size:.92rem;margin:10px 0 2px;}
+  .sliderRow{display:flex;align-items:center;gap:10px;}
+  .sliderRow input[type=range]{flex:1;accent-color:var(--blue);height:22px;}
+  .sliderRow output{font-variant-numeric:tabular-nums;font-weight:700;color:var(--blue);min-width:3.6em;text-align:right;}
+  .tableWrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .treeScroll{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .treeScroll svg{min-width:760px;}
+  table{border-collapse:collapse;width:100%;font-size:.95rem;}
+  caption{font-weight:700;text-align:left;padding:0 0 8px;color:#444;}
+  th,td{padding:5px 8px;text-align:right;border-bottom:1px solid var(--line);}
+  th:first-child,td:first-child{text-align:left;}
+  th{color:#444;font-weight:700;font-size:.85rem;}
+  td input[type=number]{
+    width:5.4em;font-size:.95rem;padding:3px 4px;border:1px solid var(--line);border-radius:5px;
+    background:#fff;color:var(--ink);
+  }
+  .modeToggle{display:flex;gap:8px;margin-bottom:14px;}
+  .modeToggle button{
+    flex:1;padding:10px 8px;font-size:.98rem;font-weight:700;border-radius:8px;
+    border:2px solid var(--blue);background:#fff;color:var(--blue);cursor:pointer;
+  }
+  .modeToggle button.active{background:var(--blue);color:#fff;}
+  svg{width:100%;height:auto;display:block;}
+  button:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visible, [data-node]:focus-visible{
+    outline:3px solid var(--orange);outline-offset:3px;
+  }
+  .nodeCircle{fill:#fff;stroke:var(--blue);stroke-width:2.5;cursor:pointer;}
+  .nodeCircle.selected{stroke:var(--orange);stroke-width:4.5;fill:#fff7ef;}
+  .nodeCircle.onpath{stroke:var(--orange);stroke-width:3.5;}
+  .nodeTitle{font-size:15px;font-weight:700;fill:var(--ink);text-anchor:middle;paint-order:stroke;stroke:var(--ivory);stroke-width:5px;stroke-linejoin:round;}
+  .nodeY{font-size:13px;fill:#555;text-anchor:middle;paint-order:stroke;stroke:var(--ivory);stroke-width:5px;stroke-linejoin:round;}
+  .nodeQ{font-size:17px;font-weight:800;fill:var(--blue);text-anchor:middle;paint-order:stroke;stroke:var(--ivory);stroke-width:5px;stroke-linejoin:round;}
+  .edgeLine{stroke:#8a8a78;stroke-width:2;}
+  .edgeLine.onpath{stroke:var(--orange);stroke-width:5;}
+  .edgeLabel{font-size:16px;font-weight:800;fill:var(--orange);text-anchor:middle;paint-order:stroke;stroke:var(--ivory);stroke-width:6px;stroke-linejoin:round;}
+  .hint{cursor:pointer;}
+  .okBadge{display:inline-block;padding:5px 12px;border-radius:20px;font-weight:700;font-size:.92rem;}
+  .okBadge.ok{background:var(--green);color:#fff;}
+  .okBadge.bad{background:var(--orange);color:#fff;}
+  .identityBox{
+    background:#fff;border:1.5px solid var(--blue);border-radius:8px;padding:12px 14px;margin-top:8px;
+    font-size:1.02rem;
+  }
+  .identityBox .row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed var(--line);}
+  .identityBox .row:last-child{border-bottom:none;}
+  .identityBox .final{font-weight:800;color:var(--blue);font-size:1.08rem;margin-top:6px;}
+  .identityBox .row span{min-width:0;overflow-wrap:anywhere;}
+  .muted{color:#666;font-size:.9rem;}
+  .legend{display:flex;gap:22px;font-size:.9rem;color:#444;margin-top:6px;flex-wrap:wrap;}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .swatch{width:14px;height:14px;border-radius:3px;display:inline-block;}
+  .twoCols{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  .portfolioItem{background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:.94rem;}
+  .portfolioItem b{color:var(--blue);}
+  .sectionNav{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 18px;}
+  .sectionNav a{
+    display:inline-block;padding:8px 12px;border:1.5px solid var(--blue);border-radius:8px;
+    color:var(--blue);background:#fff;text-decoration:none;font-weight:700;
+  }
+  .sectionNav a:hover{background:#edf7fc;}
+  .sectionTitle{margin:0 0 10px;scroll-margin-top:14px;}
+  .conceptNote{
+    background:#edf7fc;border-left:5px solid var(--blue);padding:11px 14px;margin:0 0 18px;
+    max-width:1100px;
+  }
+  details.advanced{padding:0;scroll-margin-top:14px;}
+  details.advanced>summary{
+    cursor:pointer;list-style:none;padding:16px 18px;color:var(--blue);font-size:1.18rem;font-weight:800;
+  }
+  details.advanced>summary::-webkit-details-marker{display:none;}
+  details.advanced>summary::before{content:'▸';display:inline-block;margin-right:9px;}
+  details.advanced[open]>summary::before{content:'▾';}
+  details.advanced[open]>summary{border-bottom:2px solid var(--blue);}
+  .advancedBody{padding:14px 18px 18px;}
+  .advancedWarning{background:#fff6d8;border-left:5px solid var(--yellow);padding:10px 12px;margin-bottom:14px;}
+  .srOnly{
+    position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+    clip:rect(0,0,0,0);white-space:nowrap;border:0;
+  }
+  @media (max-width:1000px){
+    .grid{grid-template-columns:1fr;}
+    .twoCols{grid-template-columns:1fr;}
+  }
+  @media (max-width:600px){
+    body{padding:14px 12px 40px;font-size:16px;}
+    .card{padding:14px 12px;}
+    .modeToggle{flex-direction:column;}
+    .identityBox .row{display:block;padding:7px 0;}
+    .identityBox .row span{display:block;}
+    details.advanced>summary{padding:14px 12px;}
+    .advancedBody{padding:12px;}
+    th,td{padding:5px 6px;}
+  }
+</style>
+</head>
+<body>
+
+<h1>Arrow-Debreu vs. Mercados Sequenciais</h1>
+<p class="subtitle">Uma árvore de eventos binária (t = 0, 1, 2) com choques agregados "alto"/"baixo". O objetivo é
+mostrar, primeiro, por que o preço de data 0 <b style="color:var(--blue)">q⁰(s^t)</b> é o produto dos preços
+sequenciais de um período <b style="color:var(--orange)">q(s^{t+1}|s^t)</b> ao longo do caminho. A parte avançada
+mostra, separadamente, uma implementação de partilha de risco e portfólios em um exemplo CRRA.</p>
+
+<nav class="sectionNav" aria-label="Navegação entre as partes do artefato">
+  <a href="#precos">1. Identidade de preços</a>
+  <a href="#avancado">2. Exemplo CRRA avançado</a>
+</nav>
+
+<section id="precos" aria-labelledby="precosTitle">
+  <h2 id="precosTitle" class="sectionTitle">Parte principal: identidade de preços</h2>
+  <div class="conceptNote">
+    <b>Resultado geral.</b> A equivalência entre mercados completos de Arrow-Debreu e negociação
+    sequencial de ativos de Arrow decorre de mercados completos e ausência de arbitragem. Ela
+    <b>não depende</b> de preferências CRRA nem da existência de um agente representativo.
+    A parametrização CRRA abaixo serve apenas para gerar um exemplo numérico de preços consistentes.
+  </div>
+
+<div class="grid">
+  <div>
+    <div class="card">
+      <h2>Calibração numérica do kernel CRRA</h2>
+      <label for="sigma">Aversão ao risco σ = <output id="sigmaOut" for="sigma" aria-live="polite"></output></label>
+      <div class="sliderRow"><input type="range" id="sigma" min="0.25" max="6" step="0.05" value="2" aria-describedby="kernelHelp"></div>
+
+      <label for="beta">Fator de desconto β = <output id="betaOut" for="beta" aria-live="polite"></output></label>
+      <div class="sliderRow"><input type="range" id="beta" min="0.80" max="1.00" step="0.01" value="0.96" aria-describedby="kernelHelp"></div>
+
+      <label for="p">Probabilidade de "alto" p = <output id="pOut" for="p" aria-live="polite"></output></label>
+      <div class="sliderRow"><input type="range" id="p" min="0.01" max="0.99" step="0.01" value="0.5" aria-describedby="kernelHelp"></div>
+      <p class="muted" id="kernelHelp">p é usada i.i.d. em cada nó. Os controles alteram o exemplo CRRA,
+      mas a identidade de preços continua valendo para qualquer sistema de preços sem arbitragem.</p>
+    </div>
+
+    <div class="card">
+      <h2>Dotação agregada</h2>
+      <div class="tableWrap" tabindex="0" role="region" aria-label="Tabela de dotação agregada por nó">
+        <table id="aggregateTable"></table>
+      </div>
+      <p class="muted">Y(s^t) é a dotação agregada em cada nó e entra no exemplo numérico do kernel de preços.</p>
+    </div>
+
+    <div class="card">
+      <h2>Visualização</h2>
+      <div class="modeToggle" role="group" aria-label="Escolha a representação dos preços">
+        <button type="button" id="btnAD" class="active" aria-pressed="true">Data 0<br>(Arrow-Debreu)</button>
+        <button type="button" id="btnSeq" aria-pressed="false">Sequencial<br>(ativos de Arrow)</button>
+      </div>
+      <div class="legend">
+        <span><span class="swatch" style="background:var(--blue)"></span> q⁰(s^t): preço de data 0</span>
+        <span><span class="swatch" style="background:var(--orange)"></span> q(s^{t+1}|s^t): preço de um período</span>
+      </div>
+      <p class="muted">Selecione um nó da árvore com clique, Enter ou barra de espaço para verificar a identidade de preços.</p>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <h2>Árvore de eventos</h2>
+      <div class="treeScroll" tabindex="0" role="region" aria-label="Árvore de eventos; role horizontalmente em telas estreitas">
+        <svg id="treeSvg" viewBox="0 0 980 680" role="group" aria-labelledby="treeTitle treeDesc">
+          <title id="treeTitle">Árvore de eventos e preços contingentes</title>
+          <desc id="treeDesc">Selecione um nó com clique, Enter ou barra de espaço para verificar o produto dos preços ao longo do caminho.</desc>
+        </svg>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Identidade de preços no caminho selecionado</h2>
+      <div id="identityPanel" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <details id="avancado" class="full card advanced">
+    <summary>Parte avançada (opcional): partilha de risco e portfólios no exemplo CRRA</summary>
+    <div class="advancedBody">
+    <div class="advancedWarning"><b>Escopo:</b> esta seção usa agentes com CRRA comum para construir uma
+    alocação e os portfólios que a implementam. Essas hipóteses facilitam o cálculo da partilha de risco;
+    elas não são necessárias para a equivalência geral de preços demonstrada acima.</div>
+    <h3>Dotações individuais</h3>
+    <div class="tableWrap" tabindex="0" role="region" aria-label="Tabela de dotações individuais; role para ver todas as colunas em telas estreitas">
+      <table id="individualTable"></table>
+    </div>
+    <p class="muted">A dotação do agente 2 é calculada como y₂(s^t) = Y(s^t) − y₁(s^t). Estes controles
+    afetam somente os cálculos de partilha e portfólio desta seção avançada.</p>
+    <p class="muted">
+      A parcela de consumo do agente 1 é constante (CRRA comum) e pinada pela restrição orçamentária de data 0:
+      share₁ = [Σ q⁰(s^t) y₁(s^t)] / [Σ q⁰(s^t) Y(s^t)], com c_i(s^t) = share_i · Y(s^t).
+      A riqueza financeira que o agente <i>i</i> carrega <b>entrando</b> no nó s^{t+1} é
+      a_i(s^{t+1}) = Σ<sub>s' ∈ subárvore de s^{t+1}</sub> [q⁰(s')/q⁰(s^{t+1})] · [c_i(s') − y_i(s')]
+      — note que a subárvore é enraizada em s^{t+1} (o nó em que se está <i>entrando</i>), não em s^t.
+    </p>
+    <div class="twoCols">
+      <div>
+        <h3>Parcelas de consumo (share)</h3>
+        <div class="tableWrap" tabindex="0" role="region" aria-label="Tabela de parcelas de consumo">
+          <table>
+            <caption>Parcela do consumo agregado por agente</caption>
+            <thead><tr><th scope="col">Agente</th><th scope="col">share_i</th></tr></thead>
+            <tbody><tr><th scope="row">Agente 1</th><td id="share1Out"></td></tr>
+            <tr><th scope="row">Agente 2</th><td id="share2Out"></td></tr></tbody>
+          </table>
+        </div>
+        <h3>Riqueza financeira a_i(s^t) e verificação de compensação</h3>
+        <div class="tableWrap" tabindex="0" role="region" aria-label="Tabela de riqueza financeira; role para ver todas as colunas em telas estreitas">
+          <table id="wealthTable"></table>
+        </div>
+        <p style="margin-top:10px;">Compensação de mercado dos ativos:
+          <span id="clearBadge" class="okBadge" role="status" aria-live="polite"></span></p>
+      </div>
+      <div>
+        <h3>Portfólio de ativos de Arrow implementado</h3>
+        <div id="portfolioPanel"></div>
+      </div>
+    </div>
+    </div>
+  </details>
+</div>
+</section>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- Tree structure ----------
+  const nodes = [
+    {id:'s0', label:'s₀', t:0, path:[],        parent:null, x:90,  y:340},
+    {id:'H',  label:'alto',        t:1, path:['H'],      parent:'s0', x:420, y:150},
+    {id:'L',  label:'baixo',       t:1, path:['L'],      parent:'s0', x:420, y:530},
+    {id:'HH', label:'alto·alto',   t:2, path:['H','H'],  parent:'H',  x:830, y:60},
+    {id:'HL', label:'alto·baixo',  t:2, path:['H','L'],  parent:'H',  x:830, y:250},
+    {id:'LH', label:'baixo·alto',  t:2, path:['L','H'],  parent:'L',  x:830, y:430},
+    {id:'LL', label:'baixo·baixo', t:2, path:['L','L'],  parent:'L',  x:830, y:620},
+  ];
+  const nodeById = {};
+  nodes.forEach(n=> nodeById[n.id]=n);
+  const edges = nodes.filter(n=>n.parent).map(n=>({from:n.parent, to:n.id, branch:n.path[n.path.length-1]}));
+  const childrenMap = {};
+  nodes.forEach(n=> childrenMap[n.id]=[]);
+  nodes.forEach(n=>{ if(n.parent) childrenMap[n.parent].push(n.id); });
+
+  const defaultY  = {s0:1, H:1.1, L:0.9, HH:1.21, HL:0.99, LH:0.99, LL:0.81};
+  const defaultY1 = {s0:0.50, H:0.77, L:0.27, HH:0.97, HL:0.50, LH:0.50, LL:0.16};
+  const lastValidY = Object.assign({}, defaultY);
+  const lastValidY1 = Object.assign({}, defaultY1);
+
+  let selectedId = 'HL';
+  let mode = 'AD'; // 'AD' or 'SEQ'
+
+  // ---------- Build controls tables ----------
+  const aggregateTable = document.getElementById('aggregateTable');
+  const individualTable = document.getElementById('individualTable');
+  (function buildControlTables(){
+    let aggregateHtml = '<caption>Dotação agregada por nó</caption><thead><tr><th scope="col">Nó</th><th scope="col">Y(s^t)</th></tr></thead><tbody>';
+    let individualHtml = '<caption>Dotações individuais por nó</caption><thead><tr><th scope="col">Nó</th><th scope="col">Y(s^t)</th><th scope="col">y₁(s^t)</th><th scope="col">y₂ = Y−y₁</th></tr></thead><tbody>';
+    nodes.forEach(n=>{
+      const rowHeader = n.label+' <span class="muted">(t='+n.t+')</span>';
+      aggregateHtml += '<tr><th scope="row">'+rowHeader+'</th>'+
+        '<td><input type="number" step="0.01" min="0.01" id="Y-'+n.id+'" value="'+defaultY[n.id]+'" aria-label="Dotação agregada Y no nó '+n.label+'"></td></tr>';
+      individualHtml += '<tr><th scope="row">'+rowHeader+'</th>'+
+        '<td><output id="Y-display-'+n.id+'">'+defaultY[n.id].toFixed(2)+'</output></td>'+
+        '<td><input type="number" step="0.01" min="0" max="'+defaultY[n.id]+'" id="y1-'+n.id+'" value="'+defaultY1[n.id]+'" aria-label="Dotação do agente 1 no nó '+n.label+'"></td>'+
+        '<td id="y2-'+n.id+'" class="muted"></td></tr>';
+    });
+    aggregateHtml += '</tbody>';
+    individualHtml += '</tbody>';
+    aggregateTable.innerHTML = aggregateHtml;
+    individualTable.innerHTML = individualHtml;
+  })();
+
+  // ---------- Build SVG skeleton ----------
+  const svg = document.getElementById('treeSvg');
+  (function buildSvg(){
+    let s = '';
+    s += '<g id="edgesG">';
+    edges.forEach(e=>{
+      const a = nodeById[e.from], b = nodeById[e.to];
+      const mx = (a.x+b.x)/2, my = (a.y+b.y)/2;
+      const dy = (e.branch==='H') ? -14 : 16;
+      s += '<g data-edge="'+e.from+'-'+e.to+'">'+
+             '<line class="edgeLine" x1="'+a.x+'" y1="'+a.y+'" x2="'+b.x+'" y2="'+b.y+'"></line>'+
+             '<text class="edgeLabel" x="'+mx+'" y="'+(my+dy)+'"></text>'+
+           '</g>';
+    });
+    s += '</g><g id="nodesG">';
+    nodes.forEach(n=>{
+      s += '<g class="hint" data-node="'+n.id+'" transform="translate('+n.x+','+n.y+')" tabindex="0" role="button" aria-pressed="false">'+
+             '<circle class="nodeCircle" r="36"></circle>'+
+             '<text class="nodeTitle" y="-48">'+n.label+'</text>'+
+             '<text class="nodeY" y="58">Y='+defaultY[n.id].toFixed(2)+'</text>'+
+             '<text class="nodeQ" y="6"></text>'+
+           '</g>';
+    });
+    s += '</g>';
+    svg.insertAdjacentHTML('beforeend', s);
+    nodes.forEach(n=>{
+      const nodeControl = svg.querySelector('[data-node="'+n.id+'"]');
+      function selectNode(){
+        selectedId = n.id;
+        render();
+      }
+      nodeControl.addEventListener('click', selectNode);
+      nodeControl.addEventListener('keydown', function(event){
+        if (event.key === 'Enter' || event.key === ' '){
+          event.preventDefault();
+          selectNode();
+        }
+      });
+    });
+  })();
+
+  // ---------- Math ----------
+  function pathProb(path, p){
+    let pr = 1;
+    for (const b of path) pr *= (b==='H' ? p : (1-p));
+    return pr;
+  }
+
+  function subtree(id){
+    let list = [id];
+    childrenMap[id].forEach(c => { list = list.concat(subtree(c)); });
+    return list;
+  }
+
+  function computeAll(){
+    const sigma = parseFloat(document.getElementById('sigma').value);
+    const beta  = parseFloat(document.getElementById('beta').value);
+    const p     = parseFloat(document.getElementById('p').value);
+
+    const Y = {}, y1 = {}, y2 = {};
+    nodes.forEach(n=>{
+      const yInput = document.getElementById('Y-'+n.id);
+      const yRaw = yInput.value.trim();
+      const yParsed = Number(yRaw);
+      const yIsValid = yRaw !== '' && Number.isFinite(yParsed) && yParsed > 0;
+      const yv = yIsValid ? yParsed : lastValidY[n.id];
+      yInput.setAttribute('aria-invalid', yIsValid ? 'false' : 'true');
+      Y[n.id] = yv;
+
+      const y1Input = document.getElementById('y1-'+n.id);
+      const y1Raw = y1Input.value.trim();
+      const y1Parsed = Number(y1Raw);
+      const y1IsValid = y1Raw !== '' && Number.isFinite(y1Parsed) && y1Parsed >= 0 && y1Parsed <= yv;
+      const y1Preview = y1Raw !== '' && Number.isFinite(y1Parsed) ? y1Parsed : lastValidY1[n.id];
+      const y1v = Math.max(0, Math.min(yv, y1Preview));
+      y1Input.max = yv;
+      y1Input.setAttribute('aria-invalid', y1IsValid ? 'false' : 'true');
+      y1[n.id] = y1v;
+      y2[n.id] = Y[n.id] - y1v;
+    });
+
+    const Pr = {};
+    nodes.forEach(n=> Pr[n.id] = pathProb(n.path, p));
+
+    const q0 = {};
+    nodes.forEach(n=>{
+      q0[n.id] = Math.pow(beta, n.t) * Pr[n.id] * Math.pow(Y[n.id]/Y['s0'], -sigma);
+    });
+
+    const qEdge = {}; // keyed by child id: price of that child given its parent
+    edges.forEach(e=>{
+      const branchProb = (e.branch==='H') ? p : (1-p);
+      qEdge[e.to] = beta * branchProb * Math.pow(Y[e.to]/Y[e.from], -sigma);
+    });
+
+    let num=0, den=0;
+    nodes.forEach(n=>{ num += q0[n.id]*y1[n.id]; den += q0[n.id]*Y[n.id]; });
+    const share1 = den !== 0 ? num/den : 0.5;
+    const share2 = 1 - share1;
+
+    const c1 = {}, c2 = {};
+    nodes.forEach(n=>{ c1[n.id] = share1*Y[n.id]; c2[n.id] = share2*Y[n.id]; });
+
+    function aWealth(id, ci, yi){
+      const subN = subtree(id);
+      let sum = 0;
+      subN.forEach(s => { sum += (q0[s]/q0[id]) * (ci[s]-yi[s]); });
+      return sum;
+    }
+    const a1 = {}, a2 = {};
+    nodes.forEach(n=>{ a1[n.id] = aWealth(n.id, c1, y1); a2[n.id] = aWealth(n.id, c2, y2); });
+
+    return {sigma,beta,p,Y,y1,y2,Pr,q0,qEdge,share1,share2,c1,c2,a1,a2};
+  }
+
+  function commitAggregateInput(n){
+    const yInput = document.getElementById('Y-'+n.id);
+    const parsed = Number(yInput.value.trim());
+    if (yInput.value.trim() === '' || !Number.isFinite(parsed) || parsed <= 0){
+      yInput.value = lastValidY[n.id];
+    } else {
+      lastValidY[n.id] = parsed;
+      yInput.value = parsed;
+    }
+
+    const y1Input = document.getElementById('y1-'+n.id);
+    const currentY1 = Number(y1Input.value.trim());
+    const safeY1 = Number.isFinite(currentY1) ? currentY1 : lastValidY1[n.id];
+    lastValidY1[n.id] = Math.max(0, Math.min(lastValidY[n.id], safeY1));
+    y1Input.value = lastValidY1[n.id];
+    y1Input.max = lastValidY[n.id];
+    render();
+  }
+
+  function commitIndividualInput(n){
+    const y1Input = document.getElementById('y1-'+n.id);
+    const parsed = Number(y1Input.value.trim());
+    const safeY1 = y1Input.value.trim() !== '' && Number.isFinite(parsed) ? parsed : lastValidY1[n.id];
+    lastValidY1[n.id] = Math.max(0, Math.min(lastValidY[n.id], safeY1));
+    y1Input.value = lastValidY1[n.id];
+    y1Input.max = lastValidY[n.id];
+    render();
+  }
+
+  // ---------- Render ----------
+  function fmt(x, d){
+    d = d===undefined ? 4 : d;
+    if (!isFinite(x)) return '—';
+    return x.toFixed(d);
+  }
+
+  function pathToSelected(id){
+    // returns array of node ids from root to id (inclusive)
+    let chain = [];
+    let cur = id;
+    while(cur){ chain.push(cur); cur = nodeById[cur].parent; }
+    return chain.reverse();
+  }
+
+  function render(){
+    document.getElementById('sigmaOut').textContent = document.getElementById('sigma').value;
+    document.getElementById('betaOut').textContent  = document.getElementById('beta').value;
+    document.getElementById('pOut').textContent      = document.getElementById('p').value;
+
+    const D = computeAll();
+
+    // y2 display
+    nodes.forEach(n=>{
+      document.getElementById('Y-display-'+n.id).textContent = fmt(D.Y[n.id], 3);
+      document.getElementById('y2-'+n.id).textContent = fmt(D.y2[n.id], 3);
+    });
+
+    // toggle buttons
+    document.getElementById('btnAD').classList.toggle('active', mode==='AD');
+    document.getElementById('btnSeq').classList.toggle('active', mode==='SEQ');
+    document.getElementById('btnAD').setAttribute('aria-pressed', mode==='AD' ? 'true' : 'false');
+    document.getElementById('btnSeq').setAttribute('aria-pressed', mode==='SEQ' ? 'true' : 'false');
+
+    const pathIds = pathToSelected(selectedId);
+    const pathSet = new Set(pathIds);
+
+    // update nodes
+    nodes.forEach(n=>{
+      const g = svg.querySelector('[data-node="'+n.id+'"]');
+      const circle = g.querySelector('.nodeCircle');
+      circle.classList.toggle('selected', n.id===selectedId);
+      circle.classList.toggle('onpath', pathSet.has(n.id) && n.id!==selectedId);
+      g.querySelector('.nodeY').textContent = 'Y='+fmt(D.Y[n.id],2);
+      const qText = g.querySelector('.nodeQ');
+      if (mode==='AD'){
+        qText.textContent = 'q⁰='+fmt(D.q0[n.id],4);
+      } else {
+        qText.textContent = '';
+      }
+      const priceDescription = mode==='AD' ? 'preço de data zero '+fmt(D.q0[n.id],4) :
+        (n.parent ? 'preço sequencial de entrada '+fmt(D.qEdge[n.id],4) : 'nó raiz sem preço de entrada');
+      g.setAttribute('aria-label', n.label+', data '+n.t+', dotação agregada '+fmt(D.Y[n.id],2)+', '+priceDescription);
+      g.setAttribute('aria-pressed', n.id===selectedId ? 'true' : 'false');
+    });
+
+    // update edges
+    edges.forEach(e=>{
+      const key = e.from+'-'+e.to;
+      const g = svg.querySelector('[data-edge="'+key+'"]');
+      const line = g.querySelector('.edgeLine');
+      const onPath = pathSet.has(e.from) && pathSet.has(e.to);
+      line.classList.toggle('onpath', onPath);
+      const label = g.querySelector('.edgeLabel');
+      if (mode==='SEQ'){
+        label.textContent = 'q='+fmt(D.qEdge[e.to],4);
+      } else {
+        label.textContent = '';
+      }
+    });
+
+    // identity panel
+    const idp = document.getElementById('identityPanel');
+    const sel = nodeById[selectedId];
+    let rows = '';
+    let running = 1;
+    let stepsHtml = '';
+    for (let k=1; k<pathIds.length; k++){
+      const childId = pathIds[k];
+      const step = D.qEdge[childId];
+      running *= step;
+      const parentLabel = nodeById[pathIds[k-1]].label;
+      const childLabel = nodeById[childId].label;
+      stepsHtml += '<div class="row"><span>q('+childLabel+' | '+parentLabel+')</span><span>'+fmt(step,4)+'</span></div>';
+      stepsHtml += '<div class="row"><span>produto acumulado até '+childLabel+'</span><span><b>'+fmt(running,4)+'</b></span></div>';
+    }
+    const diff = Math.abs(running - D.q0[selectedId]);
+    idp.innerHTML =
+      '<p>Nó selecionado: <b>'+sel.label+'</b> (t='+sel.t+'), Pr(s^t) = '+fmt(D.Pr[selectedId],4)+'</p>'+
+      '<div class="identityBox">'+
+        '<div class="row"><span>Preço direto de data 0: q⁰('+sel.label+') = β^t · Pr(s^t) · (Y/Y₀)^(−σ)</span><span><b>'+fmt(D.q0[selectedId],4)+'</b></span></div>'+
+        (stepsHtml || '<div class="row"><span>Este é o nó raiz — não há passos anteriores.</span><span>q⁰(s₀)=1</span></div>')+
+        '<div class="final">Produto dos preços sequenciais ao longo do caminho = '+fmt(running,4)+
+        (pathIds.length>1 ? ' &nbsp;&nbsp;vs.&nbsp;&nbsp; q⁰('+sel.label+') = '+fmt(D.q0[selectedId],4)+
+        ' &nbsp; '+(diff<1e-9 ? '<span style="color:var(--green)">✓ idêntico</span>' : '<span style="color:var(--orange)">Δ='+fmt(diff,6)+'</span>') : '')+
+        '</div>'+
+      '</div>';
+
+    // two-agent panel
+    document.getElementById('share1Out').textContent = fmt(D.share1,4);
+    document.getElementById('share2Out').textContent = fmt(D.share2,4);
+
+    const wt = document.getElementById('wealthTable');
+    let wtHtml = '<caption>Consumo e riqueza financeira por nó</caption><thead><tr><th scope="col">Nó</th><th scope="col">c₁</th><th scope="col">c₂</th><th scope="col">a₁ (entrando no nó)</th><th scope="col">a₂ (entrando no nó)</th><th scope="col">a₁+a₂</th></tr></thead><tbody>';
+    let maxAbs = 0;
+    nodes.forEach(n=>{
+      const sum = D.a1[n.id] + D.a2[n.id];
+      if (n.id !== 's0') maxAbs = Math.max(maxAbs, Math.abs(sum));
+      const tagA = (n.id==='s0') ? ' <span class="muted">(restrição orç.)</span>' : '';
+      wtHtml += '<tr><th scope="row">'+n.label+tagA+'</th><td>'+fmt(D.c1[n.id],3)+'</td><td>'+fmt(D.c2[n.id],3)+'</td>'+
+        '<td>'+fmt(D.a1[n.id],4)+'</td><td>'+fmt(D.a2[n.id],4)+'</td><td>'+fmt(sum,6)+'</td></tr>';
+    });
+    wtHtml += '</tbody>';
+    wt.innerHTML = wtHtml;
+
+    const badge = document.getElementById('clearBadge');
+    if (maxAbs < 1e-8){
+      badge.textContent = 'OK (máx |a₁+a₂| = '+maxAbs.toExponential(2)+')';
+      badge.className = 'okBadge ok';
+    } else {
+      badge.textContent = 'FALHA (máx |a₁+a₂| = '+fmt(maxAbs,6)+')';
+      badge.className = 'okBadge bad';
+    }
+
+    // portfolio panel: nodes with children
+    const pp = document.getElementById('portfolioPanel');
+    let ppHtml = '';
+    ['s0','H','L'].forEach(pid=>{
+      const kids = childrenMap[pid];
+      const pnode = nodeById[pid];
+      ppHtml += '<div class="portfolioItem"><b>Em '+pnode.label+'</b>, o agente 1 monta uma carteira de ativos de Arrow que paga: ';
+      const parts = kids.map(kid => {
+        const kn = nodeById[kid];
+        return 'a₁('+kn.label+') = '+fmt(D.a1[kid],4)+' se ocorrer "'+kn.label+'"';
+      });
+      ppHtml += parts.join('; ') + '. O agente 2 mantém exatamente a posição oposta em cada ativo (a₂ = −a₁).</div>';
+    });
+    pp.innerHTML = ppHtml;
+  }
+
+  // ---------- Wire up events ----------
+  ['sigma','beta','p'].forEach(id=>{
+    document.getElementById(id).addEventListener('input', render);
+  });
+  nodes.forEach(n=>{
+    document.getElementById('Y-'+n.id).addEventListener('input', render);
+    document.getElementById('Y-'+n.id).addEventListener('change', function(){ commitAggregateInput(n); });
+    document.getElementById('y1-'+n.id).addEventListener('input', render);
+    document.getElementById('y1-'+n.id).addEventListener('change', function(){ commitIndividualInput(n); });
+  });
+  document.getElementById('btnAD').addEventListener('click', function(){ mode='AD'; render(); });
+  document.getElementById('btnSeq').addEventListener('click', function(){ mode='SEQ'; render(); });
+
+  render();
+})();
+</script>
+
+</body>
+</html>

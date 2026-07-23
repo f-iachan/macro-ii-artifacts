@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Problema do planejador — caixa de Edgeworth e fronteira de utilidades</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBFAF0; --ink:#1E1E1C; --muted:#6B6A62; --rule:#DCD8C7;
+    --a1:#1F6FB2;      /* agente 1 */
+    --a2:#B0442B;      /* agente 2 */
+    --cc:#2F6B4F;      /* curva de contrato / fronteira */
+    --sans:"Inter Tight", system-ui, -apple-system, sans-serif;
+    --serif:"Source Serif 4", Georgia, serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+       font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1120px;margin:0 auto;padding:28px 24px 56px}
+  header{border-bottom:1px solid var(--rule);padding-bottom:14px;margin-bottom:22px}
+  h1{font-size:21px;font-weight:500;margin:0 0 4px;color:var(--a1)}
+  .sub{color:var(--muted);font-size:14px;margin:0}
+  .eq{font-family:var(--serif);font-style:italic}
+  .panels{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  @media(max-width:860px){.panels{grid-template-columns:1fr}}
+  .panel{border:1px solid var(--rule);background:#fff;padding:14px}
+  .panel h2{font-size:14px;font-weight:500;margin:0 0 2px}
+  .panel p.cap{margin:0 0 8px;font-size:12.5px;color:var(--muted);min-height:32px}
+  svg{display:block;width:100%;height:auto}
+  .controls{margin-top:22px;border:1px solid var(--rule);background:#fff;padding:16px}
+  .cgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 26px}
+  @media(max-width:860px){.cgrid{grid-template-columns:1fr 1fr}}
+  @media(max-width:520px){.cgrid{grid-template-columns:1fr}}
+  .ctl label{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin-bottom:3px}
+  .ctl label b{font-weight:400;color:var(--ink);font-family:var(--serif);font-style:italic}
+  input[type=range]{width:100%;accent-color:var(--a1);margin:0}
+  .wide{grid-column:1/-1}
+  .wide input[type=range]{accent-color:var(--a2)}
+  .presets{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--rule)}
+  button{font-family:var(--sans);font-size:13px;padding:6px 12px;background:var(--paper);
+         border:1px solid var(--rule);color:var(--ink);cursor:pointer}
+  button:hover{border-color:var(--a1);color:var(--a1)}
+  button[aria-pressed="true"]{border-color:var(--a2);color:var(--a2);background:#FFF8F4}
+  button:focus-visible{outline:2px solid var(--a1);outline-offset:2px}
+  table{width:100%;border-collapse:collapse;margin-top:22px;font-size:13.5px}
+  th,td{text-align:right;padding:6px 8px;border-bottom:1px solid var(--rule)}
+  th:first-child,td:first-child{text-align:left}
+  th{font-weight:500;color:var(--muted);font-size:12px}
+  td.n{font-variant-numeric:tabular-nums;font-family:var(--serif);font-style:normal}
+  .checks{margin-top:18px;border-top:1px solid var(--rule);padding-top:12px;
+          font-size:12.5px;color:var(--muted);display:flex;gap:22px;flex-wrap:wrap}
+  .checks span b{font-weight:400;font-variant-numeric:tabular-nums;color:var(--ink)}
+  .ok{color:var(--cc)}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:8px}
+  .sw{display:inline-block;width:14px;height:2px;vertical-align:middle;margin-right:5px}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Problema do planejador: da caixa de Edgeworth à fronteira de utilidades</h1>
+  <p class="sub">Dois agentes, um período, dois estados. Os &ldquo;bens&rdquo; são consumos contingentes
+     <span class="eq">c<sub>k</sub>(H)</span> e <span class="eq">c<sub>k</sub>(L)</span>.
+     O planejador maximiza <span class="eq">U<sub>1</sub></span> sujeito a
+     <span class="eq">U<sub>2</sub> ≥ Ū<sub>2</sub></span>; escolha a promessa e veja qual alocação eficiente ela seleciona.</p>
+</header>
+
+<div class="panels">
+  <div class="panel">
+    <h2>Caixa de Edgeworth em bens contingentes</h2>
+    <p class="cap" id="capBox"></p>
+    <svg id="box" viewBox="0 0 440 440" role="img" aria-labelledby="boxTitle">
+      <title id="boxTitle">Caixa de Edgeworth com curvas de indiferença e curva de contrato</title>
+    </svg>
+    <div class="legend">
+      <span><i class="sw" style="background:var(--a1)"></i>indiferença do agente 1</span>
+      <span><i class="sw" style="background:var(--a2)"></i>indiferença do agente 2</span>
+      <span><i class="sw" style="background:var(--cc)"></i>curva de contrato</span>
+      <span><i class="sw" style="background:var(--muted);opacity:.6"></i>seguro pleno</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Conjunto de utilidades possíveis</h2>
+    <p class="cap" id="capUpf"></p>
+    <svg id="upf" viewBox="0 0 440 440" role="img" aria-labelledby="upfTitle">
+      <title id="upfTitle">Fronteira de possibilidades de utilidade com a restrição de promessa</title>
+    </svg>
+    <div class="legend">
+      <span><i class="sw" style="background:var(--cc)"></i>fronteira de Pareto</span>
+      <span><i class="sw" style="background:var(--a2)"></i>restrição <span class="eq">U<sub>2</sub> ≥ Ū<sub>2</sub></span></span>
+      <span><i class="sw" style="background:var(--muted);opacity:.6"></i>reta de peso <span class="eq">λ</span></span>
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <div class="cgrid">
+    <div class="ctl wide">
+      <label for="sU2">Utilidade prometida ao agente 2 <b id="vU2">—</b></label>
+      <input type="range" id="sU2" min="0" max="1" step="0.002" value="0.5" aria-label="Utilidade prometida ao agente 2">
+    </div>
+    <div class="ctl"><label for="sYH">Dotação no estado H <b id="vYH">—</b></label>
+      <input type="range" id="sYH" min="0.4" max="2" step="0.01" value="1.4"></div>
+    <div class="ctl"><label for="sYL">Dotação no estado L <b id="vYL">—</b></label>
+      <input type="range" id="sYL" min="0.4" max="2" step="0.01" value="0.8"></div>
+    <div class="ctl"><label for="sPH">Probabilidade de H <b id="vPH">—</b></label>
+      <input type="range" id="sPH" min="0.1" max="0.9" step="0.01" value="0.5"></div>
+    <div class="ctl"><label for="sG1">Aversão ao risco do agente 1 <b id="vG1">—</b></label>
+      <input type="range" id="sG1" min="0.5" max="4" step="0.05" value="2"></div>
+    <div class="ctl"><label for="sG2">Aversão ao risco do agente 2 <b id="vG2">—</b></label>
+      <input type="range" id="sG2" min="0.5" max="4" step="0.05" value="2"></div>
+  </div>
+  <div class="presets">
+    <button type="button" id="pNoAgg">Sem risco agregado</button>
+    <button type="button" id="pAgg">Com risco agregado</button>
+    <button type="button" id="pHetero">Aversões diferentes</button>
+    <button type="button" id="pSweep" aria-pressed="false">Varrer Ū₂</button>
+  </div>
+</div>
+
+<table>
+  <thead><tr><th>Objeto</th><th>Estado H</th><th>Estado L</th><th>Resumo</th></tr></thead>
+  <tbody>
+    <tr><td>Dotação agregada <span class="eq">Y(s)</span></td><td class="n" id="tYH"></td><td class="n" id="tYL"></td><td class="n">E[Y] = <span id="tYE"></span></td></tr>
+    <tr><td>Consumo do agente 1</td><td class="n" id="tC1H"></td><td class="n" id="tC1L"></td><td class="n">U₁ = <span id="tU1">—</span></td></tr>
+    <tr><td>Consumo do agente 2</td><td class="n" id="tC2H"></td><td class="n" id="tC2L"></td><td class="n">U₂ = <span id="tU2">—</span></td></tr>
+    <tr><td>Parcela do agente 1 <span class="eq">c<sub>1</sub>(s)/Y(s)</span></td><td class="n" id="tSH"></td><td class="n" id="tSL"></td><td class="n"></td></tr>
+  </tbody>
+</table>
+
+<div class="checks" id="checks"></div>
+<p class="sub" style="margin-top:16px;font-size:12.5px">
+  A faixa acima reporta resíduos numéricos: a igualdade das TMS entre agentes (condição de tangência),
+  a folga da restrição de promessa e o erro relativo da inclinação da fronteira comparada a
+  <span class="eq">−(1−λ)/λ</span>, obtida por diferença finita. Devem ser todos ≈ 0 em qualquer configuração.
+</p>
+</div>
+
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+const NS = "http://www.w3.org/2000/svg";
+
+/* ---------- preferências CRRA normalizadas: u(c) = (c^{1-g}-1)/(1-g), u(c)=log c se g=1 ---------- */
+const u    = (c,g) => c<=0 ? -Infinity : (Math.abs(g-1)<1e-9 ? Math.log(c) : (Math.pow(c,1-g)-1)/(1-g));
+const mu   = (c,g) => Math.pow(c,-g);
+const uinv = (v,g) => {
+  if (Math.abs(g-1)<1e-9) return Math.exp(v);
+  const z = 1+(1-g)*v;
+  return z>0 ? Math.pow(z, 1/(1-g)) : NaN;
+};
+
+/* ---------- repartição eficiente estado a estado, dado o peso de Negishi lam sobre o agente 1 ----------
+   FOC: lam * u1'(c1) = (1-lam) * u2'(Y-c1). As probabilidades cancelam: o corte é estático. */
+function split(Y, lam, g1, g2){
+  let lo = 1e-9, hi = Y-1e-9;
+  const f = c => lam*mu(c,g1) - (1-lam)*mu(Y-c,g2);   // decrescente em c
+  for (let i=0;i<80;i++){ const m=0.5*(lo+hi); if (f(m)>0) lo=m; else hi=m; }
+  return 0.5*(lo+hi);
+}
+function alloc(P, lam){
+  const cH = split(P.YH, lam, P.g1, P.g2), cL = split(P.YL, lam, P.g1, P.g2);
+  const U1 = P.pH*u(cH,P.g1) + P.pL*u(cL,P.g1);
+  const U2 = P.pH*u(P.YH-cH,P.g2) + P.pL*u(P.YL-cL,P.g2);
+  return {cH, cL, U1, U2, lam};
+}
+/* U2(lam) é decrescente: inverte por bisseção para atingir a promessa Ū2 */
+function lamFromU2(P, target){
+  let lo=1e-3, hi=1-1e-3;
+  for (let i=0;i<70;i++){ const m=0.5*(lo+hi); if (alloc(P,m).U2 > target) lo=m; else hi=m; }
+  return 0.5*(lo+hi);
+}
+const LGRID = Array.from({length:181},(_,i)=> 0.005 + (0.99)*i/180);
+
+/* ---------- estado ---------- */
+const P = {YH:1.4, YL:0.8, pH:0.5, pL:0.5, g1:2, g2:2};
+let sU2 = 0.5, sweeping = null;
+
+/* ---------- helpers svg ---------- */
+function el(p, tag, attrs, text){
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text != null) e.textContent = text;
+  p.appendChild(e); return e;
+}
+function poly(p, pts, stroke, w, dash){
+  // quebra em segmentos quando há pontos inválidos
+  let d = "", pen = false;
+  for (const q of pts){
+    if (!q || !isFinite(q[0]) || !isFinite(q[1])) { pen = false; continue; }
+    d += (pen ? "L" : "M") + q[0].toFixed(1) + " " + q[1].toFixed(1) + " ";
+    pen = true;
+  }
+  if (!d) return;
+  const a = {d, fill:"none", stroke, "stroke-width":w, "stroke-linecap":"round", "stroke-linejoin":"round"};
+  if (dash) a["stroke-dasharray"] = dash;
+  el(p, "path", a);
+}
+const clear = s => { while (s.childNodes.length>1) s.removeChild(s.lastChild); };
+
+/* ---------- painel 1: caixa de Edgeworth ---------- */
+function drawBox(A){
+  const s = $("box"); clear(s);
+  const M = 46, SIZE = 344, k = SIZE/Math.max(P.YH,P.YL);
+  const W = P.YH*k, H = P.YL*k, x0 = M, y0 = M + SIZE;   // origem do agente 1: canto inferior esquerdo
+  const X = c => x0 + c*k, Y = c => y0 - c*k;
+
+  el(s,"rect",{x:x0, y:y0-H, width:W, height:H, fill:"#FDFCF6", stroke:"#DCD8C7","stroke-width":1});
+
+  // retas de seguro pleno: c1(H)=c1(L) e c2(H)=c2(L)
+  const t1 = Math.min(P.YH,P.YL);
+  poly(s, [[X(0),Y(0)],[X(t1),Y(t1)]], "#6B6A62", 1, "3 4");
+  const t2 = Math.min(P.YH,P.YL);
+  poly(s, [[X(P.YH),Y(P.YL)],[X(P.YH-t2),Y(P.YL-t2)]], "#6B6A62", 1, "3 4");
+
+  // curva de contrato
+  poly(s, LGRID.map(l => { const a = alloc(P,l); return [X(a.cH), Y(a.cL)]; }), "#2F6B4F", 2);
+
+  // curvas de indiferença que passam pela alocação corrente
+  const N = 260, p1 = [], p2 = [];
+  for (let i=0;i<=N;i++){
+    const cH = 1e-4 + (P.YH-2e-4)*i/N;
+    const v1 = (A.U1 - P.pH*u(cH,P.g1))/P.pL, cL1 = uinv(v1,P.g1);
+    p1.push(isFinite(cL1) && cL1>0 && cL1<P.YL ? [X(cH),Y(cL1)] : null);
+    const v2 = (A.U2 - P.pH*u(P.YH-cH,P.g2))/P.pL, c2L = uinv(v2,P.g2), cL2 = P.YL - c2L;
+    p2.push(isFinite(cL2) && cL2>0 && cL2<P.YL ? [X(cH),Y(cL2)] : null);
+  }
+  poly(s, p1, "#1F6FB2", 1.6);
+  poly(s, p2, "#B0442B", 1.6);
+
+  // alocação
+  el(s,"circle",{cx:X(A.cH), cy:Y(A.cL), r:5, fill:"#2F6B4F"});
+  el(s,"circle",{cx:X(A.cH), cy:Y(A.cL), r:9, fill:"none", stroke:"#2F6B4F","stroke-width":1, opacity:.45});
+
+  // eixos e rótulos
+  el(s,"text",{x:x0, y:y0+22, fill:"#6B6A62","font-size":12,"font-family":"Source Serif 4, Georgia, serif"},"O₁");
+  el(s,"text",{x:x0+W, y:y0-H-8, "text-anchor":"end", fill:"#6B6A62","font-size":12,"font-family":"Source Serif 4, Georgia, serif"},"O₂");
+  el(s,"text",{x:x0+W/2, y:y0+30, "text-anchor":"middle", fill:"#6B6A62","font-size":12,"font-style":"italic","font-family":"Source Serif 4, Georgia, serif"},"c₁(H) →");
+  el(s,"text",{x:x0-14, y:y0-H/2, "text-anchor":"middle", fill:"#6B6A62","font-size":12,"font-style":"italic",
+               "font-family":"Source Serif 4, Georgia, serif", transform:`rotate(-90 ${x0-14} ${y0-H/2})`},"c₁(L) →");
+  el(s,"text",{x:x0+W/2, y:y0-H-16, "text-anchor":"middle", fill:"#6B6A62","font-size":12,"font-style":"italic","font-family":"Source Serif 4, Georgia, serif"},"← c₂(H)");
+  el(s,"text",{x:x0+W+16, y:y0-H/2, "text-anchor":"middle", fill:"#6B6A62","font-size":12,"font-style":"italic",
+               "font-family":"Source Serif 4, Georgia, serif", transform:`rotate(90 ${x0+W+16} ${y0-H/2})`},"c₂(L) →");
+}
+
+/* ---------- painel 2: fronteira de utilidades ---------- */
+function drawUpf(A, F){
+  const s = $("upf"); clear(s);
+  const M = 52, SIZE = 340, x0 = M, y0 = M + SIZE;
+  const u1s = F.map(a=>a.U1), u2s = F.map(a=>a.U2);
+  const pad = 0.08;
+  let a1=Math.min(...u1s), b1=Math.max(...u1s), a2=Math.min(...u2s), b2=Math.max(...u2s);
+  const d1=(b1-a1)*pad||.1, d2=(b2-a2)*pad||.1; a1-=d1; b1+=d1; a2-=d2; b2+=d2;
+  const X = v => x0 + (v-a2)/(b2-a2)*SIZE, Y = v => y0 - (v-a1)/(b1-a1)*SIZE;
+
+  // conjunto factível (abaixo da fronteira)
+  let d = "M" + X(F[0].U2) + " " + Y(F[0].U1) + " ";
+  for (const a of F) d += "L" + X(a.U2).toFixed(1) + " " + Y(a.U1).toFixed(1) + " ";
+  d += "L" + X(F[F.length-1].U2) + " " + y0 + " L" + x0 + " " + y0 + " Z";
+  el(s,"path",{d, fill:"#2F6B4F", opacity:.09});
+  poly(s, F.map(a=>[X(a.U2),Y(a.U1)]), "#2F6B4F", 2);
+
+  // eixos
+  el(s,"line",{x1:x0,y1:y0,x2:x0+SIZE+8,y2:y0, stroke:"#DCD8C7","stroke-width":1});
+  el(s,"line",{x1:x0,y1:y0,x2:x0,y2:y0-SIZE-8, stroke:"#DCD8C7","stroke-width":1});
+  el(s,"text",{x:x0+SIZE+8, y:y0+22,"text-anchor":"end", fill:"#6B6A62","font-size":12,"font-style":"italic","font-family":"Source Serif 4, Georgia, serif"},"U₂");
+  el(s,"text",{x:x0-8, y:y0-SIZE-10,"text-anchor":"end", fill:"#6B6A62","font-size":12,"font-style":"italic","font-family":"Source Serif 4, Georgia, serif"},"U₁");
+
+  // restrição de promessa
+  el(s,"line",{x1:X(A.U2), y1:y0, x2:X(A.U2), y2:Y(A.U1)-14, stroke:"#B0442B","stroke-width":1.4,"stroke-dasharray":"4 4"});
+  el(s,"text",{x:X(A.U2), y:y0+22,"text-anchor":"middle", fill:"#B0442B","font-size":12,"font-style":"italic","font-family":"Source Serif 4, Georgia, serif"},"Ū₂");
+  el(s,"text",{x:X(A.U2)+7, y:y0-9, fill:"#B0442B","font-size":11,"font-style":"italic","font-family":"Source Serif 4, Georgia, serif"},"U₂ ≥ Ū₂ →");
+
+  // reta de iso-bem-estar com peso lam (inclinação -(1-lam)/lam em unidades de utilidade)
+  const slope = -(1-A.lam)/A.lam;
+  const du2 = (b2-a2)*0.42;
+  poly(s, [[X(A.U2-du2), Y(A.U1 - slope*du2)], [X(A.U2+du2), Y(A.U1 + slope*du2)]], "#6B6A62", 1, "5 4");
+
+  // ponto
+  el(s,"circle",{cx:X(A.U2), cy:Y(A.U1), r:5, fill:"#2F6B4F"});
+  el(s,"circle",{cx:X(A.U2), cy:Y(A.U1), r:9, fill:"none", stroke:"#2F6B4F","stroke-width":1, opacity:.45});
+  el(s,"text",{x:X(A.U2)+12, y:Y(A.U1)-10, fill:"#2F6B4F","font-size":12}, "ótimo");
+}
+
+/* ---------- renderização ---------- */
+const f2 = x => (Math.abs(x)<5e-5?0:x).toFixed(3);
+function render(){
+  P.pL = 1-P.pH;
+  const F = LGRID.map(l => alloc(P,l));
+  const U2max = F[0].U2, U2min = F[F.length-1].U2;
+  const target = U2min + sU2*(U2max-U2min);
+  const lam = lamFromU2(P, target);
+  const A = alloc(P, lam);
+
+  drawBox(A); drawUpf(A, F);
+
+  $("vU2").textContent = A.U2.toFixed(3);
+  $("vYH").textContent = P.YH.toFixed(2); $("vYL").textContent = P.YL.toFixed(2);
+  $("vPH").textContent = P.pH.toFixed(2);
+  $("vG1").textContent = P.g1.toFixed(2); $("vG2").textContent = P.g2.toFixed(2);
+
+  $("tYH").textContent = P.YH.toFixed(3); $("tYL").textContent = P.YL.toFixed(3);
+  $("tYE").textContent = (P.pH*P.YH+P.pL*P.YL).toFixed(3);
+  $("tC1H").textContent = A.cH.toFixed(3); $("tC1L").textContent = A.cL.toFixed(3);
+  $("tC2H").textContent = (P.YH-A.cH).toFixed(3); $("tC2L").textContent = (P.YL-A.cL).toFixed(3);
+  $("tU1").textContent = A.U1.toFixed(3); $("tU2").textContent = A.U2.toFixed(3);
+  $("tSH").textContent = (A.cH/P.YH).toFixed(3); $("tSL").textContent = (A.cL/P.YL).toFixed(3);
+
+  const agg = Math.abs(P.YH-P.YL) < 1e-6;
+  $("capBox").textContent = agg
+    ? "Sem risco agregado, a caixa é quadrada e a curva de contrato coincide com a diagonal: seguro pleno para os dois agentes."
+    : "Com risco agregado, a curva de contrato sai da diagonal — ninguém consegue seguro pleno, e o consumo de cada um comove com Y(s).";
+  $("capUpf").textContent = "A reta vertical é a promessa. Maximizar U₁ leva à fronteira; deslizar Ū₂ percorre seus ótimos interiores.";
+
+  /* ---------- verificações numéricas ---------- */
+  const MRS1 = (P.pH*mu(A.cH,P.g1))/(P.pL*mu(A.cL,P.g1));
+  const MRS2 = (P.pH*mu(P.YH-A.cH,P.g2))/(P.pL*mu(P.YL-A.cL,P.g2));
+  const gapMRS = Math.abs(MRS1-MRS2);
+  const gapProm = Math.abs(A.U2 - target);
+  // inclinação da fronteira por diferença finita vs. -(1-lam)/lam
+  const h = Math.min(2e-4, 0.02*lam, 0.02*(1-lam));
+  const Ap = alloc(P, lam+h), Am = alloc(P, lam-h);
+  const slopeFD = (Ap.U1-Am.U1)/(Ap.U2-Am.U2);
+  const slopeTheory = -(1-lam)/lam;
+  const gapSlopeRel = Math.abs(slopeFD-slopeTheory)/Math.max(1,Math.abs(slopeTheory));
+  const gapIns = Math.abs(A.cH - A.cL);
+  const mk = (label, v, tol) =>
+    `<span>${label} <b class="${v<tol?'ok':''}">${v.toExponential(1)}</b></span>`;
+  $("checks").innerHTML =
+    `<span>peso de Negishi <b>λ = ${lam.toFixed(3)}</b></span>` +
+    `<span>inclinação da fronteira <b>${slopeFD.toFixed(3)}</b></span>` +
+    mk("TMS₁ − TMS₂", gapMRS, 1e-6) +
+    mk("folga da promessa", gapProm, 1e-6) +
+    mk("erro rel. da inclinação", gapSlopeRel, 5e-4) +
+    (agg && Math.abs(P.g1-P.g2)<1e-9 ? mk("|c₁(H) − c₁(L)|", gapIns, 1e-6) : "");
+}
+
+/* ---------- ligações ---------- */
+const bind = (id, key, isP) => $(id).addEventListener("input", e => {
+  stopSweep();
+  const v = +e.target.value;
+  if (isP) P.pH = v; else P[key] = v;
+  render();
+});
+bind("sYH","YH"); bind("sYL","YL"); bind("sG1","g1"); bind("sG2","g2");
+bind("sPH", null, true);
+$("sU2").addEventListener("input", e => { stopSweep(); sU2 = +e.target.value; render(); });
+
+const setAll = o => {
+  stopSweep();
+  if ("YH" in o) { P.YH=o.YH; $("sYH").value=o.YH; }
+  if ("YL" in o) { P.YL=o.YL; $("sYL").value=o.YL; }
+  if ("g1" in o) { P.g1=o.g1; $("sG1").value=o.g1; }
+  if ("g2" in o) { P.g2=o.g2; $("sG2").value=o.g2; }
+  render();
+};
+$("pNoAgg").onclick  = () => setAll({YH:1.1, YL:1.1, g1:2, g2:2});
+$("pAgg").onclick    = () => setAll({YH:1.6, YL:0.7, g1:2, g2:2});
+$("pHetero").onclick = () => setAll({YH:1.6, YL:0.7, g1:1, g2:3.5});
+function stopSweep(){
+  if (sweeping) clearInterval(sweeping);
+  sweeping = null;
+  $("pSweep").setAttribute("aria-pressed","false");
+  $("pSweep").textContent = "Varrer Ū₂";
+}
+$("pSweep").onclick  = () => {
+  if (sweeping) { stopSweep(); return; }
+  let d = sU2 > 0.5 ? -1 : 1;
+  sweeping = setInterval(() => {
+    sU2 += d*0.006;
+    if (sU2>=1){sU2=1;d=-1;} if (sU2<=0){sU2=0;d=1;}
+    $("sU2").value = sU2; render();
+  }, 24);
+  $("pSweep").setAttribute("aria-pressed","true");
+  $("pSweep").textContent = "Pausar varredura";
+};
+
+render();
+})();
+</script>
+</body>
+</html>

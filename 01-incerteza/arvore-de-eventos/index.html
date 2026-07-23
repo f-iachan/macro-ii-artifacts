@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta name="robots" content="noindex, nofollow">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Árvore de Eventos — Macro II</title>
+<style>
+  :root{
+    --ivory:#FFFFF0;
+    --blue:#0072B2;
+    --redorange:#D55E00;
+    --green:#009E73;
+    --yellow:#F0E442;
+    --ink:#1a1a1a;
+    --panel:#ffffff;
+    --border:#d8d3c0;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;padding:0;
+    background:var(--ivory);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:17px;
+    line-height:1.45;
+  }
+  .wrap{max-width:1500px;margin:0 auto;padding:20px 28px 60px;}
+  h1{
+    font-size:1.75em;
+    margin:0 0 4px;
+    color:var(--blue);
+    font-weight:700;
+  }
+  .subtitle{color:#555;margin:0 0 20px;font-size:1.02em;}
+  .controls-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:22px;
+    align-items:flex-start;
+    margin-bottom:18px;
+  }
+  .control-group{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:12px 16px;
+  }
+  .control-group h3{
+    margin:0 0 8px;
+    font-size:0.95em;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    color:#666;
+    font-weight:700;
+  }
+  .seg{
+    display:inline-flex;
+    border-radius:8px;
+    overflow:hidden;
+    border:2px solid var(--blue);
+  }
+  .seg button{
+    border:none;
+    background:var(--panel);
+    color:var(--blue);
+    font-size:1em;
+    font-weight:600;
+    padding:8px 18px;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .seg button + button{border-left:2px solid var(--blue);}
+  .seg button.active{background:var(--blue);color:#fff;}
+  .seg button:hover:not(.active){background:#e8f2f8;}
+  .seg button:focus-visible{outline:3px solid var(--ink);outline-offset:2px;}
+
+  .main-grid{
+    display:grid;
+    grid-template-columns:minmax(480px,1.5fr) minmax(360px,1fr);
+    gap:22px;
+    align-items:start;
+  }
+  @media (max-width:1050px){
+    .main-grid{grid-template-columns:1fr;}
+  }
+  .card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:16px 18px;
+  }
+  .card h2{
+    margin:0 0 10px;
+    font-size:1.15em;
+    color:var(--blue);
+  }
+  svg#tree{width:100%;height:auto;display:block;}
+  .node-label{font-size:13px;font-weight:700;fill:#fff;pointer-events:none;}
+  .node-label.chuva-label{fill:var(--ink);}
+  .node-circle{cursor:pointer;stroke:#555;stroke-width:1.5;transition:stroke 0.15s, stroke-width 0.15s;}
+  .node-circle:hover{stroke:#000;stroke-width:2.5;}
+  .node-group:focus{outline:none;}
+  .node-group:focus .node-circle{stroke:#000;stroke-width:4;}
+  .edge-line{stroke:#8a8a7a;stroke-width:1.5;fill:none;}
+  .edge-highlight{stroke:var(--redorange);stroke-width:4.5;}
+  .node-highlight{stroke:var(--redorange);stroke-width:4;}
+  .node-selected{stroke:var(--redorange);stroke-width:6;}
+
+  #info-panel dl{margin:0;}
+  #info-panel dt{font-weight:700;color:var(--blue);margin-top:10px;font-size:0.92em;text-transform:uppercase;letter-spacing:0.03em;}
+  #info-panel dd{margin:2px 0 0;font-size:1.15em;}
+  .placeholder{color:#888;font-style:italic;}
+
+  .legend-box{
+    background:#fbfaf2;
+    border-left:5px solid var(--green);
+    border-radius:6px;
+    padding:12px 16px;
+    font-size:0.96em;
+  }
+  .legend-box b{color:var(--green);}
+  .legend-box ul{margin:8px 0 0;padding-left:22px;}
+  .legend-box li{margin-bottom:6px;}
+
+  table.counts{width:100%;border-collapse:collapse;font-size:0.98em;}
+  table.counts th,table.counts td{
+    border-bottom:1px solid var(--border);
+    padding:6px 8px;
+    text-align:center;
+  }
+  table.counts th{color:#555;font-weight:700;background:#f7f5e8;}
+  .ok{color:var(--green);font-weight:700;}
+  .bad{color:var(--redorange);font-weight:700;}
+
+  .prob-controls{max-height:340px;overflow-y:auto;padding-right:6px;}
+  .matrix-grid{
+    display:grid;
+    grid-template-columns:auto auto auto;
+    gap:8px 14px;
+    align-items:center;
+    font-size:1em;
+  }
+  .matrix-grid input[type=number]{
+    width:78px;
+    font-size:1em;
+    padding:4px 6px;
+    border:1px solid var(--border);
+    border-radius:6px;
+  }
+  .matrix-grid output{
+    display:inline-block;
+    min-width:78px;
+    padding:4px 6px;
+    border:1px solid var(--border);
+    border-radius:6px;
+    background:#f7f5e8;
+    text-align:right;
+  }
+  .input-error{color:var(--redorange);font-size:0.9em;font-weight:700;min-height:1.35em;margin:8px 0 0;}
+  .rowsum{font-size:0.9em;color:#666;}
+  .rowsum.ok{color:var(--green);}
+  .rowsum.bad{color:var(--redorange);}
+  .note{font-size:0.88em;color:#666;margin-top:10px;}
+
+  .slider-row{
+    display:grid;
+    grid-template-columns:1fr 130px 70px;
+    gap:8px;
+    align-items:center;
+    padding:6px 0;
+    border-bottom:1px dashed var(--border);
+  }
+  .slider-row label{font-size:0.9em;}
+  .slider-row input[type=range]{width:100%;}
+  .slider-row .val{font-size:0.9em;text-align:right;color:#444;}
+
+  .swatch{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:middle;margin-right:6px;}
+  footer{margin-top:24px;font-size:0.85em;color:#888;text-align:center;}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+
+  @media (max-width:600px){
+    html,body{font-size:16px;}
+    .wrap{padding:14px 12px 36px;}
+    .controls-row{gap:12px;}
+    .control-group,.card{width:100%;min-width:0;padding:12px;}
+    .seg{display:flex;width:100%;}
+    .seg button{flex:1 1 0;min-width:0;padding:8px 7px;font-size:0.9em;}
+    .main-grid{gap:12px;}
+    .matrix-grid{grid-template-columns:minmax(62px,1fr) 72px 72px;gap:7px;}
+    .matrix-grid input[type=number],.matrix-grid output{width:72px;min-width:0;}
+    .slider-row{grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;}
+    .slider-row label{grid-column:1/-1;overflow-wrap:anywhere;}
+    .slider-row input[type=range]{min-width:0;}
+    .slider-row .val{max-width:132px;white-space:normal;}
+    table.counts{font-size:0.88em;}
+    table.counts th,table.counts td{padding:5px 3px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <h1>Explorador da Árvore de Eventos</h1>
+  <p class="subtitle">Macro II · Incerteza — histórias, estados e nós em um processo binário (sol / chuva)</p>
+
+  <div class="controls-row">
+    <div class="control-group">
+      <h3>Horizonte T</h3>
+      <div class="seg" id="t-seg" role="group" aria-label="Escolha do horizonte">
+        <button type="button" data-t="2" aria-pressed="false">T = 2</button>
+        <button type="button" data-t="3" aria-pressed="false">T = 3</button>
+        <button type="button" data-t="4" aria-pressed="false">T = 4</button>
+      </div>
+    </div>
+    <div class="control-group">
+      <h3>Estrutura de probabilidades</h3>
+      <div class="seg" id="mode-seg" role="group" aria-label="Escolha da estrutura de probabilidades">
+        <button type="button" data-mode="gerais" aria-pressed="false">Probabilidades gerais</button>
+        <button type="button" data-mode="markov" aria-pressed="false">Markov</button>
+      </div>
+    </div>
+    <div class="control-group" style="max-width:640px;">
+      <h3>Contagem de nós e verificação de probabilidade</h3>
+      <table class="counts" id="counts-table">
+        <caption class="sr-only">Número de nós e soma das probabilidades não condicionais por data</caption>
+        <thead>
+          <tr><th scope="col">t</th><th scope="col">nº de nós (2^t)</th><th scope="col">Σ Pr(s^t)</th></tr>
+        </thead>
+        <tbody id="counts-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="main-grid">
+    <div class="card">
+      <h2>Árvore (clique ou use Enter/Espaço em um nó)</h2>
+      <svg id="tree" viewBox="0 0 920 620" xmlns="http://www.w3.org/2000/svg" role="group" aria-labelledby="tree-title tree-desc"></svg>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:18px;">
+      <div class="card" id="info-panel">
+        <h2>Nó selecionado</h2>
+        <div id="info-content" aria-live="polite"><p class="placeholder">Clique em um nó da árvore para ver a história, o predecessor, os sucessores e as probabilidades associadas.</p></div>
+      </div>
+
+      <div class="card legend-box">
+        <b>Legenda — não confunda estes três conceitos:</b>
+        <ul>
+          <li><b>Estado s<sub>t</sub></b>: a realização de uma variável aleatória em um único período t (por exemplo, "chuva" em t = 2). É informação nova, específica daquele período.</li>
+          <li><b>História s<sup>t</sup></b> = (s<sub>0</sub>, ..., s<sub>t</sub>): a sequência completa de estados, incluindo a raiz s<sub>0</sub>. Acumula toda a informação observada até t.</li>
+          <li><b>Nó</b>: é a própria história s<sup>t</sup> representada como um ponto da árvore. Cada nó = uma história; não existe "nó" sem uma história associada, e cada história tem exatamente um nó.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2 id="prob-panel-title">Probabilidades condicionais</h2>
+        <div id="markov-controls">
+          <div class="matrix-grid" id="markov-grid"></div>
+          <p id="markov-error" class="input-error" role="alert" aria-live="assertive"></p>
+          <p class="note">Edite P(sol | estado atual); P(chuva | estado atual) é seu complemento. Assim, cada linha soma exatamente 1, sem normalização oculta. A transição da raiz s<sub>0</sub> para t = 1 permanece fixa em 50% / 50% no modo Markov.</p>
+        </div>
+        <div id="gerais-controls" class="prob-controls" style="display:none;"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>Macro II · FGV EPGE — artefato interativo autocontido, sem dependências externas.</footer>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  var COLORS = {
+    sol:'#0072B2',
+    chuva:'#009E73',
+    root:'#3a3a3a',
+    highlight:'#D55E00'
+  };
+
+  var state = {
+    T: 3,
+    mode: 'gerais',
+    markov: { ss:0.7, sc:0.3, cs:0.4, cc:0.6 },
+    gerais: {},   // key: parentNodeId -> P(sol | parent)
+    selected: null,
+    focusNode: null,
+    nodes: {}
+  };
+
+  // ---------- Tree construction ----------
+  function buildTree(T){
+    var nodes = {};
+    nodes['0-0'] = { id:'0-0', t:0, index:0, state:null, path:[], parentId:null, children:[] };
+    for (var t=1; t<=T; t++){
+      var n = Math.pow(2,t);
+      for (var i=0;i<n;i++){
+        var parentIndex = Math.floor(i/2);
+        var parentId = (t-1)+'-'+parentIndex;
+        var isSol = (i % 2 === 0);
+        var st = isSol ? 'sol' : 'chuva';
+        var id = t+'-'+i;
+        var parent = nodes[parentId];
+        nodes[id] = {
+          id:id, t:t, index:i, state:st,
+          path: parent.path.concat([st]),
+          parentId: parentId,
+          children: []
+        };
+        parent.children.push(id);
+      }
+    }
+    return nodes;
+  }
+
+  function computeProbs(nodes, T, mode, markov, gerais){
+    nodes['0-0'].condProb = 1;
+    nodes['0-0'].uncondProb = 1;
+    for (var t=1; t<=T; t++){
+      var n = Math.pow(2,t);
+      for (var i=0;i<n;i++){
+        var id = t+'-'+i;
+        var node = nodes[id];
+        var parent = nodes[node.parentId];
+        var p;
+        if (t === 1){
+          if (mode === 'gerais'){
+            var pSolRoot = Object.prototype.hasOwnProperty.call(gerais, parent.id) ? gerais[parent.id] : 0.5;
+            p = (node.state === 'sol') ? pSolRoot : (1 - pSolRoot);
+          } else {
+            p = 0.5; // fixed initial distribution in Markov mode
+          }
+        } else if (mode === 'markov'){
+          p = (parent.state === 'sol')
+            ? (node.state === 'sol' ? markov.ss : markov.sc)
+            : (node.state === 'sol' ? markov.cs : markov.cc);
+        } else {
+          var pSol = Object.prototype.hasOwnProperty.call(gerais, parent.id) ? gerais[parent.id] : 0.5;
+          p = (node.state === 'sol') ? pSol : (1 - pSol);
+        }
+        node.condProb = p;
+        node.uncondProb = parent.uncondProb * p;
+      }
+    }
+  }
+
+  // ---------- Layout ----------
+  function layout(nodes, T){
+    var W = 920, H = 620, marginX = 70, marginY = 30;
+    var innerW = W - 2*marginX, innerH = H - 2*marginY;
+    for (var t=0;t<=T;t++){
+      var n = Math.pow(2,t);
+      var x = (T === 0) ? marginX : marginX + (innerW * t / T);
+      for (var i=0;i<n;i++){
+        var id = t+'-'+i;
+        var frac = (i + 0.5) / n;
+        var y = marginY + frac * innerH;
+        nodes[id].x = x;
+        nodes[id].y = y;
+      }
+    }
+    // node radius scales with deepest level so nodes at T don't overlap
+    var deepest = Math.pow(2,T);
+    var slot = innerH / deepest;
+    var r = Math.max(9, Math.min(24, slot*0.42 ));
+    return { r:r, W:W, H:H };
+  }
+
+  // ---------- Path helpers ----------
+  function pathToRoot(nodes, id){
+    var set = {};
+    var cur = id;
+    while (cur !== null && cur !== undefined){
+      set[cur] = true;
+      cur = nodes[cur].parentId;
+    }
+    return set;
+  }
+
+  function historyLabel(node){
+    if (node.t === 0) return 's^0 = (s_0)';
+    return 's^' + node.t + ' = (s_0, ' + node.path.join(', ') + ')';
+  }
+  function historyLabelPlain(node){
+    if (node.t === 0) return '(s_0)';
+    return '(s_0, ' + node.path.join(', ') + ')';
+  }
+
+  // ---------- Rendering ----------
+  function render(){
+    var nodes = buildTree(state.T);
+    computeProbs(nodes, state.T, state.mode, state.markov, state.gerais);
+    state.nodes = nodes;
+    if (state.selected && !nodes[state.selected]) state.selected = null;
+
+    var geo = layout(nodes, state.T);
+    var svg = document.getElementById('tree');
+    svg.setAttribute('viewBox', '0 0 ' + geo.W + ' ' + geo.H);
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+    var svgTitle = document.createElementNS('http://www.w3.org/2000/svg','title');
+    svgTitle.setAttribute('id','tree-title');
+    svgTitle.textContent = 'Árvore de eventos binária até T = ' + state.T;
+    svg.appendChild(svgTitle);
+    var svgDesc = document.createElementNS('http://www.w3.org/2000/svg','desc');
+    svgDesc.setAttribute('id','tree-desc');
+    svgDesc.textContent = 'Cada nó representa uma história s elevado a t igual a (s zero, ..., s t). Use Tab para percorrer os nós e Enter ou Espaço para selecionar.';
+    svg.appendChild(svgDesc);
+
+    var highlightSet = state.selected ? pathToRoot(nodes, state.selected) : {};
+
+    // draw edges first
+    var t, n, i, id, node, parent;
+    for (t=1; t<=state.T; t++){
+      n = Math.pow(2,t);
+      for (i=0;i<n;i++){
+        id = t+'-'+i;
+        node = nodes[id];
+        parent = nodes[node.parentId];
+        var line = document.createElementNS('http://www.w3.org/2000/svg','line');
+        line.setAttribute('x1', parent.x); line.setAttribute('y1', parent.y);
+        line.setAttribute('x2', node.x); line.setAttribute('y2', node.y);
+        var isHi = highlightSet[id] && highlightSet[parent.id];
+        line.setAttribute('class', 'edge-line' + (isHi ? ' edge-highlight':''));
+        svg.appendChild(line);
+      }
+    }
+
+    // then nodes (so circles sit above lines)
+    for (t=0;t<=state.T;t++){
+      n = Math.pow(2,t);
+      for (i=0;i<n;i++){
+        id = t+'-'+i;
+        node = nodes[id];
+        (function(node, id){
+          var g = document.createElementNS('http://www.w3.org/2000/svg','g');
+          g.setAttribute('class','node-group');
+          g.setAttribute('role','button');
+          g.setAttribute('tabindex','0');
+          g.setAttribute('data-node-id',id);
+          g.setAttribute('aria-pressed', state.selected === id ? 'true' : 'false');
+          var stateText = node.t === 0 ? 'raiz' : 'estado ' + node.state;
+          var probText = node.t === 0
+            ? 'probabilidade 1'
+            : 'probabilidade condicional ' + node.condProb.toFixed(4) + ', probabilidade não condicional ' + node.uncondProb.toFixed(4);
+          g.setAttribute('aria-label', historyLabel(node) + ', ' + stateText + ', ' + probText);
+          var circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+          circle.setAttribute('cx', node.x);
+          circle.setAttribute('cy', node.y);
+          circle.setAttribute('r', geo.r);
+          var fill = node.t===0 ? COLORS.root : (node.state==='sol'?COLORS.sol:COLORS.chuva);
+          circle.setAttribute('fill', fill);
+          var cls = 'node-circle';
+          if (state.selected === id) cls += ' node-selected';
+          else if (highlightSet[id]) cls += ' node-highlight';
+          circle.setAttribute('class', cls);
+          function selectNode(){
+            state.selected = id;
+            state.focusNode = id;
+            render();
+          }
+          g.addEventListener('click', selectNode);
+          g.addEventListener('keydown', function(e){
+            if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar'){
+              e.preventDefault();
+              selectNode();
+            }
+          });
+          var title = document.createElementNS('http://www.w3.org/2000/svg','title');
+          title.textContent = historyLabelPlain(node);
+          circle.appendChild(title);
+          g.appendChild(circle);
+
+          var label = document.createElementNS('http://www.w3.org/2000/svg','text');
+          label.setAttribute('x', node.x);
+          label.setAttribute('y', node.y + 4.5);
+          label.setAttribute('text-anchor','middle');
+          label.setAttribute('class','node-label' + (node.state === 'chuva' ? ' chuva-label' : ''));
+          label.style.fontSize = Math.max(11, Math.min(14, geo.r*0.95)) + 'px';
+          label.textContent = node.t===0 ? 's0' : (node.state==='sol'?'S':'C');
+          label.setAttribute('pointer-events','none');
+          g.appendChild(label);
+
+          svg.appendChild(g);
+        })(node, id);
+      }
+    }
+
+    renderInfo(nodes);
+    renderCounts(nodes);
+    if (state.focusNode){
+      var focusTarget = svg.querySelector('[data-node-id="' + state.focusNode + '"]');
+      state.focusNode = null;
+      if (focusTarget) focusTarget.focus();
+    }
+  }
+
+  function renderInfo(nodes){
+    var el = document.getElementById('info-content');
+    if (!state.selected){
+      el.innerHTML = '<p class="placeholder">Clique em um nó da árvore para ver a história, o predecessor, os sucessores e as probabilidades associadas.</p>';
+      return;
+    }
+    var node = nodes[state.selected];
+    var parent = node.parentId ? nodes[node.parentId] : null;
+
+    var predText = parent ? ('s^' + parent.t + ' = ' + historyLabelPlain(parent)) : '— (esta é a raiz, não tem predecessor)';
+
+    var succText;
+    if (node.children.length === 0){
+      succText = 'nó terminal (fim da árvore, t = T)';
+    } else {
+      succText = node.children.map(function(cid){
+        var c = nodes[cid];
+        return historyLabelPlain(c) + ' [via "' + c.state + '", prob. cond. ' + c.condProb.toFixed(4) + ']';
+      }).join('<br>');
+    }
+
+    var condText = (node.t === 0) ? 'N/A (raiz não tem predecessor)' : ('Pr(s^' + node.t + ' | s^' + (node.t-1) + ') = ' + node.condProb.toFixed(4));
+
+    el.innerHTML =
+      '<dl>' +
+      '<dt>História</dt><dd>' + historyLabel(node) + '</dd>' +
+      '<dt>Predecessor imediato s^{t-1}</dt><dd>' + predText + '</dd>' +
+      '<dt>Sucessores imediatos</dt><dd>' + succText + '</dd>' +
+      '<dt>Probabilidade condicional</dt><dd>' + condText + '</dd>' +
+      '<dt>Probabilidade não condicional Pr(s^t)</dt><dd>Pr(s^' + node.t + ') = ' + node.uncondProb.toFixed(4) + '</dd>' +
+      '</dl>';
+  }
+
+  function renderCounts(nodes){
+    var rows = [];
+    for (var t=0;t<=state.T;t++){
+      var n = Math.pow(2,t);
+      var sum = 0;
+      for (var i=0;i<n;i++){ sum += nodes[t+'-'+i].uncondProb; }
+      var diff = Math.abs(sum - 1);
+      var cls = diff < 1e-6 ? 'ok' : 'bad';
+      rows.push('<tr><th scope="row">'+t+'</th><td>'+n+'</td><td class="'+cls+'">'+sum.toFixed(6)+'</td></tr>');
+    }
+    document.getElementById('counts-body').innerHTML = rows.join('');
+  }
+
+  // ---------- Markov controls ----------
+  function renderMarkovControls(){
+    var grid = document.getElementById('markov-grid');
+    var m = state.markov;
+    grid.innerHTML =
+      '<div><b>de \\ para</b></div><div><b>sol</b></div><div><b>chuva</b></div>' +
+      '<div><b>sol</b></div>' +
+      '<div><input type="number" id="m-ss" step="0.05" min="0" max="1" value="'+m.ss+'" aria-label="Probabilidade de sol amanhã dado sol hoje"></div>' +
+      '<div><output id="m-sc" aria-label="Probabilidade complementar de chuva amanhã dado sol hoje">'+m.sc.toFixed(2)+'</output></div>' +
+      '<div></div><div class="rowsum ok" style="grid-column:2/4;">soma da linha: 1,00</div>' +
+      '<div><b>chuva</b></div>' +
+      '<div><input type="number" id="m-cs" step="0.05" min="0" max="1" value="'+m.cs+'" aria-label="Probabilidade de sol amanhã dado chuva hoje"></div>' +
+      '<div><output id="m-cc" aria-label="Probabilidade complementar de chuva amanhã dado chuva hoje">'+m.cc.toFixed(2)+'</output></div>' +
+      '<div></div><div class="rowsum ok" style="grid-column:2/4;">soma da linha: 1,00</div>';
+
+    function bind(id, key, complementKey, outputId){
+      document.getElementById(id).addEventListener('input', function(e){
+        var raw = e.target.value.trim();
+        var v = Number(raw);
+        var error = document.getElementById('markov-error');
+        if (raw === '' || !Number.isFinite(v) || v < 0 || v > 1){
+          e.target.setAttribute('aria-invalid','true');
+          error.textContent = 'Digite uma probabilidade entre 0 e 1. A árvore mantém o último valor válido.';
+          return;
+        }
+        e.target.setAttribute('aria-invalid','false');
+        error.textContent = '';
+        state.markov[key] = v;
+        state.markov[complementKey] = 1-v;
+        document.getElementById(outputId).textContent = (1-v).toFixed(2);
+        render();
+      });
+    }
+    bind('m-ss','ss','sc','m-sc');
+    bind('m-cs','cs','cc','m-cc');
+  }
+
+  // ---------- Gerais controls ----------
+  function renderGeraisControls(){
+    var container = document.getElementById('gerais-controls');
+    var nodes = state.nodes;
+    var html = '';
+    for (var t=0; t<state.T; t++){
+      var n = Math.pow(2,t);
+      for (var i=0;i<n;i++){
+        var id = t+'-'+i;
+        var node = nodes[id];
+        var label = (t===0) ? 's_0 (raiz)' : ('s^'+t+' = '+historyLabelPlain(node));
+        var pSol = state.gerais.hasOwnProperty(id) ? state.gerais[id] : 0.5;
+        html += '<div class="slider-row">' +
+          '<label for="p-'+id+'">P(sol | '+label+')</label>' +
+          '<input id="p-'+id+'" type="range" min="0" max="1" step="0.01" value="'+pSol+'" data-parent="'+id+'" aria-describedby="val-'+id+'">' +
+          '<span class="val" id="val-'+id+'">sol '+pSol.toFixed(2)+' / chuva '+(1-pSol).toFixed(2)+'</span>' +
+          '</div>';
+      }
+    }
+    container.innerHTML = html;
+    var inputs = container.querySelectorAll('input[type=range]');
+    inputs.forEach(function(inp){
+      inp.addEventListener('input', function(e){
+        var pid = e.target.getAttribute('data-parent');
+        var v = parseFloat(e.target.value);
+        state.gerais[pid] = v;
+        document.getElementById('val-'+pid).textContent = 'sol '+v.toFixed(2)+' / chuva '+(1-v).toFixed(2);
+        render();
+      });
+    });
+  }
+
+  // ---------- Top-level controls ----------
+  document.getElementById('t-seg').addEventListener('click', function(e){
+    var btn = e.target.closest('button');
+    if (!btn) return;
+    state.T = parseInt(btn.getAttribute('data-t'), 10);
+    state.selected = null;
+    updateTButtons();
+    // build nodes now so gerais-controls can reference labels
+    var nodes = buildTree(state.T);
+    computeProbs(nodes, state.T, state.mode, state.markov, state.gerais);
+    state.nodes = nodes;
+    renderGeraisControls();
+    render();
+  });
+
+  document.getElementById('mode-seg').addEventListener('click', function(e){
+    var btn = e.target.closest('button');
+    if (!btn) return;
+    state.mode = btn.getAttribute('data-mode');
+    updateModeButtons();
+    document.getElementById('markov-controls').style.display = (state.mode==='markov') ? 'block':'none';
+    document.getElementById('gerais-controls').style.display = (state.mode==='gerais') ? 'block':'none';
+    document.getElementById('prob-panel-title').textContent = state.mode==='markov'
+      ? 'Matriz de transição de Markov'
+      : 'Probabilidades condicionais (cada nó define P(sol) dado seu predecessor)';
+    render();
+  });
+
+  function updateTButtons(){
+    var btns = document.querySelectorAll('#t-seg button');
+    btns.forEach(function(b){
+      var isActive = parseInt(b.getAttribute('data-t'),10) === state.T;
+      b.classList.toggle('active', isActive);
+      b.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    });
+  }
+  function updateModeButtons(){
+    var btns = document.querySelectorAll('#mode-seg button');
+    btns.forEach(function(b){
+      var isActive = b.getAttribute('data-mode') === state.mode;
+      b.classList.toggle('active', isActive);
+      b.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    });
+  }
+
+  // ---------- Init ----------
+  updateTButtons();
+  updateModeButtons();
+  document.getElementById('markov-controls').style.display = 'none';
+  document.getElementById('gerais-controls').style.display = 'block';
+  renderMarkovControls();
+  var initNodes = buildTree(state.T);
+  computeProbs(initNodes, state.T, state.mode, state.markov, state.gerais);
+  state.nodes = initNodes;
+  renderGeraisControls();
+  render();
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Cadeias de Markov: para onde vão as distribuições?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<style>
+  :root {
+    --ivory: #FFFFF0;
+    --blue: #0072B2;
+    --redorange: #D55E00;
+    --green: #009E73;
+    --yellow: #F0E442;
+    --ink: #1a1a1a;
+    --card-bg: #ffffff;
+    --border: #ddd8c0;
+    --muted: #5a5a52;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--ivory);
+    color: var(--ink);
+    font-family: "Segoe UI", -apple-system, "Helvetica Neue", Arial, sans-serif;
+    font-size: 17px;
+    line-height: 1.55;
+  }
+  main { max-width: 1020px; margin: 0 auto; padding: 4px 20px 70px; }
+  header { max-width: 1020px; margin: 0 auto; padding: 30px 20px 6px; text-align: center; }
+  h1 { color: var(--blue); font-size: 1.9rem; margin: 0 0 6px; }
+  .subtitle { color: var(--muted); font-size: 1.08rem; margin: 0 0 4px; }
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 28px 28px;
+    margin: 24px 0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  }
+  h2 {
+    color: var(--blue);
+    font-size: 1.35rem;
+    border-bottom: 2px solid var(--blue);
+    padding-bottom: 8px;
+    margin: 0 0 18px;
+  }
+  h3 { color: var(--ink); font-size: 1.1rem; margin: 22px 0 8px; }
+  p { margin: 10px 0; }
+  .note {
+    background: #fbfaf0;
+    border-left: 4px solid var(--yellow);
+    padding: 10px 14px;
+    font-size: 0.96rem;
+    color: #3a3a2f;
+    border-radius: 4px;
+    margin: 12px 0;
+  }
+  .warn {
+    background: #fdf1ea;
+    border-left: 4px solid var(--redorange);
+    padding: 10px 14px;
+    font-size: 0.96rem;
+    color: #5c2200;
+    border-radius: 4px;
+    margin: 12px 0;
+    font-weight: 600;
+  }
+  .controls-row { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin-bottom: 16px; }
+  .controls-row label { font-weight: 600; margin-right: 6px; }
+  .btn {
+    background: var(--blue);
+    color: white;
+    border: none;
+    padding: 9px 16px;
+    border-radius: 7px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn:hover { background: #005a8c; }
+  .btn.secondary {
+    background: #eeece0;
+    color: var(--ink);
+    border: 1px solid var(--border);
+  }
+  .btn.secondary:hover { background: #e2ded0; }
+  .btn.secondary.active { background: var(--blue); color: white; border-color: var(--blue); }
+  .preset-group { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0 4px; }
+  .n-select { display: flex; gap: 6px; }
+  .n-select button {
+    padding: 8px 16px; border-radius: 7px; border: 1px solid var(--blue);
+    background: white; color: var(--blue); font-size: 15px; cursor: pointer; font-weight: 600;
+  }
+  .n-select button.active { background: var(--blue); color: white; }
+
+  table.matrix-table { border-collapse: collapse; margin: 14px 0; }
+  table.matrix-table td { padding: 5px 8px; text-align: center; }
+  .mcell {
+    width: 76px; font-size: 16px; text-align: center;
+    padding: 7px 4px; border: 1px solid var(--border); border-radius: 5px;
+    font-family: "Cambria Math", Cambria, Georgia, serif;
+  }
+  .mcell:focus { outline: 2px solid var(--blue); }
+  .rowsum { font-size: 15px; font-weight: 600; color: var(--green); white-space: nowrap; padding-left: 10px; }
+  .rowsum.bad { color: var(--redorange); }
+  .bracket-cell { font-size: 2.4rem; color: var(--muted); font-weight: 100; padding: 0 2px; }
+
+  .pi0-row { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; margin: 10px 0; }
+  .pi0-item { display: flex; flex-direction: column; align-items: center; font-size: 0.95rem; }
+  .pi0-item input { width: 80px; text-align: center; padding: 6px; border: 1px solid var(--border); border-radius: 5px; font-size: 16px; }
+
+  .slider-row { display: flex; align-items: center; gap: 12px; margin: 14px 0; flex-wrap: wrap; }
+  input[type=range] { width: 260px; accent-color: var(--blue); }
+
+  svg text { font-family: "Segoe UI", -apple-system, Arial, sans-serif; }
+  .chart-legend { display: flex; gap: 22px; justify-content: center; flex-wrap: wrap; margin-top: 6px; font-size: 0.95rem; }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-swatch { width: 16px; height: 16px; border-radius: 3px; display: inline-block; }
+
+  .readout { text-align: center; font-family: "Cambria Math", Cambria, Georgia, serif; font-size: 1.05rem; margin: 12px 0 2px; }
+  .readout .val { color: var(--blue); font-weight: 700; }
+  .readout .dist { color: var(--green); font-weight: 700; }
+
+  ul.cases { padding-left: 22px; }
+  ul.cases li { margin: 9px 0; }
+  .case-tag { font-weight: 700; color: var(--blue); }
+
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding: 10px 20px 30px; }
+
+  @media (max-width: 640px) {
+    .mcell { width: 58px; font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Cadeias de Markov: para onde vão as distribuições?</h1>
+  <p class="subtitle">Iteração &pi;<sub>t</sub> = &pi;<sub>0</sub> P<sup>t</sup> e convergência para a distribuição invariante</p>
+</header>
+
+<main>
+
+  <section class="card" id="sec-matrix">
+    <h2>1. Matriz de transição P</h2>
+    <p>Convenção do curso: <strong>P é estocástica à direita</strong> (linhas somam 1) e a distribuição
+      é um <strong>vetor-linha</strong> &pi;. A atualização é &pi;<sub>t+1</sub> = &pi;<sub>t</sub> P.
+      Edite P diretamente ou escolha um dos exemplos da aula.</p>
+
+    <div class="controls-row">
+      <label>Número de estados N:</label>
+      <div class="n-select" id="n-select">
+        <button data-n="2" id="btn-n2">N = 2</button>
+        <button data-n="3" id="btn-n3">N = 3</button>
+      </div>
+    </div>
+
+    <div class="controls-row">
+      <label>Exemplos da aula:</label>
+      <div class="preset-group" id="preset-group">
+        <button class="btn secondary" data-preset="simetrica">Simétrica</button>
+        <button class="btn secondary" data-preset="identidade">Identidade</button>
+        <button class="btn secondary" data-preset="absorvente">Absorvente</button>
+        <button class="btn secondary" data-preset="periodica">Periódica</button>
+      </div>
+    </div>
+
+    <div id="matrix-container"></div>
+    <div class="note" id="preset-note">Selecione um exemplo ou edite P diretamente.</div>
+
+    <div class="note">
+      <strong>Nota sobre a transposta.</strong> Aqui &pi; é vetor-linha e a regra é &pi;<sub>t+1</sub> = &pi;<sub>t</sub> P.
+      Em muitos livros e códigos, &pi;' aparece como vetor-<em>coluna</em> e a mesma recursão vira
+      &pi;'<sub>t+1</sub> = P' &pi;'<sub>t</sub>. É a mesma matemática — só troca quem multiplica quem.
+    </div>
+  </section>
+
+  <section class="card" id="sec-graph">
+    <h2>2. Diagrama de transições</h2>
+    <p>Cada <strong>nó</strong> é um estado; cada <strong>seta</strong>, uma transição de probabilidade
+      positiva (laço = P<sub>ii</sub>, a chance de ficar no mesmo estado). Espessura e opacidade crescem
+      com a probabilidade, e todas as setas de uma mesma cor <em>saem do mesmo estado</em> — são uma
+      linha de P. As cores dos nós são as do gráfico abaixo.</p>
+    <div id="graph-container" style="overflow-x:auto; text-align:center;"></div>
+  </section>
+
+  <section class="card" id="sec-iteration">
+    <h2>3. Iteração &pi;<sub>t</sub> = &pi;<sub>0</sub> P<sup>t</sup></h2>
+    <p>Escolha &pi;<sub>0</sub> (valores não negativos; normalizados automaticamente para somar 1) e
+      arraste o horizonte T. O gráfico mostra cada componente de &pi;<sub>t</sub> ao longo do tempo; a
+      linha <strong>tracejada</strong> marca a distribuição invariante — o alvo para onde a iteração
+      é atraída (quando existe e é única).</p>
+
+    <div id="pi0-container" class="pi0-row"></div>
+
+    <div class="slider-row">
+      <label for="t-slider">Horizonte T:</label>
+      <input type="range" id="t-slider" min="1" max="60" value="25">
+      <span id="t-value">25</span>
+    </div>
+
+    <div id="chart-container" style="overflow-x:auto;"></div>
+    <div id="chart-legend" class="chart-legend"></div>
+    <div class="readout" id="readout"></div>
+    <div id="iteration-message"></div>
+  </section>
+
+  <section class="card" id="sec-cases">
+    <h2>4. Lendo os quatro casos</h2>
+    <p>Percorra os exemplos e observe <em>o que muda na dinâmica</em> — não como se calcula o alvo
+      (isso fica no notebook). O que interessa aqui é a <strong>intuição</strong>:</p>
+
+    <ul class="cases">
+      <li><span class="case-tag">Simétrica.</span> Todas as entradas positivas: &pi;<sub>t</sub>
+        converge para o mesmo &pi;* a partir de <em>qualquer</em> &pi;<sub>0</sub>. É o caso "bem
+        comportado".</li>
+      <li><span class="case-tag">Identidade.</span> Ninguém se move: <em>toda</em> distribuição já é
+        invariante. Não há um alvo único — por isso não aparece linha tracejada.</li>
+      <li><span class="case-tag">Absorvente.</span> O estado 1 é transiente (perde massa e nunca a
+        recebe de volta). Ainda assim &pi;<sub>t</sub> converge para um &pi;* único, com peso zero no
+        estado transiente: um lembrete de que as hipóteses dos teoremas são
+        <strong>suficientes, não necessárias</strong>.</li>
+      <li><span class="case-tag">Periódica.</span> Aqui a convergência <strong>quebra</strong>: existe
+        um único &pi;* = [0.5, 0.5], mas para &pi;<sub>0</sub> &ne; [0.5, 0.5] a cadeia
+        <em>oscila para sempre</em> entre os dois estados. Invariante existir não garante convergir a
+        ela.</li>
+    </ul>
+  </section>
+
+</main>
+
+<footer>Material de apoio (intuição) — Macro II, FGV EPGE. O cálculo da invariante (autovetor, sistema estendido, potências) vive no notebook <code>julia_invariant_distribution.ipynb</code>.</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------- Cores (Okabe-Ito) ----------
+  var COLORS = ["#0072B2", "#D55E00", "#009E73"];
+
+  // ---------- Estado ----------
+  var state = {
+    N: 2,
+    P: [[0.7, 0.3], [0.3, 0.7]],
+    pi0raw: [1, 0],
+    T: 25,
+    presetName: "simetrica"
+  };
+
+  var PRESETS = {
+    simetrica: {
+      N: 2, P: [[0.7, 0.3], [0.3, 0.7]], pi0: [1, 0],
+      note: "Simétrica: todas as entradas positivas. Invariante única e convergência a partir de qualquer pi_0."
+    },
+    identidade2: {
+      N: 2, P: [[1, 0], [0, 1]], pi0: [0.5, 0.5],
+      note: "Identidade: toda distribuição é invariante (pi I = pi para qualquer pi). Não há alvo único."
+    },
+    identidade: {
+      N: 3, P: [[1, 0, 0], [0, 1, 0], [0, 0, 1]], pi0: [1, 0, 0],
+      note: "Identidade: toda distribuição é invariante (pi I = pi para qualquer pi). Não há alvo único."
+    },
+    absorvente: {
+      N: 3, P: [[0.7, 0.3, 0], [0, 0.5, 0.5], [0, 0.9, 0.1]], pi0: [1, 0, 0],
+      note: "Absorvente: o estado 1 é transiente (nunca recebe massa de volta). Invariante: pi* ~ [0, 0.6429, 0.3571]."
+    },
+    periodica: {
+      N: 2, P: [[0, 1], [1, 0]], pi0: [1, 0],
+      note: "Periódica: invariante única [0.5, 0.5], mas pi_t NÃO converge para pi_0 != [0.5, 0.5] — a cadeia oscila para sempre."
+    }
+  };
+
+  // ---------- Utilidades numéricas ----------
+  function fmt(x, d) {
+    d = d === undefined ? 4 : d;
+    if (!isFinite(x)) return "0." + "0".repeat(d);
+    var v = x;
+    if (Math.abs(v) < 5e-5) v = 0;
+    return v.toFixed(d);
+  }
+
+  function matVecRow(pi, P) {
+    var N = P.length;
+    var out = new Array(N).fill(0);
+    for (var j = 0; j < N; j++) {
+      var s = 0;
+      for (var i = 0; i < N; i++) s += pi[i] * P[i][j];
+      out[j] = s;
+    }
+    return out;
+  }
+
+  function rowSums(P) {
+    return P.map(function (row) { return row.reduce(function (a, b) { return a + b; }, 0); });
+  }
+
+  function safeNum(v, fallback) {
+    var x = parseFloat(v);
+    return isFinite(x) ? x : (fallback === undefined ? 0 : fallback);
+  }
+
+  // Resolve o sistema estendido apenas para DESENHAR o alvo (uso interno).
+  // O método em si — como se acha a invariante — é conteúdo do notebook.
+  function gaussianSolve(Ain, bin) {
+    var n = Ain.length;
+    var A = Ain.map(function (row) { return row.slice(); });
+    var b = bin.slice();
+    for (var col = 0; col < n; col++) {
+      var maxRow = col;
+      var maxVal = Math.abs(A[col][col]);
+      for (var r = col + 1; r < n; r++) {
+        if (Math.abs(A[r][col]) > maxVal) { maxVal = Math.abs(A[r][col]); maxRow = r; }
+      }
+      if (maxVal < 1e-9) return { singular: true };
+      if (maxRow !== col) {
+        var tmpA = A[col]; A[col] = A[maxRow]; A[maxRow] = tmpA;
+        var tmpB = b[col]; b[col] = b[maxRow]; b[maxRow] = tmpB;
+      }
+      for (var rr = col + 1; rr < n; rr++) {
+        var factor = A[rr][col] / A[col][col];
+        for (var cc = col; cc < n; cc++) A[rr][cc] -= factor * A[col][cc];
+        b[rr] -= factor * b[col];
+      }
+    }
+    var x = new Array(n).fill(0);
+    for (var i = n - 1; i >= 0; i--) {
+      var sum = b[i];
+      for (var j = i + 1; j < n; j++) sum -= A[i][j] * x[j];
+      if (Math.abs(A[i][i]) < 1e-9) return { singular: true };
+      x[i] = sum / A[i][i];
+    }
+    return { singular: false, x: x };
+  }
+
+  function solveInvariant(P) {
+    var N = P.length;
+    var A = [];
+    for (var i = 0; i < N; i++) {
+      var row = [];
+      for (var j = 0; j < N; j++) row.push(P[j][i] - (i === j ? 1 : 0));
+      A.push(row);
+    }
+    A[N - 1] = new Array(N).fill(1);
+    var b = new Array(N).fill(0);
+    b[N - 1] = 1;
+    return gaussianSolve(A, b);
+  }
+
+  // ---------- Renderização: Matriz ----------
+  function renderMatrixTable() {
+    var container = document.getElementById("matrix-container");
+    var N = state.N;
+    var html = '<table class="matrix-table"><tbody>';
+    for (var i = 0; i < N; i++) {
+      html += "<tr>";
+      html += '<td class="bracket-cell">' + (i === 0 ? "⎡" : (i === N - 1 ? "⎣" : "⎢")) + "</td>";
+      for (var j = 0; j < N; j++) {
+        html += '<td><input type="number" step="any" class="mcell" data-i="' + i + '" data-j="' + j + '" value="' + state.P[i][j] + '"></td>';
+      }
+      html += '<td class="bracket-cell">' + (i === 0 ? "⎤" : (i === N - 1 ? "⎦" : "⎥")) + "</td>";
+      html += '<td class="rowsum" id="rowsum-' + i + '"></td>';
+      html += "</tr>";
+    }
+    html += "</tbody></table>";
+    container.innerHTML = html;
+
+    var inputs = container.querySelectorAll(".mcell");
+    inputs.forEach(function (inp) {
+      inp.addEventListener("input", function () {
+        var i = parseInt(inp.getAttribute("data-i"), 10);
+        var j = parseInt(inp.getAttribute("data-j"), 10);
+        state.P[i][j] = safeNum(inp.value, 0);
+        // edição manual sai do preset nomeado
+        state.presetName = "";
+        clearPresetActive();
+        updateAll();
+      });
+    });
+    updateRowSums();
+  }
+
+  function updateRowSums() {
+    var sums = rowSums(state.P);
+    sums.forEach(function (s, i) {
+      var el = document.getElementById("rowsum-" + i);
+      if (!el) return;
+      var ok = Math.abs(s - 1) < 1e-9;
+      el.textContent = "soma = " + s.toFixed(6);
+      el.className = "rowsum" + (ok ? "" : " bad");
+    });
+  }
+
+  // ---------- Renderização: pi0 ----------
+  function renderPi0Inputs() {
+    var container = document.getElementById("pi0-container");
+    var N = state.N;
+    var html = "";
+    for (var i = 0; i < N; i++) {
+      html += '<div class="pi0-item"><label>&pi;<sub>0,' + (i + 1) + '</sub></label>' +
+        '<input type="number" step="any" min="0" class="pi0-input" data-i="' + i + '" value="' + state.pi0raw[i] + '"></div>';
+    }
+    container.innerHTML = html;
+    var inputs = container.querySelectorAll(".pi0-input");
+    inputs.forEach(function (inp) {
+      inp.addEventListener("input", function () {
+        var i = parseInt(inp.getAttribute("data-i"), 10);
+        state.pi0raw[i] = safeNum(inp.value, 0);
+        renderIterationChart();
+      });
+    });
+  }
+
+  function normalizedPi0() {
+    var N = state.N;
+    var raw = state.pi0raw.slice(0, N);
+    while (raw.length < N) raw.push(0);
+    raw = raw.map(function (v) { return Math.max(0, safeNum(v, 0)); });
+    var sum = raw.reduce(function (a, b) { return a + b; }, 0);
+    if (sum <= 0) return new Array(N).fill(1 / N);
+    return raw.map(function (v) { return v / sum; });
+  }
+
+  // ---------- Diagrama (grafo dirigido) ----------
+  function nodePositions(N, cx, cy, R) {
+    if (N === 2) return [[cx - R, cy], [cx + R, cy]];
+    if (N === 3) return [
+      [cx, cy - R],
+      [cx + R * Math.cos(Math.PI / 6), cy + R * Math.sin(Math.PI / 6)],
+      [cx + R * Math.cos(5 * Math.PI / 6), cy + R * Math.sin(5 * Math.PI / 6)]
+    ];
+    var pos = [];
+    for (var k = 0; k < N; k++) {
+      var a = -Math.PI / 2 + 2 * Math.PI * k / N;
+      pos.push([cx + R * Math.cos(a), cy + R * Math.sin(a)]);
+    }
+    return pos;
+  }
+
+  function arrowHead(x, y, ang, color) {
+    var size = 9;
+    var a1 = ang + 2.618, a2 = ang - 2.618; // ~150 graus atrás da ponta
+    return '<polygon points="' + x + ',' + y + ' ' +
+      (x + size * Math.cos(a1)) + ',' + (y + size * Math.sin(a1)) + ' ' +
+      (x + size * Math.cos(a2)) + ',' + (y + size * Math.sin(a2)) +
+      '" fill="' + color + '"></polygon>';
+  }
+
+  function renderGraph() {
+    var N = state.N, P = state.P;
+    var W = 520, H = 380, cx = 260, cy = 200, R = (N === 2 ? 150 : 110), r = 25;
+    var pos = nodePositions(N, cx, cy, R);
+    var edges = "", labels = "";
+    for (var i = 0; i < N; i++) {
+      for (var j = 0; j < N; j++) {
+        var p = P[i][j];
+        if (!(p > 1e-6)) continue;
+        var col = COLORS[i % COLORS.length];
+        var pc = Math.min(1, p);
+        var sw = 1.2 + 3.6 * pc;
+        var op = 0.35 + 0.6 * pc;
+        if (i === j) {
+          // laço: abre para fora (radialmente a partir do centro)
+          var th = Math.atan2(pos[i][1] - cy, pos[i][0] - cx);
+          var loop = 40, aa = 0.45;
+          var p1x = pos[i][0] + r * Math.cos(th - aa), p1y = pos[i][1] + r * Math.sin(th - aa);
+          var p2x = pos[i][0] + r * Math.cos(th + aa), p2y = pos[i][1] + r * Math.sin(th + aa);
+          var c1x = pos[i][0] + (r + loop) * Math.cos(th - aa * 0.7), c1y = pos[i][1] + (r + loop) * Math.sin(th - aa * 0.7);
+          var c2x = pos[i][0] + (r + loop) * Math.cos(th + aa * 0.7), c2y = pos[i][1] + (r + loop) * Math.sin(th + aa * 0.7);
+          edges += '<path d="M' + p1x + ',' + p1y + ' C' + c1x + ',' + c1y + ' ' + c2x + ',' + c2y + ' ' + p2x + ',' + p2y + '" fill="none" stroke="' + col + '" stroke-width="' + sw + '" opacity="' + op + '"></path>';
+          edges += arrowHead(p2x, p2y, Math.atan2(p2y - c2y, p2x - c2x), col);
+          var lx = pos[i][0] + (r + loop + 14) * Math.cos(th), ly = pos[i][1] + (r + loop + 14) * Math.sin(th);
+          labels += '<text x="' + lx + '" y="' + (ly + 4) + '" font-size="14" fill="#1a1a1a" text-anchor="middle">' + fmt(p, 2) + '</text>';
+        } else {
+          // aresta curva; i->j e j->i pendem para lados opostos
+          var dx = pos[j][0] - pos[i][0], dy = pos[j][1] - pos[i][1];
+          var len = Math.hypot(dx, dy);
+          var px = -dy / len, py = dx / len; // perpendicular unitária
+          var bend = 32;
+          var mx = (pos[i][0] + pos[j][0]) / 2 + px * bend;
+          var my = (pos[i][1] + pos[j][1]) / 2 + py * bend;
+          var sdx = mx - pos[i][0], sdy = my - pos[i][1], sl = Math.hypot(sdx, sdy);
+          var sx = pos[i][0] + r * sdx / sl, sy = pos[i][1] + r * sdy / sl;
+          var edx = mx - pos[j][0], edy = my - pos[j][1], el = Math.hypot(edx, edy);
+          var ex = pos[j][0] + (r + 7) * edx / el, ey = pos[j][1] + (r + 7) * edy / el;
+          edges += '<path d="M' + sx + ',' + sy + ' Q' + mx + ',' + my + ' ' + ex + ',' + ey + '" fill="none" stroke="' + col + '" stroke-width="' + sw + '" opacity="' + op + '"></path>';
+          edges += arrowHead(ex, ey, Math.atan2(ey - my, ex - mx), col);
+          var midx = 0.25 * sx + 0.5 * mx + 0.25 * ex, midy = 0.25 * sy + 0.5 * my + 0.25 * ey;
+          labels += '<text x="' + (midx + px * 12) + '" y="' + (midy + py * 12 + 4) + '" font-size="14" fill="#1a1a1a" text-anchor="middle">' + fmt(p, 2) + '</text>';
+        }
+      }
+    }
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" style="max-width:' + W + 'px" xmlns="http://www.w3.org/2000/svg">';
+    svg += edges;
+    for (var k = 0; k < N; k++) {
+      svg += '<circle cx="' + pos[k][0] + '" cy="' + pos[k][1] + '" r="' + r + '" fill="' + COLORS[k] + '" stroke="#ffffff" stroke-width="2"></circle>';
+      svg += '<text x="' + pos[k][0] + '" y="' + (pos[k][1] + 6) + '" font-size="18" fill="#ffffff" text-anchor="middle" font-weight="700">' + (k + 1) + '</text>';
+    }
+    svg += labels + '</svg>';
+    document.getElementById("graph-container").innerHTML = svg;
+  }
+
+  // ---------- Iteração + gráfico ----------
+  function computeIterationHistory() {
+    var pi0 = normalizedPi0();
+    var T = state.T;
+    var history = [pi0];
+    for (var t = 1; t <= T; t++) history.push(matVecRow(history[t - 1], state.P));
+    return history;
+  }
+
+  function renderIterationChart() {
+    var N = state.N;
+    var history = computeIterationHistory();
+    var T = state.T;
+    var inv = solveInvariant(state.P);
+
+    var W = 780, H = 340;
+    var margin = { top: 20, right: 30, bottom: 46, left: 54 };
+    var plotW = W - margin.left - margin.right;
+    var plotH = H - margin.top - margin.bottom;
+
+    function xPix(t) { return margin.left + (t / T) * plotW; }
+    function yPix(v) { return margin.top + (1 - v) * plotH; }
+
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" style="max-width:' + W + 'px" xmlns="http://www.w3.org/2000/svg">';
+    svg += '<rect x="' + margin.left + '" y="' + margin.top + '" width="' + plotW + '" height="' + plotH + '" fill="#fffef7" stroke="#ddd8c0" stroke-width="1"></rect>';
+
+    [0, 0.25, 0.5, 0.75, 1].forEach(function (v) {
+      var y = yPix(v);
+      svg += '<line x1="' + margin.left + '" y1="' + y + '" x2="' + (margin.left + plotW) + '" y2="' + y + '" stroke="#e7e3d2" stroke-width="1"></line>';
+      svg += '<text x="' + (margin.left - 10) + '" y="' + (y + 5) + '" font-size="14" fill="#1a1a1a" text-anchor="end">' + v.toFixed(2) + '</text>';
+    });
+
+    var xTickStep = Math.max(1, Math.round(T / 8));
+    for (var t = 0; t <= T; t += xTickStep) {
+      var x = xPix(t);
+      svg += '<line x1="' + x + '" y1="' + (margin.top + plotH) + '" x2="' + x + '" y2="' + (margin.top + plotH + 5) + '" stroke="#1a1a1a" stroke-width="1"></line>';
+      svg += '<text x="' + x + '" y="' + (margin.top + plotH + 22) + '" font-size="14" fill="#1a1a1a" text-anchor="middle">' + t + '</text>';
+    }
+    svg += '<text x="' + (margin.left + plotW / 2) + '" y="' + (H - 6) + '" font-size="15" fill="#1a1a1a" text-anchor="middle">t</text>';
+    svg += '<text x="16" y="' + (margin.top + plotH / 2) + '" font-size="15" fill="#1a1a1a" text-anchor="middle" transform="rotate(-90 16 ' + (margin.top + plotH / 2) + ')">probabilidade</text>';
+
+    if (!inv.singular) {
+      for (var j = 0; j < N; j++) {
+        var yv = yPix(inv.x[j]);
+        svg += '<line x1="' + margin.left + '" y1="' + yv + '" x2="' + (margin.left + plotW) + '" y2="' + yv + '" stroke="' + COLORS[j] + '" stroke-width="1.6" stroke-dasharray="6,5" opacity="0.75"></line>';
+      }
+    }
+
+    for (var jj = 0; jj < N; jj++) {
+      var pts = [];
+      for (var tt = 0; tt <= T; tt++) pts.push(xPix(tt) + "," + yPix(history[tt][jj]));
+      var areaPts = margin.left + "," + (margin.top + plotH) + " " + pts.join(" ") + " " + (margin.left + plotW) + "," + (margin.top + plotH);
+      svg += '<polygon points="' + areaPts + '" fill="' + COLORS[jj] + '" opacity="0.07"></polygon>';
+      svg += '<polyline points="' + pts.join(" ") + '" fill="none" stroke="' + COLORS[jj] + '" stroke-width="2.6"></polyline>';
+    }
+
+    svg += "</svg>";
+    document.getElementById("chart-container").innerHTML = svg;
+
+    var legendHtml = "";
+    for (var k = 0; k < N; k++) {
+      legendHtml += '<div class="legend-item"><span class="legend-swatch" style="background:' + COLORS[k] + '"></span>&pi;<sub>' + (k + 1) + '</sub> (tracejado = invariante)</div>';
+    }
+    document.getElementById("chart-legend").innerHTML = legendHtml;
+
+    // Leitura: pi_T e distância L1 ao alvo
+    var piT = history[T];
+    var readoutEl = document.getElementById("readout");
+    var piTStr = "[" + piT.map(function (v) { return '<span class="val">' + fmt(v, 4) + "</span>"; }).join(", ") + "]";
+    if (!inv.singular) {
+      var dist = 0;
+      for (var m = 0; m < N; m++) dist += Math.abs(piT[m] - inv.x[m]);
+      readoutEl.innerHTML = "&pi;<sub>" + T + "</sub> = " + piTStr +
+        " &nbsp;&middot;&nbsp; distância à invariante = <span class=\"dist\">" + fmt(dist, 4) + "</span>";
+    } else {
+      readoutEl.innerHTML = "&pi;<sub>" + T + "</sub> = " + piTStr + " &nbsp;&middot;&nbsp; (sem alvo único)";
+    }
+
+    var msgEl = document.getElementById("iteration-message");
+    if (inv.singular) {
+      msgEl.innerHTML = '<p class="warn">Não há distribuição invariante única para esta P — nenhum alvo a mostrar. Repare que, com P = I, cada &pi;<sub>0</sub> já é seu próprio ponto fixo: &pi;<sub>t</sub> não muda.</p>';
+    } else if (state.presetName === "periodica") {
+      msgEl.innerHTML = '<p class="warn">Observe: para &pi;<sub>0</sub> diferente de [0.5, 0.5], &pi;<sub>t</sub> NÃO converge — a cadeia oscila para sempre. A distância à invariante não vai a zero.</p>';
+    } else {
+      msgEl.innerHTML = "";
+    }
+  }
+
+  // ---------- Preset / N ----------
+  function clearPresetActive() {
+    document.querySelectorAll("#preset-group button").forEach(function (b) { b.classList.remove("active"); });
+  }
+
+  function markPresetActive(name) {
+    clearPresetActive();
+    var btn = document.querySelector('#preset-group button[data-preset="' + name + '"]');
+    if (btn) btn.classList.add("active");
+  }
+
+  function applyPreset(name) {
+    var key = name;
+    if (name === "identidade") key = state.N === 2 ? "identidade2" : "identidade";
+    var preset = PRESETS[key];
+    state.N = preset.N;
+    state.P = preset.P.map(function (row) { return row.slice(); });
+    state.pi0raw = preset.pi0.slice();
+    state.T = state.T || 25;
+    state.presetName = name === "identidade" ? "identidade" : name;
+    document.getElementById("preset-note").textContent = preset.note;
+    markPresetActive(name);
+    fullRender();
+  }
+
+  function setN(n) {
+    if (n === state.N) return;
+    state.N = n;
+    if (n === 2) applyPreset("simetrica");
+    else applyPreset("absorvente");
+  }
+
+  function updateNButtons() {
+    document.getElementById("btn-n2").className = state.N === 2 ? "active" : "";
+    document.getElementById("btn-n3").className = state.N === 3 ? "active" : "";
+  }
+
+  // ---------- Orquestração ----------
+  function updateAll() {
+    updateRowSums();
+    renderGraph();
+    renderIterationChart();
+  }
+
+  function fullRender() {
+    updateNButtons();
+    renderMatrixTable();
+    renderPi0Inputs();
+    document.getElementById("t-slider").value = state.T;
+    document.getElementById("t-value").textContent = state.T;
+    updateAll();
+  }
+
+  // ---------- Eventos ----------
+  document.getElementById("btn-n2").addEventListener("click", function () { setN(2); });
+  document.getElementById("btn-n3").addEventListener("click", function () { setN(3); });
+
+  document.querySelectorAll("#preset-group button").forEach(function (btn) {
+    btn.addEventListener("click", function () { applyPreset(btn.getAttribute("data-preset")); });
+  });
+
+  document.getElementById("t-slider").addEventListener("input", function (e) {
+    state.T = parseInt(e.target.value, 10);
+    document.getElementById("t-value").textContent = state.T;
+    renderIterationChart();
+  });
+
+  // ---------- Inicialização ----------
+  applyPreset("simetrica");
+})();
+</script>
+</body>
+</html>

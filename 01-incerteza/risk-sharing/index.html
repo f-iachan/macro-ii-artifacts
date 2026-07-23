@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta name="robots" content="noindex, nofollow">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Risk Sharing e Regressão de Townsend — Macro II</title>
+<style>
+  :root{
+    --ivory:#FFFFF0;
+    --blue:#0072B2;
+    --redorange:#D55E00;
+    --green:#009E73;
+    --yellow:#F0E442;
+    --ink:#1a1a1a;
+    --panel:#ffffff;
+    --border:#d8d3c0;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;padding:0;
+    background:var(--ivory);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:17px;
+    line-height:1.45;
+  }
+  .wrap{max-width:1500px;margin:0 auto;padding:20px 28px 60px;}
+  h1{font-size:1.75em;margin:0 0 4px;color:var(--blue);font-weight:700;}
+  .subtitle{color:#555;margin:0 0 20px;font-size:1.02em;}
+  .card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:16px 18px;
+    margin-bottom:18px;
+  }
+  .card h2{margin:0 0 10px;font-size:1.2em;color:var(--blue);}
+  .card h3{margin:14px 0 8px;font-size:1em;color:#444;}
+
+  .controls-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));
+    gap:18px 26px;
+  }
+  .slider-block label{
+    display:flex;justify-content:space-between;
+    font-size:0.95em;font-weight:600;margin-bottom:2px;
+  }
+  .slider-block .desc{font-size:0.82em;color:#595959;margin-bottom:4px;}
+  .slider-block input[type=range]{width:100%;}
+  .valtag{color:var(--blue);font-weight:700;}
+
+  .preset-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px;}
+  .regime-status{font-weight:700;color:var(--blue);margin-top:8px;}
+
+  button.action{
+    background:var(--blue);color:#fff;border:none;border-radius:8px;
+    padding:9px 18px;font-size:0.95em;font-weight:600;cursor:pointer;font-family:inherit;
+  }
+  button.action:hover{background:#005a8c;}
+  button.preset{
+    background:#f7f5e8;color:#333;border:1px solid var(--border);border-radius:7px;
+    padding:7px 11px;font-size:0.9em;font-weight:600;cursor:pointer;font-family:inherit;
+  }
+  button.preset:hover,button.preset:focus-visible{border-color:var(--blue);color:var(--blue);}
+  button.preset[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff;}
+
+  .lambda-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px 22px;}
+  .swatch{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:middle;margin-right:6px;}
+
+  table.shares{width:100%;border-collapse:collapse;font-size:0.95em;margin-top:8px;}
+  table.shares th,table.shares td{border-bottom:1px solid var(--border);padding:6px 10px;text-align:center;}
+  table.shares th{background:#f7f5e8;color:#555;}
+
+  .plots-row{display:flex;flex-wrap:wrap;gap:20px;}
+  .plot-box{flex:1 1 480px;min-width:0;}
+  svg.chart{width:100%;height:auto;display:block;background:#fffdf6;border:1px solid var(--border);border-radius:8px;}
+  .axis-label{font-size:14px;fill:#444;font-weight:600;}
+  .tick-label{font-size:13px;fill:#555;}
+
+  .bhat-display{
+    text-align:center;padding:14px 0 6px;
+  }
+  .bhat-display .num{font-size:2.6em;font-weight:800;color:var(--redorange);}
+  .bhat-display .lbl{font-size:0.95em;color:#555;}
+  .identification-warning{
+    display:none;margin:8px auto 4px;max-width:620px;padding:9px 12px;
+    color:#7a2e00;background:#fff2e8;border:1px solid #e7a477;border-radius:7px;font-weight:600;
+  }
+  .identification-warning.visible{display:block;}
+
+  .formula-box{
+    background:#fbfaf2;border-left:5px solid var(--blue);border-radius:6px;
+    padding:12px 16px;font-size:0.98em;margin-top:6px;
+  }
+  .formula-box code{font-size:1.05em;background:none;}
+  .formula-box code{white-space:normal;overflow-wrap:anywhere;}
+
+  .hypo-box{
+    background:#fbfaf2;border-left:5px solid var(--green);border-radius:6px;
+    padding:12px 16px;font-size:0.97em;
+  }
+  .hypo-box b.rs{color:var(--blue);}
+  .hypo-box b.au{color:#8a3a00;}
+  .reduced-form-note{
+    background:#fff6d8;border-left:5px solid:#b46b00;border-radius:6px;
+    padding:10px 14px;margin-top:10px;color:#3f3420;font-size:0.93em;
+  }
+  .chart-note{color:#595959;font-size:0.88em;margin:0 0 8px;}
+
+  footer{margin-top:24px;font-size:0.85em;color:#595959;text-align:center;}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+  @media (max-width:480px){
+    html,body{font-size:15px;}
+    .wrap{padding:12px 10px 36px;}
+    .card{padding:13px 11px;}
+    h1{font-size:1.48em;line-height:1.2;}
+    table.shares{font-size:0.83em;}
+    table.shares th,table.shares td{padding:5px 3px;}
+    .bhat-display .num{font-size:2.1em;}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <h1>Sandbox de Risk Sharing e Regressão de Townsend</h1>
+  <p class="subtitle">Macro II · Incerteza — do risk sharing perfeito à autarquia, passando por partilha incompleta</p>
+
+  <div class="card">
+    <h2>Parâmetros da economia</h2>
+    <div class="controls-grid">
+      <div class="slider-block">
+        <label for="s-N">Número de agentes N <span class="valtag" id="v-N" aria-live="polite">4</span></label>
+        <div class="desc">Quantos agentes dividem o risco agregado. Alterar N gera uma nova amostra.</div>
+        <input type="range" id="s-N" min="2" max="6" step="1" value="4">
+      </div>
+      <div class="slider-block">
+        <label for="s-sigma">Aversão ao risco σ (CRRA) <span class="valtag" id="v-sigma" aria-live="polite">2.00</span></label>
+        <div class="desc">Com pesos λ desiguais, σ altera as frações eficientes: quanto maior σ, mais próximas elas ficam.</div>
+        <input type="range" id="s-sigma" min="0.25" max="5" step="0.05" value="2">
+      </div>
+      <div class="slider-block">
+        <label for="s-volagg">Vol. agregada (choque comum) <span class="valtag" id="v-volagg" aria-live="polite">0.10</span></label>
+        <div class="desc">Desvio-padrão do choque agregado agg_t.</div>
+        <input type="range" id="s-volagg" min="0" max="0.5" step="0.01" value="0.10">
+      </div>
+      <div class="slider-block">
+        <label for="s-volidio">Vol. idiossincrática <span class="valtag" id="v-volidio" aria-live="polite">0.20</span></label>
+        <div class="desc">Desvio-padrão do choque idiossincrático idio_i,t; ele redistribui a dotação, sem alterar Y_t.</div>
+        <input type="range" id="s-volidio" min="0" max="0.5" step="0.01" value="0.20">
+      </div>
+      <div class="slider-block">
+        <label for="s-periods">Períodos simulados T <span class="valtag" id="v-periods" aria-live="polite">200</span></label>
+        <div class="desc">Tamanho da amostra usada nos gráficos e na regressão. Alterar T gera uma nova amostra.</div>
+        <input type="range" id="s-periods" min="50" max="500" step="10" value="200">
+      </div>
+      <div class="slider-block" style="align-self:end;">
+        <button class="action" id="btn-resample" type="button">Nova amostra (resimular choques)</button>
+      </div>
+    </div>
+
+    <h3>Pesos de Pareto λ_i (desiguais por padrão; normalizados automaticamente)</h3>
+    <div class="lambda-list" id="lambda-controls"></div>
+
+    <h3 id="regime-heading">Grau de exposição ao endowment próprio</h3>
+    <div class="slider-block" role="group" aria-labelledby="regime-heading">
+      <label for="s-theta">Partilha incompleta θ <span class="valtag" id="v-theta" aria-live="polite">0.25</span></label>
+      <div class="desc" id="theta-help">θ = 0 elimina o risco idiossincrático; θ = 1 preserva toda a exposição da autarquia.</div>
+      <input type="range" id="s-theta" min="0" max="1" step="0.01" value="0.25" aria-describedby="theta-help theta-caveat">
+      <div class="preset-row" role="group" aria-label="Atalhos para regimes de alocação" aria-describedby="theta-caveat">
+        <button class="preset" type="button" data-theta="0" aria-pressed="false" aria-describedby="theta-caveat">Completo (θ=0)</button>
+        <button class="preset" type="button" data-theta="0.25" aria-pressed="true" aria-describedby="theta-caveat">Incompleto (θ=0,25)</button>
+        <button class="preset" type="button" data-theta="1" aria-pressed="false" aria-describedby="theta-caveat">Autarquia (θ=1)</button>
+      </div>
+      <div class="regime-status" id="regime-status" aria-live="polite"></div>
+    </div>
+
+    <div class="formula-box">
+      <b>Da partilha completa à autarquia:</b><br>
+      <code>share_i = λ_i^(1/σ) / Σ_j λ_j^(1/σ)</code><br>
+      <code>c_i,t = (1−θ) · share_i · Y_t + θ · y_i,t</code><br>
+      Sob θ = 0, cada agente consome uma fração constante de Y. Para 0 &lt; θ &lt; 1, parte do risco idiossincrático permanece; sob θ = 1, c_i,t = y_i,t.
+    </div>
+    <div class="reduced-form-note" id="theta-caveat">
+      <b>Interpretação didática:</b> θ é uma interpolação de forma reduzida entre dois benchmarks, não um
+      parâmetro estrutural derivado de um modelo de mercados incompletos. Nesta simulação, <b>b = θ por
+      construção</b>; a igualdade organiza a intuição, mas não deve ser lida como identificação estrutural.
+    </div>
+
+    <table class="shares" id="shares-table"><caption class="sr-only">Pesos normalizados e frações eficientes por agente</caption></table>
+  </div>
+
+  <div class="card">
+    <h2>Gráficos</h2>
+    <div class="plots-row">
+      <div class="plot-box">
+        <h3>(a) Consumo individual c_i vs. endowment agregado Y</h3>
+        <p class="chart-note">Os eixos usam escalas próprias para tornar a dispersão legível. Compare os valores nos eixos; o ângulo visual da linha não é um coeficiente de regressão.</p>
+        <svg class="chart" id="scatter" viewBox="0 0 560 460" role="img" aria-label="Dispersão do consumo individual contra o endowment agregado, por agente" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+      <div class="plot-box">
+        <h3>(b) Regressão de Townsend estimada (OLS, dados simulados)</h3>
+        <div class="formula-box" style="margin-top:0;">
+          <code>c_i,t = α_i · C_t + b · y_i,t</code> &nbsp; (C_t = consumo agregado = Y_t)
+        </div>
+        <div class="bhat-display" aria-live="polite">
+          <div class="num" id="bhat-num">0.000</div>
+          <div class="lbl">b estimado (coeficiente do endowment individual)</div>
+          <div class="identification-warning" id="identification-warning" role="alert"></div>
+        </div>
+        <svg class="chart" id="bars" viewBox="0 0 560 300" role="img" aria-label="Coeficientes alfa estimados por agente e referências teóricas" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+    </div>
+
+    <div class="hypo-box">
+      <b>Três referências para interpretar a regressão de Townsend:</b><br>
+      • <b class="rs">Risk sharing perfeito</b> (mercados completos): b = 0 — o consumo individual só reage ao agregado C_t, não ao endowment próprio y_i,t.<br>
+      • <b>Partilha incompleta</b>: 0 &lt; b &lt; 1 — nesta interpolação didática, a regressão recupera b = θ por construção.<br>
+      • <b class="au">Autarquia / hand-to-mouth</b>: α_i = 0 e b = 1 — cada agente simplesmente consome seu próprio endowment.<br>
+      Na literatura empírica (Townsend, 1994, e réplicas), b estimado costuma ser <b>pequeno mas positivo</b> — evidência de partilha de risco substancial, porém incompleta.
+    </div>
+  </div>
+
+  <footer>Macro II · FGV EPGE — artefato interativo autocontido, sem dependências externas.</footer>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  var AGENT_COLORS = ['#0072B2','#D55E00','#009E73','#E69F00','#56B4E9','#CC79A7'];
+
+  var state = {
+    N: 4,
+    sigma: 2.0,
+    volAgg: 0.10,
+    volIdio: 0.20,
+    periods: 200,
+    lambda: [0.55,0.30,0.15,0.08,0.05,0.03],
+    theta: 0.25,
+    shocks: null // choques-padrão fixos: {aggBase:[], idioBase:[[...]]}
+  };
+
+  // ---------- RNG ----------
+  function randNormal(){
+    var u = 1 - Math.random(); // in (0,1]
+    var v = Math.random();
+    return Math.sqrt(-2*Math.log(u)) * Math.cos(2*Math.PI*v);
+  }
+
+  function resimulate(){
+    var N = state.N, T = state.periods;
+    var aggBase = new Array(T);
+    for (var t=0;t<T;t++) aggBase[t] = randNormal();
+    var idioBase = new Array(N);
+    for (var i=0;i<N;i++){
+      idioBase[i] = new Array(T);
+      for (var t2=0;t2<T;t2++) idioBase[i][t2] = randNormal();
+    }
+    state.shocks = { aggBase: aggBase, idioBase: idioBase };
+  }
+
+  // ---------- Economics ----------
+  function computeShares(){
+    var N = state.N;
+    var lam = state.lambda.slice(0,N);
+    var sum = 0; for (var i=0;i<N;i++) sum += lam[i];
+    if (!(sum>0)) sum = 1;
+    var norm = lam.map(function(l){ return l/sum; });
+    var sigma = state.sigma;
+    var w = norm.map(function(l){ return Math.pow(Math.max(l,1e-9), 1/sigma); });
+    var wsum = w.reduce(function(a,b){return a+b;},0);
+    if (!(wsum>0)) wsum = 1;
+    var shares = w.map(function(x){ return x/wsum; });
+    return { normLambda: norm, shares: shares };
+  }
+
+  function computeSeries(){
+    var N = state.N, T = state.periods;
+    if (!state.shocks || state.shocks.idioBase.length !== N || state.shocks.aggBase.length !== T){
+      resimulate();
+    }
+    var aggBase = state.shocks.aggBase, idioBase = state.shocks.idioBase;
+    var y = new Array(N), Y = new Array(T).fill(0);
+    for (var i=0;i<N;i++) y[i] = new Array(T);
+    for (var t=0;t<T;t++){
+      var common = Math.exp(state.volAgg * aggBase[t]);
+      if (!isFinite(common)) common = 0;
+      var raw = new Array(N), rawSum = 0;
+      for (var i2=0;i2<N;i2++){
+        raw[i2] = Math.exp(state.volIdio * idioBase[i2][t]);
+        if (!isFinite(raw[i2])) raw[i2] = 0;
+        rawSum += raw[i2];
+      }
+      if (!(rawSum > 0)) rawSum = N;
+      Y[t] = N * common;
+      for (var i3=0;i3<N;i3++) y[i3][t] = Y[t] * raw[i3] / rawSum;
+    }
+    return { y:y, Y:Y };
+  }
+
+  function computeConsumption(y, Y, shares){
+    var N = state.N, T = state.periods;
+    var theta = state.theta;
+    var c = new Array(N);
+    for (var i=0;i<N;i++){
+      c[i] = new Array(T);
+      for (var t=0;t<T;t++){
+        c[i][t] = (1-theta)*shares[i]*Y[t] + theta*y[i][t];
+      }
+    }
+    return c;
+  }
+
+  // ---------- OLS por Frisch–Waugh–Lovell, com diagnóstico de identificação ----------
+  function runRegression(y, Y, c){
+    var N = state.N, T = state.periods;
+    var ssResidualY = 0, crossResidual = 0, ssY = 0;
+    var projectionY = new Array(N), projectionC = new Array(N);
+
+    for (var i=0;i<N;i++){
+      var sCC = 0, sCy = 0, sCc = 0;
+      for (var t=0;t<T;t++){
+        var Ct = Y[t];
+        sCC += Ct*Ct;
+        sCy += Ct*y[i][t];
+        sCc += Ct*c[i][t];
+      }
+      if (!(sCC > 1e-14)){
+        return { identified:false, b:null, alpha:null, signalRatio:0,
+          reason:'A regressão não está identificada: o consumo agregado não tem escala suficiente nesta amostra.' };
+      }
+      projectionY[i] = sCy/sCC;
+      projectionC[i] = sCc/sCC;
+      for (var t2=0;t2<T;t2++){
+        var ry = y[i][t2] - projectionY[i]*Y[t2];
+        var rc = c[i][t2] - projectionC[i]*Y[t2];
+        ssResidualY += ry*ry;
+        crossResidual += ry*rc;
+        ssY += y[i][t2]*y[i][t2];
+      }
+    }
+
+    var signalRatio = ssResidualY/Math.max(ssY,1e-30);
+    if (!(ssResidualY > 1e-14) || signalRatio < 1e-9){
+      return { identified:false, b:null, alpha:null, signalRatio:signalRatio,
+        reason:'b não é identificado: sem variação idiossincrática útil, y_i,t é colinear com C_t dentro de cada agente.' };
+    }
+
+    var b = crossResidual/ssResidualY;
+    if (!isFinite(b)){
+      return { identified:false, b:null, alpha:null, signalRatio:signalRatio,
+        reason:'b não pôde ser estimado com estabilidade numérica nesta amostra.' };
+    }
+    var alpha = new Array(N);
+    for (var i2=0;i2<N;i2++) alpha[i2] = projectionC[i2] - b*projectionY[i2];
+    return { identified:true, alpha:alpha, b:b, signalRatio:signalRatio };
+  }
+
+  // ---------- SVG helpers ----------
+  function svgEl(tag, attrs){
+    var el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    for (var k in attrs){ el.setAttribute(k, attrs[k]); }
+    return el;
+  }
+
+  function renderScatter(y, Y, c, shares){
+    var svg = document.getElementById('scatter');
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var title = svgEl('title',{}); title.textContent = 'Consumo individual contra endowment agregado'; svg.appendChild(title);
+    var desc = svgEl('desc',{}); desc.textContent = 'Pontos observados por agente e linhas tracejadas do componente médio de consumo no grau de partilha atual. Os eixos horizontal e vertical têm escalas próprias.'; svg.appendChild(desc);
+    var W=560,H=460, ml=60, mr=20, mt=48, mb=55;
+    var plotW = W-ml-mr, plotH = H-mt-mb;
+    var N = state.N, T = state.periods;
+
+    var maxAggregate = 0, maxConsumption = 0;
+    for (var t=0;t<T;t++){ if (Y[t]>maxAggregate) maxAggregate = Y[t]; }
+    for (var i=0;i<N;i++){ for (var t2=0;t2<T;t2++){ if (c[i][t2]>maxConsumption) maxConsumption = c[i][t2]; } }
+    if (maxAggregate<=0) maxAggregate = 1;
+    if (maxConsumption<=0) maxConsumption = 1;
+    var maxX = maxAggregate * 1.08;
+    var maxYScale = maxConsumption * 1.08;
+
+    function xPix(v){ return ml + (v/maxX)*plotW; }
+    function yPix(v){ return mt + plotH - (v/maxYScale)*plotH; }
+
+    // axes
+    svg.appendChild(svgEl('line',{x1:ml,y1:mt+plotH,x2:ml+plotW,y2:mt+plotH,stroke:'#333','stroke-width':1.5}));
+    svg.appendChild(svgEl('line',{x1:ml,y1:mt,x2:ml,y2:mt+plotH,stroke:'#333','stroke-width':1.5}));
+
+    var nticks = 5;
+    for (var k=0;k<=nticks;k++){
+      var xVal = maxX*k/nticks, yVal = maxYScale*k/nticks;
+      var xx = xPix(xVal), yy = yPix(yVal);
+      var tx = svgEl('line',{x1:xx,y1:mt+plotH,x2:xx,y2:mt+plotH+5,stroke:'#333'});
+      svg.appendChild(tx);
+      var txt = svgEl('text',{x:xx,y:mt+plotH+22,'text-anchor':'middle','class':'tick-label'});
+      txt.textContent = xVal.toFixed(2);
+      svg.appendChild(txt);
+      var ty = svgEl('line',{x1:ml-5,y1:yy,x2:ml,y2:yy,stroke:'#333'});
+      svg.appendChild(ty);
+      var tyx = svgEl('text',{x:ml-10,y:yy+4,'text-anchor':'end','class':'tick-label'});
+      tyx.textContent = yVal.toFixed(2);
+      svg.appendChild(tyx);
+    }
+
+    svg.appendChild((function(){ var t=svgEl('text',{x:ml+plotW/2,y:H-12,'text-anchor':'middle','class':'axis-label'}); t.textContent='Y agregado (endowment total)'; return t; })());
+    svg.appendChild((function(){ var t=svgEl('text',{x:16,y:mt+plotH/2,'text-anchor':'middle','class':'axis-label','transform':'rotate(-90 16 '+(mt+plotH/2)+')'}); t.textContent='c_i (consumo individual)'; return t; })());
+
+    // legend
+    svg.appendChild(svgEl('circle',{cx:72,cy:21,r:4,fill:'#555',opacity:0.65}));
+    var legPoints = svgEl('text',{x:82,y:25,'class':'tick-label'}); legPoints.textContent='consumo observado'; svg.appendChild(legPoints);
+    svg.appendChild(svgEl('line',{x1:245,y1:21,x2:280,y2:21,stroke:'#555','stroke-width':2.5,'stroke-dasharray':'7,4'}));
+    var legLine = svgEl('text',{x:288,y:25,'class':'tick-label'}); legLine.textContent='componente médio (θ='+state.theta.toFixed(2)+')'; svg.appendChild(legLine);
+
+    // scatter points
+    var frag = document.createDocumentFragment();
+    for (var i2=0;i2<N;i2++){
+      var col = AGENT_COLORS[i2];
+      for (var t3=0;t3<T;t3++){
+        var cx = xPix(Y[t3]), cy = yPix(c[i2][t3]);
+        var pt = svgEl('circle',{cx:cx,cy:cy,r:2.3,fill:col,opacity:0.5});
+        frag.appendChild(pt);
+      }
+    }
+    svg.appendChild(frag);
+
+    // Linhas de referência: componente médio de c_i condicional a Y na amostra atual.
+    for (var i3=0;i3<N;i3++){
+      var meanEndowmentShare = 0;
+      for (var t4=0;t4<T;t4++) meanEndowmentShare += y[i3][t4]/Y[t4];
+      meanEndowmentShare /= T;
+      var currentSlope = (1-state.theta)*shares[i3] + state.theta*meanEndowmentShare;
+      var lineMaxX = maxX*0.98;
+      if (currentSlope > 0) lineMaxX = Math.min(lineMaxX, maxYScale*0.98/currentSlope);
+      var x0=xPix(0), y0=yPix(0);
+      var x1=xPix(lineMaxX), y1=yPix(currentSlope*lineMaxX);
+      var line = svgEl('line',{x1:x0,y1:y0,x2:x1,y2:y1,stroke:AGENT_COLORS[i3],'stroke-width':2.5,'stroke-dasharray':'7,4'});
+      svg.appendChild(line);
+    }
+  }
+
+  function renderBars(reg, shares){
+    var svg = document.getElementById('bars');
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    var title = svgEl('title',{}); title.textContent = 'Coeficientes alfa da regressão de Townsend'; svg.appendChild(title);
+    var desc = svgEl('desc',{}); desc.textContent = reg.identified ? 'Barras estimadas e traços de referência teórica por agente.' : 'A regressão não está identificada nesta amostra.'; svg.appendChild(desc);
+    var W=560,H=300, ml=60, mr=20, mt=52, mb=50;
+    var plotW = W-ml-mr, plotH = H-mt-mb;
+    var N = state.N;
+
+    if (!reg.identified){
+      var warning = svgEl('text',{x:W/2,y:H/2-8,'text-anchor':'middle','class':'axis-label',fill:'#7a2e00'});
+      warning.textContent='Coeficientes não exibidos: regressão não identificada.';
+      svg.appendChild(warning);
+      var hint = svgEl('text',{x:W/2,y:H/2+18,'text-anchor':'middle','class':'tick-label'});
+      hint.textContent='Aumente a volatilidade idiossincrática.';
+      svg.appendChild(hint);
+      return;
+    }
+
+    var alpha = reg.alpha;
+    var theoreticalAlpha = shares.map(function(s){ return (1-state.theta)*s; });
+
+    var maxAbs = 0.1;
+    for (var i=0;i<N;i++){ maxAbs = Math.max(maxAbs, Math.abs(alpha[i]), Math.abs(theoreticalAlpha[i])); }
+    maxAbs *= 1.25;
+
+    function yPix(v){ return mt + plotH - ((v+maxAbs)/(2*maxAbs))*plotH; }
+    var zeroY = yPix(0);
+
+    svg.appendChild(svgEl('line',{x1:ml,y1:zeroY,x2:ml+plotW,y2:zeroY,stroke:'#333','stroke-width':1.5}));
+    svg.appendChild(svgEl('line',{x1:ml,y1:mt,x2:ml,y2:mt+plotH,stroke:'#333','stroke-width':1.5}));
+    svg.appendChild((function(){ var t=svgEl('text',{x:ml-10,y:zeroY+4,'text-anchor':'end','class':'tick-label'}); t.textContent='0'; return t; })());
+
+    svg.appendChild(svgEl('rect',{x:72,y:17,width:18,height:12,fill:AGENT_COLORS[0],opacity:0.85}));
+    var legBar = svgEl('text',{x:98,y:28,'class':'tick-label'}); legBar.textContent='α_i estimado'; svg.appendChild(legBar);
+    svg.appendChild(svgEl('line',{x1:238,y1:23,x2:270,y2:23,stroke:'#222','stroke-width':3}));
+    var legRef = svgEl('text',{x:278,y:28,'class':'tick-label'}); legRef.textContent='referência (1−θ) share_i'; svg.appendChild(legRef);
+
+    var barW = plotW/(N*2.2);
+    for (var i2=0;i2<N;i2++){
+      var cx = ml + plotW*( (i2+0.5)/N );
+      var av = alpha[i2];
+      var y0 = zeroY, y1 = yPix(av);
+      var top = Math.min(y0,y1), h = Math.abs(y1-y0);
+      svg.appendChild(svgEl('rect',{x:cx-barW/2,y:top,width:barW,height:Math.max(h,1),fill:AGENT_COLORS[i2],opacity:0.85}));
+      var refY = yPix(theoreticalAlpha[i2]);
+      svg.appendChild(svgEl('line',{x1:cx-barW*0.62,y1:refY,x2:cx+barW*0.62,y2:refY,stroke:'#222','stroke-width':3}));
+      var lbl = svgEl('text',{x:cx,y:mt+plotH+20,'text-anchor':'middle','class':'tick-label'});
+      lbl.textContent = 'α_'+(i2+1);
+      svg.appendChild(lbl);
+      var vlbl = svgEl('text',{x:cx,y:(av>=0? top-6 : top+h+16),'text-anchor':'middle','class':'tick-label'});
+      vlbl.textContent = av.toFixed(3);
+      svg.appendChild(vlbl);
+    }
+    svg.appendChild((function(){ var t=svgEl('text',{x:ml+plotW/2,y:H-8,'text-anchor':'middle','class':'axis-label'}); t.textContent='α_i por agente no regime atual'; return t; })());
+  }
+
+  // ---------- UI: lambda sliders ----------
+  function renderLambdaControls(){
+    var container = document.getElementById('lambda-controls');
+    var html = '';
+    for (var i=0;i<state.N;i++){
+      var col = AGENT_COLORS[i];
+      var sliderId = 's-lambda'+i;
+      html += '<div class="slider-block">' +
+        '<label for="'+sliderId+'"><span><span class="swatch" style="background:'+col+'"></span>λ_'+(i+1)+'</span> <span class="valtag" id="v-lambda'+i+'" aria-live="polite">'+state.lambda[i].toFixed(2)+'</span></label>' +
+        '<input id="'+sliderId+'" type="range" min="0.03" max="1" step="0.01" value="'+state.lambda[i]+'" data-idx="'+i+'" class="lambda-slider">' +
+        '</div>';
+    }
+    container.innerHTML = html;
+    var sliders = container.querySelectorAll('.lambda-slider');
+    sliders.forEach(function(s){
+      s.addEventListener('input', function(e){
+        var idx = parseInt(e.target.getAttribute('data-idx'),10);
+        state.lambda[idx] = parseFloat(e.target.value);
+        document.getElementById('v-lambda'+idx).textContent = state.lambda[idx].toFixed(2);
+        recomputeAndRender();
+      });
+    });
+  }
+
+  function renderSharesTable(normLambda, shares){
+    var rows = ['<caption class="sr-only">Pesos normalizados e frações eficientes por agente</caption><tr><th scope="col">Agente</th><th scope="col">λ_i (normalizado)</th><th scope="col">share_i eficiente</th></tr>'];
+    for (var i=0;i<state.N;i++){
+      rows.push('<tr><th scope="row"><span class="swatch" style="background:'+AGENT_COLORS[i]+'"></span>Agente '+(i+1)+'</th>' +
+        '<td>'+normLambda[i].toFixed(3)+'</td><td>'+shares[i].toFixed(3)+'</td></tr>');
+    }
+    document.getElementById('shares-table').innerHTML = rows.join('');
+  }
+
+  // ---------- Main recompute ----------
+  function recomputeAndRender(){
+    var sh = computeShares();
+    var series = computeSeries();
+    var c = computeConsumption(series.y, series.Y, sh.shares);
+    var reg = runRegression(series.y, series.Y, c);
+
+    renderSharesTable(sh.normLambda, sh.shares);
+    renderScatter(series.y, series.Y, c, sh.shares);
+    renderBars(reg, sh.shares);
+
+    var bNumber = document.getElementById('bhat-num');
+    var warning = document.getElementById('identification-warning');
+    if (reg.identified){
+      bNumber.textContent = reg.b.toFixed(3);
+      warning.textContent = '';
+      warning.classList.remove('visible');
+    } else {
+      bNumber.textContent = '—';
+      warning.textContent = reg.reason;
+      warning.classList.add('visible');
+    }
+
+    var regimeLabel;
+    if (state.theta === 0) regimeLabel = 'Mercados completos: nenhum risco idiossincrático no consumo.';
+    else if (state.theta === 1) regimeLabel = 'Autarquia: consumo igual ao endowment próprio.';
+    else regimeLabel = 'Interpolação didática: b = θ = '+state.theta.toFixed(2)+' por construção.';
+    document.getElementById('regime-status').textContent = regimeLabel;
+
+    document.querySelectorAll('button[data-theta]').forEach(function(button){
+      var presetTheta = parseFloat(button.getAttribute('data-theta'));
+      button.setAttribute('aria-pressed', Math.abs(presetTheta-state.theta)<1e-9 ? 'true' : 'false');
+    });
+  }
+
+  // ---------- Bind top-level controls ----------
+  function bindRange(id, key, fmt, needsResample){
+    var el = document.getElementById(id);
+    var out = document.getElementById('v-'+key);
+    el.addEventListener('input', function(e){
+      var v = parseFloat(e.target.value);
+      state[key] = v;
+      if (out) out.textContent = fmt(v);
+      if (needsResample) resimulate();
+      recomputeAndRender();
+    });
+  }
+
+  document.getElementById('s-N').addEventListener('input', function(e){
+    var n = parseInt(e.target.value,10);
+    state.N = n;
+    document.getElementById('v-N').textContent = n;
+    renderLambdaControls();
+    resimulate();
+    recomputeAndRender();
+  });
+
+  bindRange('s-sigma','sigma', function(v){ return v.toFixed(2); }, false);
+
+  document.getElementById('s-volagg').addEventListener('input', function(e){
+    var v = parseFloat(e.target.value);
+    state.volAgg = v;
+    document.getElementById('v-volagg').textContent = v.toFixed(2);
+    recomputeAndRender();
+  });
+
+  document.getElementById('s-volidio').addEventListener('input', function(e){
+    var v = parseFloat(e.target.value);
+    state.volIdio = v;
+    document.getElementById('v-volidio').textContent = v.toFixed(2);
+    recomputeAndRender();
+  });
+
+  document.getElementById('s-periods').addEventListener('input', function(e){
+    var v = parseInt(e.target.value,10);
+    state.periods = v;
+    document.getElementById('v-periods').textContent = v;
+    resimulate();
+    recomputeAndRender();
+  });
+
+  function setTheta(v){
+    state.theta = Math.max(0,Math.min(1,v));
+    document.getElementById('s-theta').value = state.theta;
+    document.getElementById('v-theta').textContent = state.theta.toFixed(2);
+    recomputeAndRender();
+  }
+
+  document.getElementById('s-theta').addEventListener('input', function(e){
+    setTheta(parseFloat(e.target.value));
+  });
+
+  document.querySelectorAll('button[data-theta]').forEach(function(button){
+    button.addEventListener('click', function(e){
+      setTheta(parseFloat(e.currentTarget.getAttribute('data-theta')));
+    });
+  });
+
+  document.getElementById('btn-resample').addEventListener('click', function(){
+    resimulate();
+    recomputeAndRender();
+  });
+
+  // ---------- Init ----------
+  renderLambdaControls();
+  resimulate();
+  recomputeAndRender();
+
+})();
+</script>
+</body>
+</html>

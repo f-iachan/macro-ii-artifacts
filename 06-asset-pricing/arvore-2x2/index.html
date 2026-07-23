@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta name="robots" content="noindex, nofollow">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Árvore de Lucas 2×2 — Macro II</title>
+<style>
+  :root{
+    --ivory:#FFFFF0;
+    --blue:#0072B2;
+    --redorange:#D55E00;
+    --green:#009E73;
+    --yellow:#F0E442;
+    --ink:#1a1a1a;
+    --panel:#ffffff;
+    --border:#d8d3c0;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;padding:0;
+    background:var(--ivory);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:17px;
+    line-height:1.45;
+  }
+  .wrap{max-width:1100px;margin:0 auto;padding:20px 28px 60px;}
+  h1{font-size:1.6em;margin:0 0 4px;color:var(--blue);font-weight:700;}
+  .subtitle{color:#555;margin:0 0 20px;font-size:1em;}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:18px;}
+  .row{display:flex;flex-wrap:wrap;gap:18px;}
+  .col{flex:1 1 320px;}
+  label{display:block;font-weight:600;margin:10px 0 2px;}
+  input[type=range]{width:100%;}
+  .val{color:var(--redorange);font-weight:700;font-variant-numeric:tabular-nums;}
+  table{border-collapse:collapse;width:100%;margin-top:8px;}
+  th,td{border-bottom:1px solid var(--border);padding:6px 10px;text-align:right;font-variant-numeric:tabular-nums;}
+  th:first-child,td:first-child{text-align:left;}
+  th{color:var(--blue);}
+  .hl{color:var(--redorange);font-weight:700;}
+  .note{font-size:.92em;color:#555;margin-top:10px;}
+  svg text{font-family:inherit;}
+  .lesson{border-left:4px solid var(--blue);padding:8px 14px;background:#f4f9fd;border-radius:0 8px 8px 0;margin-top:10px;font-size:.95em;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Árvore de Lucas 2×2</h1>
+  <p class="subtitle">Companheiro do exemplo dos slides de Asset Pricing (AP.tex).
+  Agente representativo, dois estados, árvore pagando (2, 1) e ativo livre de risco (1, 1),
+  ambos em oferta líquida zero. CRRA: u&prime;(c) = c<sup>&minus;&gamma;</sup>.
+  Em equilíbrio, c = e em todos os nós.</p>
+
+  <div class="row">
+    <div class="col card">
+      <label>Aversão ao risco &gamma; = <span class="val" id="vgamma"></span></label>
+      <input type="range" id="gamma" min="0" max="10" step="0.1" value="2">
+      <label>Probabilidade do estado bom &pi;<sub>h</sub> = <span class="val" id="vpih"></span></label>
+      <input type="range" id="pih" min="0.05" max="0.95" step="0.05" value="0.5">
+      <label>Desconto &beta; = <span class="val" id="vbeta"></span></label>
+      <input type="range" id="beta" min="0.80" max="1.00" step="0.01" value="0.96">
+      <label>Dispersão da dotação em t=1 (e<sub>h</sub>=1,5+d, e<sub>l</sub>=1,5&minus;d), d = <span class="val" id="vd"></span></label>
+      <input type="range" id="dspread" min="0" max="0.5" step="0.05" value="0.5">
+      <p class="note">Com d=0,5: (e<sub>h</sub>, e<sub>l</sub>)=(2, 1), o exemplo dos slides.
+      A árvore paga a dotação de t=1; e<sub>0</sub>=3/2 fixo. Com d=0 não há risco agregado.</p>
+    </div>
+
+    <div class="col card">
+      <svg id="tree" viewBox="0 0 380 240" width="100%"></svg>
+    </div>
+  </div>
+
+  <div class="card">
+    <table id="out">
+      <thead><tr><th>Objeto</th><th>Fórmula</th><th>Valor</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div class="lesson" id="lesson"></div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const fmt = (x,n=4) => x.toLocaleString('pt-BR',{minimumFractionDigits:n,maximumFractionDigits:n});
+
+function update(){
+  const g  = parseFloat($('gamma').value);
+  const ph = parseFloat($('pih').value);
+  const b  = parseFloat($('beta').value);
+  const d  = parseFloat($('dspread').value);
+  const pl = 1-ph;
+  const e0 = 1.5, eh = 1.5+d, el = 1.5-d;
+
+  $('vgamma').textContent = fmt(g,1);
+  $('vpih').textContent   = fmt(ph,2);
+  $('vbeta').textContent  = fmt(b,2);
+  $('vd').textContent     = fmt(d,2);
+
+  const up = c => Math.pow(c,-g);          // u'(c) = c^{-gamma}
+  const qh = b*ph*up(eh)/up(e0);
+  const ql = b*pl*up(el)/up(e0);
+  const mh = qh/ph, ml = ql/pl;            // pricing kernel por estado
+  // payoffs: árvore x^a = (eh, el); livre de risco (1,1)
+  const pa = qh*eh + ql*el;
+  const pf = qh + ql;
+  const Rf = 1/pf;
+  const ERa = (ph*eh + pl*el)/pa;
+  const prem = ERa - Rf;
+
+  const rows = [
+    ['q<sub>h</sub> (preço do estado bom)',  'βπ<sub>h</sub>u\'(e<sub>h</sub>)/u\'(e<sub>0</sub>)', fmt(qh)],
+    ['q<sub>l</sub> (preço do estado ruim)', 'βπ<sub>l</sub>u\'(e<sub>l</sub>)/u\'(e<sub>0</sub>)', fmt(ql)],
+    ['m<sub>h</sub> = q<sub>h</sub>/π<sub>h</sub>', 'kernel no estado bom',  fmt(mh)],
+    ['m<sub>l</sub> = q<sub>l</sub>/π<sub>l</sub>', 'kernel no estado ruim', fmt(ml)],
+    ['p<sup>a</sup> (árvore)', 'q<sub>h</sub>e<sub>h</sub> + q<sub>l</sub>e<sub>l</sub>', fmt(pa)],
+    ['p<sup>f</sup> (livre de risco)', 'q<sub>h</sub> + q<sub>l</sub>', fmt(pf)],
+    ['R<sup>f</sup>', '1/p<sup>f</sup>', fmt(Rf)],
+    ['E[R<sup>a</sup>]', 'E[x<sup>a</sup>]/p<sup>a</sup>', fmt(ERa)],
+    ['<span class="hl">Prêmio de risco E[R<sup>a</sup>] − R<sup>f</sup></span>', 'cov(m, x<sup>a</sup>) &lt; 0', '<span class="hl">'+fmt(prem)+'</span>'],
+  ];
+  $('out').querySelector('tbody').innerHTML =
+    rows.map(r=>`<tr><td>${r[0]}</td><td style="text-align:left;color:#777">${r[1]}</td><td>${r[2]}</td></tr>`).join('');
+
+  let lesson;
+  if (d===0){
+    lesson = 'Sem risco agregado (d=0): m<sub>h</sub>=m<sub>l</sub>=β, o prêmio é zero e '+
+             'R<sup>f</sup>=1/β. Todo o prêmio do caso geral vem da <b>covariância</b> entre payoff e kernel.';
+  } else if (g===0){
+    lesson = 'Com γ=0 (neutralidade ao risco): m é constante, q<sub>s</sub>=βπ<sub>s</sub> e o prêmio é zero '+
+             'mesmo com payoff arriscado — risco sem covariância com u\'(c) não é remunerado.';
+  } else {
+    lesson = 'O estado ruim é o estado <b>caro</b> por unidade de probabilidade (m<sub>l</sub> &gt; m<sub>h</sub>): '+
+             'consumo escasso vale mais. A árvore paga mais no estado barato, logo seu preço embute desconto '+
+             'por risco e E[R<sup>a</sup>] &gt; R<sup>f</sup>. Aumente γ ou d e veja o prêmio crescer.';
+  }
+  $('lesson').innerHTML = lesson;
+
+  // ---- árvore SVG ----
+  const svg = $('tree');
+  const nodeR = 26;
+  const x0=70, y0=120, x1=290, yh=48, yl=192;
+  const line = (x1,y1,x2,y2,txt,ty) =>
+    `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#999" stroke-width="1.5"/>`+
+    `<text x="${(x1+x2)/2}" y="${ty}" font-size="13" fill="#555" text-anchor="middle">${txt}</text>`;
+  const node = (x,y,c,lab,val) =>
+    `<circle cx="${x}" cy="${y}" r="${nodeR}" fill="${c}" fill-opacity="0.12" stroke="${c}" stroke-width="2"/>`+
+    `<text x="${x}" y="${y-2}" font-size="12" text-anchor="middle" fill="${c}" font-weight="700">${lab}</text>`+
+    `<text x="${x}" y="${y+14}" font-size="12" text-anchor="middle">${val}</text>`;
+  svg.innerHTML =
+    line(x0+nodeR,y0-10,x1-nodeR,yh+8,`π<tspan baseline-shift="sub" font-size="9">h</tspan> = ${fmt(ph,2)}`,64) +
+    line(x0+nodeR,y0+10,x1-nodeR,yl-8,`π<tspan baseline-shift="sub" font-size="9">l</tspan> = ${fmt(pl,2)}`,182) +
+    node(x0,y0,'#0072B2','t=0', 'e₀='+fmt(e0,2)) +
+    node(x1,yh,'#009E73','h', 'e=' + fmt(eh,2)) +
+    node(x1,yl,'#D55E00','l', 'e=' + fmt(el,2)) +
+    `<text x="${x1+40}" y="${yh+4}" font-size="12" fill="#555">q<tspan baseline-shift="sub" font-size="9">h</tspan>=${fmt(qh,3)}</text>`+
+    `<text x="${x1+40}" y="${yl+4}" font-size="12" fill="#555">q<tspan baseline-shift="sub" font-size="9">l</tspan>=${fmt(ql,3)}</text>`;
+}
+['gamma','pih','beta','dspread'].forEach(id=>$(id).addEventListener('input',update));
+update();
+</script>
+</body>
+</html>

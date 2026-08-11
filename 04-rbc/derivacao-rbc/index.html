@@ -1,0 +1,1248 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Handout digital completo sobre CPOs, envelope e log-linearização do modelo RBC.">
+  <title>RBC — CPOs, envelope e log-linearização passo a passo</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="reader.css">
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [["\\(", "\\)"]],
+        displayMath: [["\\[", "\\]"]],
+        processEscapes: true
+      },
+      chtml: { scale: 0.98 }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@4.1.3/tex-mml-chtml.js"></script>
+</head>
+<body>
+  <div id="reading-progress" class="reading-progress" aria-hidden="true"></div>
+
+  <nav class="topbar" aria-label="Recursos do tópico">
+    <div class="topbar-inner">
+      <a class="brand" href="#top">MACRO II · RBC · HANDOUT DIGITAL</a>
+      <div class="resource-links">
+        <a href="../rbc-irf-explorer/index.html">Laboratório de IRFs</a>
+        <button id="print-button" class="print-button" type="button">Imprimir</button>
+      </div>
+    </div>
+  </nav>
+
+  <header id="top" class="hero">
+    <div>
+      <p class="eyebrow">Macro II · FGV EPGE · 2026</p>
+      <h1>CPOs, envelope e log-linearização do RBC</h1>
+      <p class="dek">
+        Uma derivação autocontida, da formulação recursiva ao sistema linear.
+        Nenhuma passagem algébrica essencial fica implícita.
+      </p>
+    </div>
+    <aside class="hero-card">
+      <strong>Como usar esta versão</strong>
+      <p>
+        Leia em sequência para reconstruir a derivação ou use o índice para localizar
+        uma equação. Todas as contas ficam abertas; o Reveal separado serve apenas ao
+        ritmo de apresentação no quadro.
+      </p>
+    </aside>
+  </header>
+
+  <div class="page">
+    <nav class="toc" aria-label="Índice do handout">
+      <p class="toc-title">Nesta página</p>
+      <ol>
+        <li><a href="#mapa">1. Mapa e notação</a></li>
+        <li><a href="#modelo">2. Problema recursivo</a></li>
+        <li><a href="#cpos">3. CPOs, envelope e Euler</a></li>
+        <li><a href="#ferramentas">4. Ferramentas de log-linearização</a></li>
+        <li><a href="#intratemporal">5. Condição intratemporal</a></li>
+        <li><a href="#notas-antigas">6. Caso \(\log(1-N)\)</a></li>
+        <li><a href="#euler-linear">7. Euler log-linearizada</a></li>
+        <li><a href="#capital">8. Acumulação de capital</a></li>
+        <li><a href="#sistema">9. Sistema e políticas</a></li>
+      </ol>
+    </nav>
+
+    <article>
+      <section id="mapa" class="chapter">
+        <span class="chapter-number">Seção 1</span>
+        <h2>Mapa da derivação e notação</h2>
+        <p class="lead">
+          Há duas operações diferentes. Primeiro resolvemos o problema econômico;
+          depois aproximamos suas condições ao redor do estado estacionário.
+          Misturar as duas camadas é a maneira mais rápida de perder um termo.
+        </p>
+
+        <div class="route" aria-label="Sequência da derivação">
+          <div class="route-step">Bellman</div>
+          <div class="route-step green">CPOs</div>
+          <div class="route-step green">Envelope</div>
+          <div class="route-step orange">Euler</div>
+          <div class="route-step">Log-linearização</div>
+          <div class="route-step orange">Sistema linear</div>
+        </div>
+
+        <div class="two-col">
+          <div class="concept-card">
+            <h4>Camada 1 · otimização</h4>
+            <p>
+              O problema recursivo produz a condição intratemporal, a condição
+              envelope e a equação de Euler.
+            </p>
+          </div>
+          <div class="concept-card orange">
+            <h4>Camada 2 · aproximação</h4>
+            <p>
+              Cada condição não linear é expandida no estado estacionário e escrita
+              em desvios logarítmicos.
+            </p>
+          </div>
+        </div>
+
+        <h3>Objetos que aparecem repetidamente</h3>
+        <table class="glossary">
+          <tbody>
+            <tr>
+              <th>\(K_t,z_t\)</th>
+              <td>Estados: capital predeterminado e produtividade.</td>
+            </tr>
+            <tr>
+              <th>\(C_t,N_t\)</th>
+              <td>Controles: consumo e trabalho.</td>
+            </tr>
+            <tr>
+              <th>\(\widehat X_t\)</th>
+              <td>
+                Desvio logarítmico:
+                \(\widehat X_t=\log X_t-\log\bar X\).
+              </td>
+            </tr>
+            <tr>
+              <th>\(\sigma,\zeta\)</th>
+              <td>
+                Curvatura do consumo e inversa da elasticidade de Frisch na
+                especificação CRRA aditiva.
+              </td>
+            </tr>
+            <tr>
+              <th>\(\kappa\)</th>
+              <td>
+                Peso do produto marginal do capital no retorno bruto:
+                \(\kappa=\beta(\bar r+\delta)\).
+              </td>
+            </tr>
+            <tr>
+              <th>\(s_C,s_I\)</th>
+              <td>Participações de consumo e investimento no produto estacionário.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="note">
+          <p>
+            <strong>Destino.</strong> O sistema terá dois estados,
+            \(\widehat K_t,\widehat z_t\), e um controle que salta,
+            \(\widehat C_t\). Trabalho, produto e investimento serão recuperados
+            das condições estáticas.
+          </p>
+        </div>
+      </section>
+
+      <section id="modelo" class="chapter">
+        <span class="chapter-number">Seção 2</span>
+        <h2>Tecnologia, preferências e problema recursivo</h2>
+
+        <h3>Tecnologia e transição</h3>
+        <p>A função de produção é Cobb–Douglas:</p>
+        <div id="eq-production" class="equation blue">
+          <span class="eq-label">(2.1)</span>
+          \[
+            Y_t=z_tK_t^\alpha N_t^{1-\alpha},
+            \qquad 0<\alpha<1.
+          \]
+        </div>
+
+        <p>
+          Produto não consumido aumenta o estoque de capital, enquanto uma fração
+          \(\delta\) do capital existente deprecia:
+        </p>
+        <div id="eq-capital-law" class="equation blue">
+          <span class="eq-label">(2.2)</span>
+          \[
+            K_{t+1}=(1-\delta)K_t+Y_t-C_t.
+          \]
+        </div>
+
+        <p>O choque de produtividade segue um AR(1) em logaritmos:</p>
+        <div id="eq-tfp" class="equation">
+          <span class="eq-label">(2.3)</span>
+          \[
+            \log z_{t+1}
+            =\rho\log z_t+\sigma_z\varepsilon_{t+1},
+            \qquad \mathbb E_t\varepsilon_{t+1}=0.
+          \]
+        </div>
+
+        <h3>Preferências</h3>
+        <p>Para a derivação geral, usamos preferências CRRA separáveis:</p>
+        <div id="eq-utility" class="equation blue">
+          <span class="eq-label">(2.4)</span>
+          \[
+            u(C_t,N_t)
+            =
+            \frac{C_t^{1-\sigma}-1}{1-\sigma}
+            -
+            \chi\frac{N_t^{1+\zeta}}{1+\zeta},
+            \qquad \sigma>0,\quad \zeta\geq0.
+          \]
+        </div>
+        <p>
+          Quando \(\sigma=1\), o primeiro termo é interpretado pelo limite
+          \(\log C_t\). Nesta especificação, \(\zeta\) é a inversa da elasticidade
+          de Frisch.
+        </p>
+
+        <h3>Bellman</h3>
+        <p>
+          Usando \((K,z)\) como estado e \((C,N)\) como controles, o planejador
+          resolve
+        </p>
+        <div id="eq-bellman" class="equation key">
+          <span class="eq-label">(2.5)</span>
+          \[
+            V(K,z)
+            =
+            \max_{C,N}
+            \left\{
+              u(C,N)
+              +
+              \beta\mathbb E\!\left[V(K',z')\mid z\right]
+            \right\},
+          \]
+          \[
+            K'=(1-\delta)K+zK^\alpha N^{1-\alpha}-C.
+          \]
+        </div>
+
+        <div class="checkpoint">
+          <p>
+            <strong>Cheque de sinais antes das CPOs.</strong>
+            \(\partial K'/\partial C=-1\),
+            \(\partial K'/\partial N=\operatorname{PMgN}>0\) e
+            \(\partial K'/\partial K=1-\delta+\operatorname{PMgK}>0\).
+            Esses três sinais organizam toda a derivação.
+          </p>
+        </div>
+      </section>
+
+      <section id="cpos" class="chapter">
+        <span class="chapter-number">Seção 3</span>
+        <h2>Das CPOs à equação de Euler</h2>
+
+        <h3>CPO do consumo</h3>
+        <p>
+          Uma unidade adicional de consumo reduz \(K_{t+1}\) em uma unidade.
+          Diferenciando o lado direito de Bellman em relação a \(C_t\):
+        </p>
+        <div class="derivation">
+          <div class="derivation-step">
+            <span class="step-label">Derivada direta</span>
+            \[
+              u_C(C_t,N_t)
+              +
+              \beta\mathbb E_t
+              \left[
+                V_K(K_{t+1},z_{t+1})
+                \frac{\partial K_{t+1}}{\partial C_t}
+              \right]
+              =0.
+            \]
+          </div>
+          <div class="derivation-step">
+            <span class="step-label">Usar \(\partial K_{t+1}/\partial C_t=-1\)</span>
+            \[
+              u_C(C_t,N_t)
+              -
+              \beta\mathbb E_t
+              \left[V_K(K_{t+1},z_{t+1})\right]
+              =0.
+            \]
+          </div>
+          <div class="derivation-step">
+            <span class="step-label">Usar \(u_C=C^{-\sigma}\)</span>
+            \[
+              C_t^{-\sigma}
+              =
+              \beta\mathbb E_t
+              \left[V_K(K_{t+1},z_{t+1})\right].
+            \]
+          </div>
+        </div>
+        <div id="eq-foc-c" class="equation key">
+          <span class="eq-label">(3.1)</span>
+          \[
+            \boxed{
+            C_t^{-\sigma}
+            =
+            \beta\mathbb E_t
+            \left[V_K(K_{t+1},z_{t+1})\right]
+            }.
+          \]
+        </div>
+
+        <h3>CPO do trabalho</h3>
+        <p>O produto marginal do trabalho é</p>
+        <div class="equation">
+          \[
+            \operatorname{PMgN}_t
+            =
+            (1-\alpha)z_tK_t^\alpha N_t^{-\alpha}.
+          \]
+        </div>
+        <p>
+          Uma unidade adicional de trabalho aumenta \(K_{t+1}\) por esse montante.
+          Como \(u_N=-\chi N^\zeta\), a CPO é
+        </p>
+        <div class="derivation">
+          <div class="derivation-step">
+            \[
+              -\chi N_t^\zeta
+              +
+              \beta\mathbb E_t
+              \left[V_K(K_{t+1},z_{t+1})\right]
+              \operatorname{PMgN}_t
+              =0.
+            \]
+          </div>
+          <div class="derivation-step">
+            <span class="step-label">Substituir a CPO do consumo (3.1)</span>
+            \[
+              -\chi N_t^\zeta
+              +
+              C_t^{-\sigma}
+              (1-\alpha)z_tK_t^\alpha N_t^{-\alpha}
+              =0.
+            \]
+          </div>
+          <div class="derivation-step">
+            <span class="step-label">Multiplicar por \(C_t^\sigma\)</span>
+            \[
+              \chi C_t^\sigma N_t^\zeta
+              =
+              (1-\alpha)z_tK_t^\alpha N_t^{-\alpha}.
+            \]
+          </div>
+        </div>
+        <div id="eq-foc-n" class="equation key">
+          <span class="eq-label">(3.2)</span>
+          \[
+            \boxed{
+              \chi C_t^\sigma N_t^\zeta
+              =
+              (1-\alpha)z_tK_t^\alpha N_t^{-\alpha}
+            }.
+          \]
+        </div>
+        <div class="note">
+          <p>
+            <strong>Interpretação.</strong> A CPO intratemporal iguala a taxa
+            marginal de substituição entre trabalho e consumo ao salário real,
+            que coincide com o produto marginal do trabalho.
+          </p>
+        </div>
+
+        <h3>Envelope</h3>
+        <p>
+          Pelo teorema do envelope, as derivadas dos controles ótimos em relação
+          a \(K_t\) desaparecem. Resta o efeito direto de \(K_t\) sobre
+          \(K_{t+1}\):
+        </p>
+        <div class="derivation">
+          <div class="derivation-step">
+            \[
+              \frac{\partial K_{t+1}}{\partial K_t}
+              =
+              1-\delta+
+              \alpha z_tK_t^{\alpha-1}N_t^{1-\alpha}.
+            \]
+          </div>
+          <div class="derivation-step">
+            \[
+              V_K(K_t,z_t)
+              =
+              \beta\mathbb E_t
+              [V_K(K_{t+1},z_{t+1})]
+              \left[
+                1-\delta+
+                \alpha z_tK_t^{\alpha-1}N_t^{1-\alpha}
+              \right].
+            \]
+          </div>
+          <div class="derivation-step">
+            <span class="step-label">Usar novamente a CPO do consumo em \(t\)</span>
+            \[
+              V_K(K_t,z_t)
+              =
+              C_t^{-\sigma}
+              \left[
+                1-\delta+
+                \alpha z_tK_t^{\alpha-1}N_t^{1-\alpha}
+              \right].
+            \]
+          </div>
+        </div>
+        <div id="eq-envelope" class="equation blue">
+          <span class="eq-label">(3.3)</span>
+          \[
+            V_K(K_t,z_t)
+            =
+            C_t^{-\sigma}
+            \left[
+              1-\delta+
+              \alpha z_tK_t^{\alpha-1}N_t^{1-\alpha}
+            \right].
+          \]
+        </div>
+
+        <h3>Euler</h3>
+        <p>
+          Date a equação envelope em \(t+1\) e substitua-a na CPO do consumo
+          datada em \(t\). Isso elimina a derivada da função valor:
+        </p>
+        <div class="derivation">
+          <div class="derivation-step">
+            \[
+              V_K(K_{t+1},z_{t+1})
+              =
+              C_{t+1}^{-\sigma}
+              \left[
+                1-\delta+
+                \alpha z_{t+1}K_{t+1}^{\alpha-1}N_{t+1}^{1-\alpha}
+              \right].
+            \]
+          </div>
+          <div class="derivation-step">
+            <span class="step-label">Substituir em (3.1)</span>
+            \[
+              C_t^{-\sigma}
+              =
+              \beta\mathbb E_t
+              \left[
+                C_{t+1}^{-\sigma}
+                \left(
+                  1-\delta+
+                  \alpha z_{t+1}K_{t+1}^{\alpha-1}N_{t+1}^{1-\alpha}
+                \right)
+              \right].
+            \]
+          </div>
+        </div>
+        <div id="eq-euler" class="equation key">
+          <span class="eq-label">(3.4)</span>
+          \[
+            \boxed{
+              C_t^{-\sigma}
+              =
+              \beta\mathbb E_t
+              \left[
+                C_{t+1}^{-\sigma}
+                \left(
+                  1-\delta+
+                  \alpha z_{t+1}K_{t+1}^{\alpha-1}N_{t+1}^{1-\alpha}
+                \right)
+              \right]
+            }.
+          \]
+        </div>
+      </section>
+
+      <section id="ferramentas" class="chapter">
+        <span class="chapter-number">Seção 4</span>
+        <h2>Ferramentas de log-linearização</h2>
+
+        <h3>Desvios logarítmicos</h3>
+        <p>Para qualquer variável positiva \(X_t\), definimos</p>
+        <div id="eq-hat" class="equation blue">
+          <span class="eq-label">(4.1)</span>
+          \[
+            \widehat X_t
+            \equiv
+            \log X_t-\log\bar X
+            =
+            \log\left(\frac{X_t}{\bar X}\right).
+          \]
+        </div>
+        <p>
+          Próximo do estado estacionário, \(\widehat X_t\) é aproximadamente o
+          desvio percentual de \(X_t\) em relação a \(\bar X\).
+        </p>
+
+        <div class="two-col">
+          <div class="concept-card green">
+            <h4>Produtos e potências</h4>
+            \[
+              \log(X_tY_t)
+              \Rightarrow
+              \widehat X_t+\widehat Y_t,
+            \]
+            \[
+              \log(X_t^a)
+              \Rightarrow
+              a\widehat X_t,
+            \]
+            \[
+              X_t^a
+              \approx
+              \bar X^a(1+a\widehat X_t).
+            \]
+          </div>
+          <div class="concept-card orange">
+            <h4>Somas</h4>
+            <p>
+              Se \(Z_t=X_t+Y_t\), cada desvio recebe o peso de sua participação
+              estacionária:
+            </p>
+            \[
+              \widehat Z_t
+              \approx
+              \frac{\bar X}{\bar Z}\widehat X_t+
+              \frac{\bar Y}{\bar Z}\widehat Y_t.
+            \]
+          </div>
+        </div>
+        <div id="eq-sum-rule" class="equation key">
+          <span class="eq-label">(4.2)</span>
+          \[
+            \boxed{
+              Z_t=X_t+Y_t
+              \quad\Longrightarrow\quad
+              \widehat Z_t
+              \approx
+              \frac{\bar X}{\bar Z}\widehat X_t+
+              \frac{\bar Y}{\bar Z}\widehat Y_t
+            }.
+          \]
+        </div>
+        <div class="warning">
+          <p>
+            <strong>Erro comum.</strong> Logaritmos transformam produtos em somas.
+            Uma soma em níveis não pode ser log-linearizada sem os pesos do estado
+            estacionário.
+          </p>
+        </div>
+
+        <h3>Identidades do estado estacionário</h3>
+        <p>
+          No estado estacionário não estocástico, normalizamos \(\bar z=1\).
+          Como consumo e capital são constantes, a Euler (3.4) implica
+        </p>
+        <div id="eq-ss-euler" class="equation">
+          <span class="eq-label">(4.3)</span>
+          \[
+            1
+            =
+            \beta
+            \left(
+              1-\delta+\alpha\frac{\bar Y}{\bar K}
+            \right).
+          \]
+        </div>
+        <p>
+          Defina a taxa líquida \(\bar r=\beta^{-1}-1\). Rearranjando (4.3):
+        </p>
+        <div class="derivation">
+          <div class="derivation-step">
+            \[
+              \beta^{-1}
+              =
+              1-\delta+\alpha\frac{\bar Y}{\bar K}.
+            \]
+          </div>
+          <div class="derivation-step">
+            \[
+              \alpha\frac{\bar Y}{\bar K}
+              =
+              \beta^{-1}-1+\delta
+              =
+              \bar r+\delta.
+            \]
+          </div>
+        </div>
+        <div id="eq-kappa" class="equation key">
+          <span class="eq-label">(4.4)</span>
+          \[
+            \boxed{
+              \kappa
+              \equiv
+              \beta(\bar r+\delta)
+              =
+              \alpha\beta\frac{\bar Y}{\bar K}
+            }.
+          \]
+        </div>
+
+        <p>
+          Da condição estacionária \(\bar I=\delta\bar K\) e da restrição de
+          recursos \(\bar Y=\bar C+\bar I\):
+        </p>
+        <div id="eq-shares" class="equation blue">
+          <span class="eq-label">(4.5)</span>
+          \[
+            s_I\equiv\frac{\bar I}{\bar Y}
+            =
+            \delta\frac{\bar K}{\bar Y},
+            \qquad
+            s_C\equiv\frac{\bar C}{\bar Y}
+            =
+            1-s_I.
+          \]
+        </div>
+        <div class="note">
+          <p>
+            <strong>Por que \(\kappa\) importa?</strong> Ele converte o desvio do
+            produto marginal do capital no desvio do retorno bruto que entra na
+            Euler. Na calibração trimestral, \(\kappa\) é pequeno; omiti-lo altera
+            fortemente a resposta do consumo.
+          </p>
+        </div>
+      </section>
+
+      <section id="intratemporal" class="chapter">
+        <span class="chapter-number">Seção 5</span>
+        <h2>Log-linearização da condição intratemporal</h2>
+        <p>Partimos da CPO do trabalho (3.2):</p>
+        <div class="equation">
+     …507 tokens truncated…ma=1\).
+          </p>
+        </div>
+
+        <h3>Isolando o trabalho</h3>
+        <p>
+          Esta forma será usada para eliminar \(\widehat N_t\) da Euler e da
+          acumulação de capital:
+        </p>
+        <div id="eq-n-static" class="equation blue">
+          <span class="eq-label">(5.2)</span>
+          \[
+            \boxed{
+              \widehat N_t
+              =
+              \frac{1}{\zeta+\alpha}\widehat z_t+
+              \frac{\alpha}{\zeta+\alpha}\widehat K_t-
+              \frac{\sigma}{\zeta+\alpha}\widehat C_t
+            }.
+          \]
+        </div>
+      </section>
+
+      <section id="notas-antigas" class="chapter">
+        <span class="chapter-number">Seção 6</span>
+        <h2>Como a nota antiga com \(\log(1-N)\) se encaixa</h2>
+        <p>
+          As notas de 2025 usam preferências logarítmicas em consumo e lazer:
+        </p>
+        <div class="equation blue">
+          \[
+            u(C_t,N_t)=\log C_t+\chi\log(1-N_t).
+          \]
+        </div>
+        <p>A condição intratemporal correspondente é</p>
+        <div id="eq-old-intra" class="equation">
+          <span class="eq-label">(6.1)</span>
+          \[
+            \chi\frac{C_t}{1-N_t}
+            =
+            (1-\alpha)z_tK_t^\alpha N_t^{-\alpha}.
+          \]
+        </div>
+
+        <p>
+          O termo que requer uma aproximação específica é \(\log(1-N_t)\). Para
+          obter sua elasticidade local em relação a \(N_t\), aplique a regra da
+          cadeia:
+        </p>
+        <div class="derivation">
+          <div class="derivation-step">
+            \[
+              \frac{\partial\log(1-N)}{\partial\log N}
+              =
+              \frac{\partial\log(1-N)}{\partial N}
+              \frac{\partial N}{\partial\log N}.
+            \]
+          </div>
+          <div class="derivation-step">
+            \[
+              \frac{\partial\log(1-N)}{\partial N}
+              =-\frac{1}{1-N},
+              \qquad
+              \frac{\partial N}{\partial\log N}=N.
+            \]
+          </div>
+          <div class="derivation-step">
+            \[
+              \frac{\partial\log(1-N)}{\partial\log N}
+              =
+              -\frac{N}{1-N}.
+            \]
+          </div>
+        </div>
+        <p>Avaliando no estado estacionário:</p>
+        <div class="equation">
+          \[
+            \log(1-N_t)
+            \approx
+            \log(1-\bar N)
+            -
+            \frac{\bar N}{1-\bar N}\widehat N_t.
+          \]
+        </div>
+        <div id="eq-zeta-local" class="equation blue">
+          <span class="eq-label">(6.2)</span>
+          \[
+            \zeta_\ell
+            \equiv
+            \frac{\bar N}{1-\bar N}.
+          \]
+        </div>
+
+        <p>
+          Tomando logs em (6.1), subtraindo o estado estacionário e usando
+          (6.2), obtemos
+        </p>
+        <div class="derivation">
+          <div class="derivation-step">
+            \[
+              \widehat C_t
+              -
+              \left(-\zeta_\ell\widehat N_t\right)
+              =
+              \widehat z_t+
+              \alpha\widehat K_t-
+              \alpha\widehat N_t.
+            \]
+          </div>
+          <div class="derivation-step">
+            \[
+              \widehat C_t+\zeta_\ell\widehat N_t
+              =
+              \widehat z_t+\alpha\widehat K_t-\alpha\widehat N_t.
+            \]
+          </div>
+        </div>
+        <div id="eq-old-intra-linear" class="equation key">
+          <span class="eq-label">(6.3)</span>
+          \[
+            \boxed{
+              (\zeta_\ell+\alpha)\widehat N_t+\widehat C_t
+              =
+              \widehat z_t+\alpha\widehat K_t
+            }.
+          \]
+        </div>
+        <div class="note">
+          <p>
+            <strong>Reconciliação.</strong> As equações (5.1) e (6.3) têm a mesma
+            forma quando \(\sigma=1\) e \(\zeta=\zeta_\ell\). A nota antiga é uma
+            parametrização local do mesmo mecanismo, não uma derivação concorrente.
+          </p>
+        </div>
+      </section>
+
+      <section id="euler-linear" class="chapter">
+        <span class="chapter-number">Seção 7</span>
+        <h2>Log-linearização da equação de Euler</h2>
+
+        <h3>Produto marginal e retorno bruto</h3>
+        <p>Defina o produto marginal do capital:</p>
+        <div class="equation">
+          \[
+            m_{t+1}
+            =
+            \alpha z_{t+1}K_{t+1}^{\alpha-1}N_{t+1}^{1-\alpha}.
+          \]
+        </div>
+        <p>Como esse objeto é um produto de potências, sua log-linearização é direta:</p>
+        <div id="eq-mpk-hat" class="equation blue">
+          <span class="eq-label">(7.1)</span>
+          \[
+            \widehat m_{t+1}
+            =
+            \widehat z_{t+1}
+            -
+            (1-\alpha)\widehat K_{t+1}
+            +
+            (1-\alpha)\widehat N_{t+1}.
+          \]
+        </div>
+
+        <p>
+          O retorno bruto é \(R_{t+1}=1-\delta+m_{t+1}\). Aqui aparece uma soma,
+          portanto precisamos da regra das participações:
+        </p>
+        <div class="derivation">
+          <div class="derivation-step">
+            \[
+              \widehat R_{t+1}
+              \approx
+              \frac{\bar m}{\bar R}\widehat m_{t+1}.
+            \]
+          </div>
+          <div class="derivation-step">
+            <span class="step-label">Usar \(\beta\bar R=1\)</span>
+            \[
+              \frac{\bar m}{\bar R}
+              =
+              \beta\bar m
+              =
+              \kappa.
+            \]
+          </div>
+          <div class="derivation-step">
+            \[
+              R_{t+1}
+              \approx
+              \bar R\left(1+\kappa\widehat m_{t+1}\right).
+            \]
+          </div>
+        </div>
+
+        <h3>Expansão completa da Euler</h3>
+        <p>A aproximação da utilidade marginal do consumo é</p>
+        <div class="equation">
+          \[
+            C_t^{-\sigma}
+            \approx
+            \bar C^{-\sigma}\left(1-\sigma\widehat C_t\right).
+          \]
+        </div>
+        <p>Substituindo as duas aproximações na Euler (3.4):</p>
+        <div class="derivation">
+          <div class="derivation-step">
+            \[
+              \beta\mathbb E_t
+              [C_{t+1}^{-\sigma}R_{t+1}]
+              \approx
+              \beta\bar C^{-\sigma}\bar R\,
+              \mathbb E_t
+              \left[
+                (1-\sigma\widehat C_{t+1})
+                (1+\kappa\widehat m_{t+1})
+              \right].
+            \]
+          </div>
+          <div class="derivation-step">
+            <span class="step-label">Expandir o produto</span>
+            \[
+              (1-\sigma\widehat C_{t+1})
+              (1+\kappa\widehat m_{t+1})
+              =
+              1-\sigma\widehat C_{t+1}
+              +\kappa\widehat m_{t+1}
+              -\sigma\kappa
+              \widehat C_{t+1}\widehat m_{t+1}.
+            \]
+          </div>
+          <div class="derivation-step">
+            <span class="step-label">Descartar o produto de dois desvios</span>
+            \[
+              \approx
+              1-\sigma\widehat C_{t+1}
+              +\kappa\widehat m_{t+1}.
+            \]
+          </div>
+          <div class="derivation-step">
+            <span class="step-label">Usar \(\beta\bar R=1\)</span>
+            \[
+              \beta\mathbb E_t
+              [C_{t+1}^{-\sigma}R_{t+1}]
+              \approx
+              \bar C^{-\sigma}
+              \mathbb E_t
+              \left[
+                1-\sigma\widehat C_{t+1}
+                +\kappa\widehat m_{t+1}
+              \right].
+            \]
+          </div>
+          <div class="derivation-step">
+            <span class="step-label">Igualar ao lado esquerdo e cancelar constantes</span>
+            \[
+              -\sigma\widehat C_t
+              =
+              -\sigma\mathbb E_t\widehat C_{t+1}
+              +
+              \kappa\mathbb E_t\widehat m_{t+1}.
+            \]
+          </div>
+        </div>
+        <div id="eq-euler-linear" class="equation key">
+          <span class="eq-label">(7.2)</span>
+          \[
+            \boxed{
+              \mathbb E_t\widehat C_{t+1}-\widehat C_t
+              =
+              \frac{\kappa}{\sigma}
+              \mathbb E_t\widehat m_{t+1}
+            }.
+          \]
+        </div>
+
+        <h3>Eliminando o trabalho</h3>
+        <p>
+          Substitua a condição estática (5.2), datada em \(t+1\), na expressão
+          do produto marginal (7.1):
+        </p>
+        <div class="derivation">
+          <div class="derivation-step">
+            \[
+              \begin{aligned}
+              \widehat m_{t+1}
+              &=
+              \widehat z_{t+1}
+              -(1-\alpha)\widehat K_{t+1}\\
+              &\quad+
+              (1-\alpha)
+              \left[
+                \frac{\widehat z_{t+1}}{\zeta+\alpha}
+                +\frac{\alpha\widehat K_{t+1}}{\zeta+\alpha}
+                -\frac{\sigma\widehat C_{t+1}}{\zeta+\alpha}
+              \right].
+              \end{aligned}
+            \]
+          </div>
+          <div class="derivation-step">
+            <span class="step-label">Coeficiente de produtividade</span>
+            \[
+              1+\frac{1-\alpha}{\zeta+\alpha}
+              =
+              \frac{\zeta+1}{\zeta+\alpha}.
+            \]
+          </div>
+          <div class="derivation-step">
+            <span class="step-label">Coeficiente do capital</span>
+            \[
+              -(1-\alpha)
+              +(1-\alpha)\frac{\alpha}{\zeta+\alpha}
+              =
+              -(1-\alpha)\frac{\zeta}{\zeta+\alpha}.
+            \]
+          </div>
+          <div class="derivation-step">
+            <span class="step-label">Coeficiente do consumo</span>
+            \[
+              -\sigma\frac{1-\alpha}{\zeta+\alpha}.
+            \]
+          </div>
+        </div>
+        <div id="eq-mpk-reduced" class="equation blue">
+          <span class="eq-label">(7.3)</span>
+          \[
+            \widehat m_{t+1}
+            =
+            \frac{\zeta+1}{\zeta+\alpha}\widehat z_{t+1}
+            -
+            (1-\alpha)\frac{\zeta}{\zeta+\alpha}\widehat K_{t+1}
+            -
+            \sigma\frac{1-\alpha}{\zeta+\alpha}\widehat C_{t+1}.
+          \]
+        </div>
+        <p>Finalmente, substitua (7.3) em (7.2):</p>
+        <div id="eq-euler-reduced" class="equation key">
+          <span class="eq-label">(7.4)</span>
+          \[
+            \boxed{
+            \begin{aligned}
+              \mathbb E_t\widehat C_{t+1}-\widehat C_t
+              =
+              \frac{\kappa}{\sigma}\mathbb E_t\Bigg[
+              &\frac{\zeta+1}{\zeta+\alpha}\widehat z_{t+1}\\
+              &-
+              (1-\alpha)\frac{\zeta}{\zeta+\alpha}\widehat K_{t+1}\\
+              &-
+              \sigma\frac{1-\alpha}{\zeta+\alpha}\widehat C_{t+1}
+              \Bigg].
+            \end{aligned}
+            }.
+          \]
+        </div>
+      </section>
+
+      <section id="capital" class="chapter">
+        <span class="chapter-number">Seção 8</span>
+        <h2>Log-linearização da acumulação de capital</h2>
+        <p>Retome a lei de movimento:</p>
+        <div class="equation">
+          \[
+            K_{t+1}
+            =
+            (1-\delta)K_t+
+            z_tK_t^\alpha N_t^{1-\alpha}
+            -
+            C_t.
+          \]
+        </div>
+
+        <h3>Aproximação em níveis</h3>
+        <p>
+          Uma variação logarítmica \(\widehat X_t\) corresponde, em primeira ordem,
+          à variação em níveis \(\bar X\widehat X_t\). Portanto,
+        </p>
+        <div class="derivation">
+          <div class="derivation-step">
+            \[
+              \bar K\widehat K_{t+1}
+              =
+              (1-\delta)\bar K\widehat K_t
+              +
+              \bar Y
+              \left[
+                \widehat z_t+
+                \alpha\widehat K_t+
+                (1-\alpha)\widehat N_t
+              \right]
+              -
+              \bar C\widehat C_t.
+            \]
+          </div>
+          <div class="derivation-step">
+            <span class="step-label">Dividir por \(\bar K\)</span>
+            \[
+              \begin{aligned}
+              \widehat K_{t+1}
+              &=
+              \frac{\bar Y}{\bar K}
+              \left[
+                \widehat z_t+
+                \alpha\widehat K_t+
+                (1-\alpha)\widehat N_t
+              \right]\\
+              &\quad+
+              (1-\delta)\widehat K_t
+              -
+              \frac{\bar C}{\bar K}\widehat C_t.
+              \end{aligned}
+            \]
+          </div>
+        </div>
+
+        <h3>Substituir trabalho e coletar termos</h3>
+        <p>Insira (5.2) e trate separadamente cada coeficiente.</p>
+        <div class="derivation">
+          <div class="derivation-step">
+            <span class="step-label">Coeficiente de \(\widehat z_t\)</span>
+            \[
+              \frac{\bar Y}{\bar K}
+              \left[
+                1+\frac{1-\alpha}{\zeta+\alpha}
+              \right]
+              =
+              \frac{\bar Y}{\bar K}
+              \frac{\zeta+1}{\zeta+\alpha}.
+            \]
+          </div>
+          <div class="derivation-step">
+            <span class="step-label">Coeficiente de \(\widehat C_t\)</span>
+            \[
+              -
+              \left[
+                \frac{\bar C}{\bar K}
+                +
+                \sigma\frac{1-\alpha}{\zeta+\alpha}
+                \frac{\bar Y}{\bar K}
+              \right].
+            \]
+          </div>
+          <div class="derivation-step">
+            <span class="step-label">Coeficiente de \(\widehat K_t\)</span>
+            \[
+              1-\delta+
+              \frac{\bar Y}{\bar K}
+              \left[
+                \alpha+
+                \frac{\alpha(1-\alpha)}{\zeta+\alpha}
+              \right].
+            \]
+          </div>
+          <div class="derivation-step">
+            <span class="step-label">Usar a Euler estacionária</span>
+            \[
+              1-\delta+\alpha\frac{\bar Y}{\bar K}
+              =
+              \beta^{-1},
+            \]
+            \[
+              \Rightarrow\quad
+              \beta^{-1}
+              +
+              \frac{\alpha(1-\alpha)}{\zeta+\alpha}
+              \frac{\bar Y}{\bar K}.
+            \]
+          </div>
+          <div class="derivation-step">
+            <span class="step-label">Subtrair \(\widehat K_t\) dos dois lados</span>
+            \[
+              \beta^{-1}-1+
+              \frac{\alpha(1-\alpha)}{\zeta+\alpha}
+              \frac{\bar Y}{\bar K}.
+            \]
+          </div>
+        </div>
+
+        <div id="eq-capital-reduced" class="equation key">
+          <span class="eq-label">(8.1)</span>
+          \[
+            \boxed{
+            \begin{aligned}
+              \widehat K_{t+1}-\widehat K_t
+              &=
+              \frac{\bar Y}{\bar K}
+              \frac{\zeta+1}{\zeta+\alpha}\widehat z_t\\
+              &\quad+
+              \left[
+                \beta^{-1}-1+
+                \frac{\alpha(1-\alpha)}{\zeta+\alpha}
+                \frac{\bar Y}{\bar K}
+              \right]\widehat K_t\\
+              &\quad-
+              \left[
+                \frac{\bar C}{\bar K}
+                +
+                \sigma\frac{1-\alpha}{\zeta+\alpha}
+                \frac{\bar Y}{\bar K}
+              \right]\widehat C_t.
+            \end{aligned}
+            }.
+          \]
+        </div>
+      </section>
+
+      <section id="sistema" class="chapter">
+        <span class="chapter-number">Seção 9</span>
+        <h2>Dois estados, um controle e as demais políticas</h2>
+        <p>
+          As equações (7.4) e (8.1), junto com o processo de produtividade,
+          formam o núcleo dinâmico do modelo:
+        </p>
+        <div class="system-box">
+          <h3>Sistema reduzido</h3>
+          <div class="equation key">
+            \[
+              \begin{aligned}
+              \mathbb E_t\widehat C_{t+1}-\widehat C_t
+              &=
+              \frac{\kappa}{\sigma}\mathbb E_t
+              \left[
+                a_z\widehat z_{t+1}
+                +a_K\widehat K_{t+1}
+                +a_C\widehat C_{t+1}
+              \right],\\
+              \widehat K_{t+1}-\widehat K_t
+              &=
+              b_z\widehat z_t+
+              b_K\widehat K_t+
+              b_C\widehat C_t,\\
+              \widehat z_{t+1}
+              &=
+              \rho\widehat z_t+
+              \sigma_z\varepsilon_{t+1},
+              \end{aligned}
+            \]
+            <p>
+              onde \(a_z,a_K,a_C\) são os coeficientes explícitos de (7.4) e
+              \(b_z,b_K,b_C\) os de (8.1).
+            </p>
+          </div>
+        </div>
+
+        <p>
+          Os estados são \(\widehat K_t,\widehat z_t\); consumo é o controle que
+          salta. A solução estável é conjecturada como
+        </p>
+        <div id="eq-policy-c" class="equation key">
+          <span class="eq-label">(9.1)</span>
+          \[
+            \boxed{
+              \widehat C_t
+              =
+              \psi_{C,K}\widehat K_t+
+              \psi_{C,z}\widehat z_t
+            }.
+          \]
+        </div>
+
+        <h3>Recuperando trabalho, produto e investimento</h3>
+        <p>
+          Uma vez conhecidos \(\psi_{C,K}\) e \(\psi_{C,z}\), as demais políticas
+          não exigem novos problemas de otimização.
+        </p>
+        <div class="derivation">
+          <div class="derivation-step">
+            <span class="step-label">Trabalho · condição intratemporal</span>
+            \[
+              \widehat N_t
+              =
+              \frac{\widehat z_t+\alpha\widehat K_t-
+              \sigma\widehat C_t}{\zeta+\alpha}.
+            \]
+          </div>
+          <div class="derivation-step">
+            <span class="step-label">Produto · tecnologia</span>
+            \[
+              \widehat Y_t
+              =
+              \widehat z_t+
+              \alpha\widehat K_t+
+              (1-\alpha)\widehat N_t.
+            \]
+          </div>
+          <div class="derivation-step">
+            <span class="step-label">Investimento · restrição de recursos</span>
+            \[
+              \widehat Y_t
+              =
+              s_C\widehat C_t+s_I\widehat I_t
+              \quad\Longrightarrow\quad
+              \widehat I_t
+              =
+              \frac{\widehat Y_t-s_C\widehat C_t}{s_I}.
+            \]
+          </div>
+        </div>
+
+        <div class="checkpoint">
+          <p><strong>Checklist antes de resolver numericamente:</strong></p>
+          <ul>
+            <li>\(\sigma\) aparece na CPO intratemporal e divide a Euler;</li>
+            <li>\(\kappa\) multiplica o desvio do produto marginal do capital;</li>
+            <li>somas carregam participações estacionárias;</li>
+            <li>o caso \(\delta=1,\sigma=1,\zeta=0\) deve reproduzir a solução analítica.</li>
+          </ul>
+        </div>
+
+        <h3>Próxima etapa</h3>
+        <p>
+          O handout termina quando o sistema econômico está inteiramente derivado.
+          A determinação dos coeficientes \(\psi\), os resíduos e as funções
+          impulso-resposta pertencem aos artefatos computacionais.
+        </p>
+        <div class="next">
+          <a href="../rbc-irf-explorer/index.html">
+            <strong>Laboratório de IRFs</strong>
+            <span>Comparação dinâmica de parâmetros.</span>
+          </a>
+        </div>
+      </section>
+    </article>
+  </div>
+
+  <footer class="page-footer">
+    Felipe Iachan · Macro II · FGV EPGE · 2026
+  </footer>
+  <script src="reader.js"></script>
+</body>
+</html>

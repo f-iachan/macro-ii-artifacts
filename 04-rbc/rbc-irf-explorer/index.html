@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Laboratório de IRFs — RBC</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --page: light-dark(#f8f6ef, #171a1f);
+      --surface: light-dark(#ffffff, #22262d);
+      --surface-soft: light-dark(#f0f4f6, #2a3038);
+      --text: light-dark(#17212b, #eef3f7);
+      --muted-text: light-dark(#56616c, #b7c0c8);
+      --border: light-dark(#d7dde2, #3d4650);
+      --grid: light-dark(#dfe4e8, #343b43);
+      --axis: light-dark(#68737d, #aeb7bf);
+      --blue: #0072b2;
+      --green: #009e73;
+      --orange: #d55e00;
+      --red: light-dark(#a83232, #ff8a8a);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--text);
+    }
+    main {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 30px 0 48px;
+    }
+    header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 22px;
+    }
+    h1 {
+      margin: 0 0 7px;
+      font-size: clamp(1.7rem, 4vw, 2.7rem);
+      font-weight: 650;
+      letter-spacing: -0.035em;
+    }
+    header p, .fixed {
+      margin: 0;
+      color: var(--muted-text);
+    }
+    .fixed { white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(245px, 0.78fr) minmax(0, 2.22fr);
+      gap: 18px;
+      align-items: start;
+    }
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      box-shadow: 0 7px 24px light-dark(rgb(17 28 38 / 7%), rgb(0 0 0 / 22%));
+    }
+    .controls { padding: 20px; }
+    .controls h2, .chart-panel h2, .coefficients h2 {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 650;
+    }
+    .control { margin-top: 22px; }
+    .control label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 14px;
+      font-weight: 600;
+    }
+    output {
+      min-width: 3.8rem;
+      text-align: right;
+      color: var(--blue);
+      font-variant-numeric: tabular-nums;
+    }
+    input[type="range"] {
+      width: 100%;
+      margin: 10px 0 3px;
+      accent-color: var(--blue);
+    }
+    .range {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted-text);
+      font-size: 0.74rem;
+    }
+    button {
+      width: 100%;
+      margin-top: 24px;
+      padding: 10px 13px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--surface-soft);
+      color: var(--text);
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--blue); }
+    .chart-panel { padding: 18px 20px 15px; min-width: 0; }
+    .chart-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 8px;
+    }
+    .solver-status {
+      font-size: 0.78rem;
+      font-variant-numeric: tabular-nums;
+      color: var(--muted-text);
+    }
+    .solver-status.ok::before { content: "● "; color: var(--green); }
+    .solver-status.error { color: var(--red); }
+    #irf-chart {
+      display: block;
+      width: 100%;
+      height: 440px;
+    }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 7px 15px;
+      margin-top: 2px;
+      color: var(--muted-text);
+      font-size: 0.78rem;
+    }
+    .legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .swatch { width: 19px; height: 3px; border-radius: 2px; }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 9px;
+      margin-top: 17px;
+    }
+    .metric {
+      padding: 10px 12px;
+      background: var(--surface-soft);
+      border-radius: 9px;
+      font-size: 0.82rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .coefficients {
+      grid-column: 1 / -1;
+      padding: 19px 20px;
+      display: grid;
+      grid-template-columns: minmax(230px, 0.7fr) minmax(0, 1.3fr);
+      gap: 26px;
+    }
+    .coefficients p {
+      color: var(--muted-text);
+      line-height: 1.5;
+      margin: 9px 0 0;
+    }
+    table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+    th, td { padding: 7px 9px; border-bottom: 1px solid var(--border); text-align: right; }
+    th:first-child { text-align: left; }
+    thead th { color: var(--muted-text); font-size: 0.78rem; }
+    details {
+      grid-column: 1 / -1;
+      color: var(--muted-text);
+      font-size: 0.86rem;
+    }
+    summary { cursor: pointer; font-weight: 600; color: var(--text); }
+    .equations { overflow-x: auto; margin-top: 10px; line-height: 1.7; }
+    code { color: var(--text); }
+    @media (max-width: 780px) {
+      header { display: block; }
+      .fixed { margin-top: 8px; }
+      .layout { grid-template-columns: 1fr; }
+      .controls {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0 20px;
+      }
+      .controls h2, .controls button { grid-column: 1 / -1; }
+      .coefficients { grid-template-columns: 1fr; }
+      #irf-chart { height: 390px; }
+    }
+    @media (max-width: 480px) {
+      main { width: min(100% - 20px, 1180px); padding-top: 20px; }
+      .controls { display: block; }
+      .metrics { grid-template-columns: 1fr; }
+      .chart-heading { display: block; }
+      .solver-status { margin-top: 6px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>Laboratório de IRFs do RBC</h1>
+        <p>Choque de TFP de 1%. Mova um parâmetro e acompanhe a nova solução.</p>
+      </div>
+      <p class="fixed">Fixos: α = 0,33 · β = 0,99</p>
+    </header>
+
+    <div class="layout">
+      <section class="panel controls" aria-labelledby="controls-title">
+        <h2 id="controls-title">Parâmetros</h2>
+        <div class="control">
+          <label for="rho">Persistência da TFP, ρ <output id="rho-value">0.95</output></label>
+          <input id="rho" type="range" min="0" max="0.99" step="0.01" value="0.95">
+          <div class="range"><span>0</span><span>0,99</span></div>
+        </div>
+        <div class="control">
+          <label for="sigma">Aversão ao risco, σ <output id="sigma-value">2.0</output></label>
+          <input id="sigma" type="range" min="0.5" max="5" step="0.1" value="2">
+          <div class="range"><span>0,5</span><span>5</span></div>
+        </div>
+        <div class="control">
+          <label for="zeta">Inversa de Frisch, ζ <output id="zeta-value">2.0</output></label>
+          <input id="zeta" type="range" min="0" max="5" step="0.1" value="2">
+          <div class="range"><span>0</span><span>5</span></div>
+        </div>
+        <div class="control">
+          <label for="delta">Depreciação, δ <output id="delta-value">0.025</output></label>
+          <input id="delta" type="range" min="0.025" max="1" step="0.005" value="0.025">
+          <div class="range"><span>0,025</span><span>1</span></div>
+        </div>
+        <button id="reset" type="button">Restaurar calibração</button>
+      </section>
+
+      <section class="panel chart-panel" aria-labelledby="chart-title">
+        <div class="chart-heading">
+          <h2 id="chart-title">Funções impulso-resposta</h2>
+          <div id="solver-status" class="solver-status" role="status" aria-live="polite"></div>
+        </div>
+        <canvas id="irf-chart" role="img" aria-label="IRFs de produto, consumo, investimento, trabalho, capital e produtividade"></canvas>
+        <div class="legend" aria-label="Legenda">
+          <span><i class="swatch" style="background:#0072b2"></i>Produto</span>
+          <span><i class="swatch" style="background:#009e73"></i>Consumo</span>
+          <span><i class="swatch" style="background:#d55e00"></i>Investimento</span>
+          <span><i class="swatch" style="background:#cc79a7"></i>Trabalho</span>
+          <span><i class="swatch" style="background:#5f6368"></i>Capital</span>
+          <span><i class="swatch" style="background:#56b4e9"></i>TFP</span>
+        </div>
+        <div class="metrics">
+          <div class="metric" id="impact-values"></div>
+          <div class="metric" id="capital-peak"></div>
+          <div class="metric" id="capital-persistence"></div>
+        </div>
+      </section>
+
+      <section class="panel coefficients" aria-labelledby="coefficients-title">
+        <div>
+          <h2 id="coefficients-title">A solução não fica escondida</h2>
+          <p>O painel resolve as mesmas oito equações do notebook. Os coeficientes
+            mudam com os controles e o resíduo numérico aparece acima do gráfico.</p>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Variável</th><th>ψ<sub>X,K</sub></th><th>ψ<sub>X,z</sub></th></tr>
+          </thead>
+          <tbody id="coefficient-body"></tbody>
+        </table>
+        <details>
+          <summary>Equações reduzidas resolvidas pelo painel</summary>
+          <div class="equations">
+            <code>
+              ψ<sub>C,K</sub> = [α − (ζ+α)ψ<sub>L,K</sub>]/σ;&nbsp;
+              ψ<sub>C,z</sub> = [1 − (ζ+α)ψ<sub>L,z</sub>]/σ.<br>
+              F<sub>7</sub> = ψ<sub>C,K</sub>(Λ−1) − (κ/σ)r<sub>K</sub>Λ = 0.<br>
+              F<sub>8</sub> = ψ<sub>C,K</sub>δψ<sub>I,z</sub> + ψ<sub>C,z</sub>(ρ−1)
+              − (κ/σ)[ρ + r<sub>K</sub>δψ<sub>I,z</sub> + (1−α)ψ<sub>L,z</sub>ρ] = 0.
+            </code>
+          </div>
+        </details>
+      </section>
+    </div>
+  </main>
+  <script src="solver.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

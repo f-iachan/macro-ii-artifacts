@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Ramsey: notícias e eventos antecipados</title>
+  <style>
+    :root {
+      --paper: #fffff7;
+      --surface: #ffffff;
+      --surface-soft: #f4f3e9;
+      --ink: #202124;
+      --muted: #687077;
+      --border: #d9d8cc;
+      --grid: #e8e7dc;
+      --blue: #0072b2;
+      --orange: #d55e00;
+      --green: #009e73;
+      --magenta: #a34f8a;
+      --red: #b23a48;
+      --focus: #7a5cff;
+      --shadow: 0 10px 35px rgba(32, 33, 36, 0.08);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color-scheme: light;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --paper: #171816;
+        --surface: #21231f;
+        --surface-soft: #2a2d27;
+        --ink: #f2f2e9;
+        --muted: #b5bab1;
+        --border: #454a42;
+        --grid: #373b35;
+        --blue: #56b4e9;
+        --orange: #e69f5c;
+        --green: #45c69a;
+        --magenta: #d58abc;
+        --red: #ef7c8b;
+        --focus: #b6a8ff;
+        --shadow: 0 10px 35px rgba(0, 0, 0, 0.24);
+        color-scheme: dark;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); }
+    button, input, select { font: inherit; }
+    button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+    .shell { width: min(1460px, calc(100% - 32px)); margin: 0 auto; padding: 32px 0 48px; }
+    .hero { display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: end; margin-bottom: 22px; }
+    .eyebrow { margin: 0 0 7px; color: var(--blue); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; }
+    h1 { max-width: 850px; margin: 0; font-size: clamp(1.8rem, 4.1vw, 3.35rem); line-height: 1.03; font-weight: 500; letter-spacing: -0.035em; }
+    .hero p:last-child { max-width: 800px; margin: 12px 0 0; color: var(--muted); line-height: 1.55; }
+    .source-chip { align-self: start; display: inline-flex; gap: 7px; align-items: center; padding: 8px 11px; border: 1px solid var(--border); border-radius: 999px; color: var(--muted); font-size: 0.76rem; white-space: nowrap; }
+    .source-chip::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+    .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow); }
+    .controls { padding: 18px 20px; margin-bottom: 16px; }
+    .control-top { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .segmented { display: inline-flex; gap: 4px; padding: 4px; background: var(--surface-soft); border-radius: 11px; }
+    .segment { border: 0; border-radius: 8px; padding: 8px 12px; color: var(--muted); background: transparent; cursor: pointer; }
+    .segment[aria-pressed="true"] { color: var(--surface); background: var(--ink); }
+    @media (prefers-color-scheme: dark) { .segment[aria-pressed="true"] { color: var(--paper); } }
+    .calibration { color: var(--muted); font-size: 0.78rem; }
+    .control-grid { display: grid; grid-template-columns: repeat(4, minmax(150px, 1fr)); gap: 18px; margin-top: 18px; padding-top: 17px; border-top: 1px solid var(--border); }
+    .range-field { min-width: 0; }
+    .range-field label { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 8px; color: var(--muted); font-size: 0.78rem; }
+    .range-field output { color: var(--ink); font-variant-numeric: tabular-nums; }
+    input[type="range"] { width: 100%; accent-color: var(--blue); cursor: pointer; }
+    .timing-row { display: flex; gap: 10px; align-items: center; margin-top: 14px; flex-wrap: wrap; }
+    .timing-label { color: var(--muted); font-size: 0.78rem; }
+    .fixed-loss { display: none; color: var(--muted); font-size: 0.8rem; }
+    .fixed-loss.visible { display: inline-flex; gap: 7px; align-items: center; }
+    .fixed-loss strong { color: var(--ink); font-weight: 500; }
+    .hidden { display: none !important; }
+    .playback { display: grid; grid-template-columns: auto minmax(180px, 1fr) auto; gap: 14px; align-items: center; padding: 12px 16px; margin-bottom: 16px; }
+    .play-actions { display: flex; gap: 7px; align-items: center; }
+    .action { border: 1px solid var(--border); border-radius: 9px; padding: 7px 10px; color: var(--ink); background: var(--surface); cursor: pointer; }
+    .action.primary { color: var(--surface); background: var(--ink); border-color: var(--ink); }
+    .action:disabled { opacity: 0.55; cursor: not-allowed; }
+    @media (prefers-color-scheme: dark) { .action.primary { color: var(--paper); } }
+    .time-control { display: grid; grid-template-columns: 72px 1fr; gap: 9px; align-items: center; min-width: 0; }
+    #time-output { color: var(--muted); font-size: 0.78rem; font-variant-numeric: tabular-nums; }
+    .speed-wrap { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 0.78rem; }
+    select { padding: 6px 8px; border: 1px solid var(--border); border-radius: 8px; color: var(--ink); background: var(--surface); }
+    .status-line { display: flex; align-items: center; gap: 9px; min-height: 28px; margin: 0 1px 12px; color: var(--muted); font-size: 0.84rem; }
+    .status-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--green); flex: 0 0 auto; }
+    .status-line.solving .status-dot { background: var(--orange); animation: pulse 0.9s infinite alternate; }
+    .status-line.error { color: var(--red); }
+    .status-line.error .status-dot { background: var(--red); }
+    @keyframes pulse { from { opacity: 0.35; } to { opacity: 1; } }
+    .charts { display: grid; grid-template-columns: 1.28fr 1fr 1fr; gap: 14px; align-items: stretch; }
+    .chart-panel { min-width: 0; margin: 0; padding: 14px 14px 10px; }
+    .chart-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 7px; }
+    .chart-heading h2 { margin: 0; font-size: 0.94rem; font-weight: 500; }
+    .chart-heading span { color: var(--muted); font-size: 0.72rem; text-align: right; }
+    .chart { display: block; width: 100%; height: 390px; }
+    .time-chart { height: 390px; }
+    .legend { display: flex; flex-wrap: wrap; gap: 8px 13px; margin-top: 5px; color: var(--muted); font-size: 0.7rem; }
+    .legend span { display: inline-flex; align-items: center; gap: 5px; }
+    .legend i { width: 15px; height: 3px; border-radius: 2px; background: var(--legend-color); }
+    .readout { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 14px; }
+    .stat { padding: 13px 15px; }
+    .stat span { display: block; color: var(--muted); font-size: 0.72rem; }
+    .stat strong { display: block; margin-top: 4px; font-size: 1.08rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+    .stat small { display: block; min-height: 1.2em; margin-top: 3px; color: var(--muted); font-size: 0.7rem; }
+    .explanation { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 14px; }
+    .explanation article { padding: 16px 17px; }
+    .explanation h3 { margin: 0 0 7px; font-size: 0.86rem; font-weight: 500; }
+    .explanation p { margin: 0; color: var(--muted); font-size: 0.8rem; line-height: 1.5; }
+    .equation { display: block; margin-top: 9px; color: var(--ink); font-family: ui-serif, Georgia, serif; font-size: 0.8rem; }
+    .technical { margin: 17px 4px 0; color: var(--muted); font-size: 0.72rem; line-height: 1.5; }
+    svg text { font-family: inherit; }
+    @media (max-width: 1080px) {
+      .control-grid { grid-template-columns: repeat(2, minmax(150px, 1fr)); }
+      .charts { grid-template-columns: 1fr 1fr; }
+      .chart-panel:first-child { grid-column: 1 / -1; }
+      .chart { height: 410px; }
+      .time-chart { height: 300px; }
+    }
+    @media (max-width: 720px) {
+      .shell { width: min(100% - 20px, 680px); padding-top: 20px; }
+      .hero { grid-template-columns: 1fr; }
+      .source-chip { justify-self: start; }
+      .controls { padding: 15px; }
+      .control-grid { grid-template-columns: 1fr; gap: 13px; }
+      .segmented { width: 100%; }
+      .segment { flex: 1 1 0; }
+      .playback { grid-template-columns: 1fr; }
+      .time-control { grid-template-columns: 64px 1fr; }
+      .charts { grid-template-columns: 1fr; }
+      .chart-panel:first-child { grid-column: auto; }
+      .chart, .time-chart { height: 320px; }
+      .readout, .explanation { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 380px) {
+      .shell { width: min(100% - 12px, 360px); }
+      .segment { padding: 8px 6px; font-size: 0.78rem; }
+      .chart-panel { padding: 11px 8px 8px; }
+      .chart, .time-chart { height: 292px; }
+      .play-actions { flex-wrap: wrap; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Programação dinâmica em tempo contínuo</p>
+        <h1>Hoje escolhemos para chegar ao lugar certo em T</h1>
+        <p>Notícias mudam o consumo antes que a tecnologia mude. Um desastre anunciado exige poupança antes de deslocar fisicamente o capital.</p>
+      </div>
+      <div class="source-chip">calibrado pelo notebook da aula</div>
+    </header>
+
+    <section class="panel controls" aria-label="Parâmetros do experimento">
+      <div class="control-top">
+        <div class="segmented" role="group" aria-label="Tipo de experimento">
+          <button class="segment experiment-button" type="button" data-kind="tfp" aria-pressed="true">Mudança de TFP</button>
+          <button class="segment experiment-button" type="button" data-kind="destruction" aria-pressed="false">Destruição de capital</button>
+        </div>
+        <div class="calibration">α = 0,33 · δ = 0,08 · ρ = 0,04</div>
+      </div>
+
+      <div class="timing-row" id="tfp-timing-row">
+        <span class="timing-label">Calendário de A<sub>1</sub></span>
+        <div class="segmented" role="group" aria-label="Calendário da mudança de TFP">
+          <button class="segment timing-button" type="button" data-timing="starts" aria-pressed="true">A<sub>1</sub> começa em T</button>
+          <button class="segment timing-button" type="button" data-timing="ends" aria-pressed="false">A<sub>1</sub> termina em T</button>
+        </div>
+      </div>
+      <div class="fixed-loss" id="fixed-loss"><strong>Perda anunciada:</strong> Δ<sub>K</sub> = 0,50 em T</div>
+
+      <div class="control-grid">
+        <div class="range-field">
+          <label for="event-time"><span>Data do evento, T</span><output id="event-time-output">10,0 anos</output></label>
+          <input id="event-time" type="range" min="2" max="20" step="0.5" value="10">
+        </div>
+        <div class="range-field">
+          <label for="eis"><span>EIS</span><output id="eis-output">0,50 · θ = 2,00</output></label>
+          <input id="eis" type="range" min="0.25" max="1.5" step="0.05" value="0.5">
+        </div>
+        <div class="range-field">
+          <label for="a0"><span>TFP de referência, A<sub>0</sub></span><output id="a0-output">1,00</output></label>
+          <input id="a0" type="range" min="0.8" max="1.2" step="0.05" value="1">
+        </div>
+        <div class="range-field" id="a1-field">
+          <label for="a1"><span>TFP alternativa, A<sub>1</sub></span><output id="a1-output">1,30</output></label>
+          <input id="a1" type="range" min="0.8" max="1.5" step="0.05" value="1.3">
+        </div>
+      </div>
+    </section>
+
+    <section class="panel playback" aria-label="Controles da animação">
+      <div class="play-actions">
+        <button class="action primary" id="play" type="button" aria-label="Reproduzir animação" disabled>▶ Reproduzir</button>
+        <button class="action" id="restart" type="button">Reiniciar</button>
+        <button class="action" id="go-event" type="button">Ir para T</button>
+      </div>
+      <div class="time-control">
+        <output id="time-output" for="time-slider">t = 0,0</output>
+        <input id="time-slider" type="range" min="0" max="48" step="0.05" value="0" aria-label="Tempo da simulação">
+      </div>
+      <label class="speed-wrap" for="speed">Velocidade
+        <select id="speed">
+          <option value="0.5">0,5×</option>
+          <option value="1" selected>1×</option>
+          <option value="2">2×</option>
+        </select>
+      </label>
+    </section>
+
+    <div class="status-line solving" id="solver-status" aria-live="polite">
+      <span class="status-dot" aria-hidden="true"></span>
+      <span id="status-message">Calculando a trajetória que satisfaz o matching em T…</span>
+    </div>
+    <div id="error-message" role="alert" class="hidden"></div>
+
+    <section class="charts" aria-label="Visualizações sincronizadas">
+      <figure class="panel chart-panel">
+        <figcaption class="chart-heading"><h2>Plano de fase</h2><span id="phase-subtitle">campo A₀ antes de T</span></figcaption>
+        <svg class="chart" id="phase-chart" role="img" aria-labelledby="phase-title phase-desc">
+          <title id="phase-title">Plano de fase do modelo de Ramsey</title>
+          <desc id="phase-desc">Braços estáveis, campo vetorial, trajetória selecionada e posição corrente.</desc>
+        </svg>
+        <div class="legend" id="phase-legend"></div>
+      </figure>
+      <figure class="panel chart-panel">
+        <figcaption class="chart-heading"><h2>Capital</h2><span>estoque predeterminado</span></figcaption>
+        <svg class="chart time-chart" id="capital-chart" role="img" aria-labelledby="capital-title capital-desc">
+          <title id="capital-title">Capital ao longo do tempo</title>
+          <desc id="capital-desc">Trajetória do capital, com a data do evento marcada.</desc>
+        </svg>
+      </figure>
+      <figure class="panel chart-panel">
+        <figcaption class="chart-heading"><h2>Consumo</h2><span>controle que reage à notícia</span></figcaption>
+        <svg class="chart time-chart" id="consumption-chart" role="img" aria-labelledby="consumption-title consumption-desc">
+          <title id="consumption-title">Consumo ao longo do tempo</title>
+          <desc id="consumption-desc">Trajetória do consumo, incluindo a resposta no anúncio.</desc>
+        </svg>
+      </figure>
+    </section>
+
+    <section class="readout" aria-label="Valores correntes">
+      <div class="panel stat"><span>Agora</span><strong id="now-value">t = 0,0</strong><small id="now-regime">anúncio</small></div>
+      <div class="panel stat"><span>Capital e consumo</span><strong id="state-value">k = — · c = —</strong><small id="motion-value">—</small></div>
+      <div class="panel stat"><span>Condição em T</span><strong id="matching-value">resíduo —</strong><small id="event-value">—</small></div>
+    </section>
+
+    <section class="explanation" aria-label="Leitura econômica">
+      <article class="panel">
+        <h3>No anúncio, em t = 0</h3>
+        <p id="announcement-explanation">A notícia escolhe um novo consumo inicial; capital não salta.</p>
+        <span class="equation" id="announcement-equation">k(0⁺)=k(0⁻), &nbsp; c(0⁺)≠c(0⁻)</span>
+      </article>
+      <article class="panel">
+        <h3>No instante conhecido T</h3>
+        <p id="event-explanation">A economia precisa atingir a variedade estável do regime posterior.</p>
+        <span class="equation" id="event-equation">c(T)=P₁(k(T))</span>
+      </article>
+      <article class="panel">
+        <h3>O papel da EIS</h3>
+        <p>A EIS controla quanto o crescimento do consumo responde ao retorno marginal do capital. Mova o slider e compare a curvatura da trajetória de ligação.</p>
+        <span class="equation">ċ/c = EIS · [αAk<sup>α−1</sup>−δ−ρ]</span>
+      </article>
+    </section>
+
+    <p class="technical">As variedades estáveis são pré-computadas pelo mesmo código do notebook. O navegador resolve o shooting, aplica o matching em T e segue a política pós-evento; nenhum servidor é necessário.</p>
+  </main>
+
+  <script src="data.js"></script>
+  <script src="solver.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

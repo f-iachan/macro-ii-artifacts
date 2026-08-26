@@ -1,0 +1,678 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Simulação do modelo de Ramsey em tempo contínuo com TFP seguindo uma cadeia de Markov de dois estados.">
+  <title>Saltos entre políticas de regime — Macro II</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --page: light-dark(#f6f3e9, #13171d);
+      --surface: light-dark(#fffef9, #1d232b);
+      --surface-2: light-dark(#eeeee6, #252d36);
+      --surface-3: light-dark(#e4e7e4, #303943);
+      --ink: light-dark(#17222a, #f1f5f6);
+      --muted: light-dark(#5f696f, #aeb9bf);
+      --faint: light-dark(#8b9497, #7f8c94);
+      --border: light-dark(#d8d8cf, #3a444e);
+      --grid: light-dark(#e3e4de, #303943);
+      --blue: #0072b2;
+      --orange: #d55e00;
+      --green: #009e73;
+      --yellow: #f0e442;
+      --shadow: light-dark(rgb(23 34 42 / 8%), rgb(0 0 0 / 24%));
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--page); color: var(--ink); }
+    button, input { font: inherit; }
+    button { color: inherit; }
+    svg text { font-family: inherit; }
+
+    main {
+      width: min(1440px, calc(100% - 36px));
+      margin: 0 auto;
+      padding: 24px 0 50px;
+    }
+
+    header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 30px;
+      margin: 4px 2px 20px;
+    }
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--blue);
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    h1 {
+      max-width: 900px;
+      margin: 0;
+      font-size: clamp(2rem, 4.3vw, 4.2rem);
+      font-weight: 670;
+      letter-spacing: -0.052em;
+      line-height: 0.98;
+    }
+    .lead {
+      max-width: 880px;
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: clamp(0.98rem, 1.4vw, 1.16rem);
+      line-height: 1.5;
+    }
+    .model-stamp {
+      flex: 0 0 auto;
+      min-width: 210px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: color-mix(in srgb, var(--surface) 75%, transparent);
+      color: var(--muted);
+      font-size: 0.78rem;
+      line-height: 1.55;
+      font-variant-numeric: tabular-nums;
+    }
+    .model-stamp strong { color: var(--ink); }
+
+    .panel {
+      min-width: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: 0 10px 32px var(--shadow);
+    }
+    .main-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 2.16fr) minmax(295px, 0.84fr);
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .phase-card { padding: 17px 19px 15px; }
+    .panel-heading {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 8px;
+    }
+    .panel-heading h2, .control-card h2, .distribution-card h2 {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 720;
+      letter-spacing: -0.015em;
+    }
+    .panel-heading p, .distribution-card .intro {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.45;
+    }
+    .now-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 0 0 auto;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: var(--surface-2);
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .now-chip::before {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--state-color, var(--blue));
+      content: "";
+    }
+    #phase-chart {
+      display: block;
+      width: 100%;
+      height: 520px;
+      overflow: visible;
+    }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px 16px;
+      margin: 1px 0 0;
+      color: var(--muted);
+      font-size: 0.73rem;
+    }
+    .legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .line-key { width: 22px; height: 3px; border-radius: 2px; background: currentColor; }
+    .line-key.dashed {
+      height: 2px;
+      background: repeating-linear-gradient(90deg, currentColor 0 5px, transparent 5px 9px);
+    }
+    .dot-key { width: 9px; height: 9px; border: 2px solid currentColor; border-radius: 50%; }
+
+    .transport {
+      display: grid;
+      grid-template-columns: auto auto auto minmax(160px, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+      margin-top: 14px;
+      padding-top: 13px;
+      border-top: 1px solid var(--border);
+    }
+    .icon-button, .text-button, .preset-button, .toggle-button {
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      cursor: pointer;
+      transition: border-color 120ms, background 120ms, transform 120ms;
+    }
+    .icon-button:hover, .text-button:hover, .preset-button:hover, .toggle-button:hover {
+      border-color: var(--blue);
+    }
+    .icon-button:active, .text-button:active { transform: translateY(1px); }
+    .text-button:disabled { cursor: default; opacity: 0.52; border-color: var(--border); }
+    .icon-button {
+      width: 38px;
+      height: 36px;
+      border-radius: 10px;
+      font-weight: 760;
+    }
+    .text-button {
+      min-height: 36px;
+      padding: 7px 11px;
+      border-radius: 10px;
+      font-size: 0.76rem;
+      font-weight: 670;
+    }
+    #time-slider { width: 100%; accent-color: var(--green); }
+    .time-output {
+      min-width: 58px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    #regime-strip {
+      display: block;
+      width: 100%;
+      height: 20px;
+      grid-column: 4;
+    }
+
+    .control-card {
+      display: flex;
+      flex-direction: column;
+      padding: 19px;
+    }
+    .state-readout {
+      position: relative;
+      overflow: hidden;
+      margin-top: 14px;
+      padding: 16px;
+      border: 1px solid color-mix(in srgb, var(--state-color, var(--blue)) 30%, var(--border));
+      border-radius: 14px;
+      background: color-mix(in srgb, var(--state-color, var(--blue)) 9%, var(--surface));
+    }
+    .state-readout::after {
+      position: absolute;
+      top: -42px;
+      right: -36px;
+      width: 110px;
+      height: 110px;
+      border: 20px solid color-mix(in srgb, var(--state-color, var(--blue)) 12%, transparent);
+      border-radius: 50%;
+      content: "";
+    }
+    .state-name {
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      color: var(--state-color, var(--blue));
+      font-size: 1.35rem;
+      font-weight: 760;
+      letter-spacing: -0.025em;
+    }
+    .state-subtitle { margin: 3px 0 0; color: var(--muted); font-size: 0.78rem; }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .metric {
+      padding: 10px 11px;
+      border-radius: 10px;
+      background: var(--surface-2);
+    }
+    .metric span { display: block; color: var(--muted); font-size: 0.67rem; }
+    .metric strong {
+      display: block;
+      margin-top: 3px;
+      font-size: 1rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+    .mechanism {
+      margin: 12px 0 0;
+      padding: 11px 12px;
+      border-left: 3px solid var(--state-color, var(--blue));
+      border-radius: 0 9px 9px 0;
+      background: var(--surface-2);
+      color: var(--muted);
+      font-size: 0.78rem;
+      line-height: 1.45;
+    }
+    .mechanism strong { color: var(--ink); }
+
+    .control-group { margin-top: 18px; }
+    .control-label {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 0.73rem;
+      font-weight: 680;
+    }
+    .segmented {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5px;
+      padding: 4px;
+      border-radius: 12px;
+      background: var(--surface-2);
+    }
+    .preset-button {
+      min-width: 0;
+      padding: 8px 5px;
+      border-color: transparent;
+      border-radius: 9px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.7rem;
+      font-weight: 690;
+    }
+    .preset-button.active {
+      border-color: var(--border);
+      background: var(--surface);
+      color: var(--ink);
+      box-shadow: 0 2px 7px var(--shadow);
+    }
+    .hazards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.69rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .hazards span { padding: 7px 8px; border-radius: 8px; background: var(--surface-2); }
+    .hazards strong { display: block; color: var(--ink); font-size: 0.78rem; }
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 16px;
+      padding-top: 15px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.74rem;
+    }
+    .toggle-button {
+      flex: 0 0 auto;
+      padding: 7px 10px;
+      border-radius: 9px;
+      font-size: 0.7rem;
+      font-weight: 690;
+    }
+    .toggle-button[aria-pressed="true"] {
+      border-color: color-mix(in srgb, var(--green) 65%, var(--border));
+      background: color-mix(in srgb, var(--green) 12%, var(--surface));
+      color: var(--green);
+    }
+
+    .distribution-card { margin-top: 16px; padding: 18px 20px 16px; }
+    .distribution-heading {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .distribution-note {
+      flex: 0 0 auto;
+      padding: 7px 10px;
+      border-radius: 9px;
+      background: var(--surface-2);
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .distribution-groups {
+      display: grid;
+      gap: 20px;
+      margin-top: 16px;
+    }
+    .distribution-group {
+      min-width: 0;
+      padding-top: 15px;
+      border-top: 1px solid var(--border);
+    }
+    .distribution-group:first-child { padding-top: 0; border-top: 0; }
+    .distribution-group-heading {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 9px;
+    }
+    .distribution-group-heading h3 { margin: 0; font-size: 0.91rem; }
+    .distribution-group-heading p { margin: 0; color: var(--muted); font-size: 0.7rem; }
+    .distribution-triptych {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+    .distribution-triptych figure {
+      min-width: 0;
+      margin: 0;
+      padding: 10px 11px 7px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: color-mix(in srgb, var(--surface-2) 42%, var(--surface));
+    }
+    .distribution-triptych figure.active-conditional {
+      border-color: color-mix(in srgb, var(--active-panel-color) 55%, var(--border));
+      box-shadow: inset 0 3px 0 var(--active-panel-color);
+    }
+    .distribution-triptych figcaption {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 0.68rem;
+    }
+    .distribution-triptych figcaption strong { color: var(--ink); font-size: 0.77rem; }
+    .distribution-chart { display: block; width: 100%; height: 145px; }
+    .distribution-legend {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 0.69rem;
+    }
+    .square-key { width: 10px; height: 10px; border-radius: 2px; }
+
+    .reading-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .reading-card {
+      padding: 17px 18px;
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      background: color-mix(in srgb, var(--surface) 72%, transparent);
+    }
+    .reading-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--surface-3);
+      color: var(--muted);
+      font-size: 0.7rem;
+      font-weight: 760;
+    }
+    .reading-card h3 { margin: 10px 0 5px; font-size: 0.89rem; }
+    .reading-card p { margin: 0; color: var(--muted); font-size: 0.75rem; line-height: 1.48; }
+    .equation {
+      display: block;
+      overflow-x: auto;
+      margin-top: 9px;
+      color: var(--ink);
+      font-family: "STIX Two Text", Cambria, Georgia, serif;
+      font-size: 0.82rem;
+      white-space: nowrap;
+    }
+    details {
+      margin-top: 14px;
+      padding: 0 2px;
+      color: var(--muted);
+      font-size: 0.74rem;
+      line-height: 1.55;
+    }
+    summary { cursor: pointer; color: var(--ink); font-weight: 680; }
+    details p { max-width: 980px; }
+    footer {
+      margin-top: 19px;
+      color: var(--faint);
+      font-size: 0.68rem;
+      text-align: center;
+    }
+
+    @media (max-width: 980px) {
+      header { display: block; }
+      .model-stamp { display: inline-block; margin-top: 14px; }
+      .main-grid { grid-template-columns: 1fr; }
+      .control-card { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; }
+      .control-card h2 { grid-column: 1 / -1; }
+      .state-readout { grid-row: 2 / span 3; }
+      .toggle-row { grid-column: 1 / -1; }
+    }
+    @media (max-width: 720px) {
+      main { width: min(100% - 20px, 1440px); padding-top: 15px; }
+      h1 { line-height: 1.02; }
+      .phase-card, .control-card, .distribution-card { padding: 15px; }
+      #phase-chart { height: 420px; }
+      .panel-heading, .distribution-heading { display: block; }
+      .now-chip, .distribution-note { display: inline-flex; margin-top: 8px; }
+      .transport { grid-template-columns: auto auto minmax(110px, 1fr) auto; }
+      #next-jump { grid-column: 1 / -1; grid-row: 2; }
+      #regime-strip { grid-column: 3; }
+      .control-card { display: block; }
+      .distribution-triptych, .reading-grid { grid-template-columns: 1fr; }
+      .distribution-triptych { gap: 10px; }
+      .distribution-group-heading { display: block; }
+      .distribution-group-heading p { margin-top: 3px; }
+    }
+    @media (max-width: 430px) {
+      #phase-chart { height: 365px; }
+      .legend { justify-content: start; }
+      .segmented { grid-template-columns: 1fr; }
+      .hazards { grid-template-columns: 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      * { scroll-behavior: auto !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <p class="eyebrow">Macro II · tempo contínuo</p>
+        <h1>A economia salta entre dois braços de política</h1>
+        <p class="lead">A TFP tem dois estados discretos, mas muda em datas aleatórias no tempo contínuo. Entre saltos, o capital se move ao longo da política do regime ativo. Num salto Markov não antecipado, o consumo muda imediatamente para a outra política.</p>
+      </div>
+      <div class="model-stamp">
+        <strong>Ramsey + Markov (2 estados)</strong><br>
+        α = 0,33 · δ = 0,08 · ρ = 0,04 · θ = 2<br>
+        A<sub>L</sub> = 1 · A<sub>H</sub> = 1,3
+      </div>
+    </header>
+
+    <div class="main-grid">
+      <section class="panel phase-card" aria-labelledby="phase-title">
+        <div class="panel-heading">
+          <div>
+            <h2 id="phase-title">Diagrama de fase: políticas ótimas c = P<sub>s</sub>(k)</h2>
+            <p>Linhas sólidas são políticas acopladas que antecipam futuras transições; as variedades estáveis tracejadas tratam o regime atual como permanente.</p>
+          </div>
+          <div class="now-chip" id="now-chip">t = 0,0 · TFP baixa</div>
+        </div>
+        <svg id="phase-chart" role="img" aria-label="Diagrama de fase com políticas condicionais, variedades estáveis determinísticas e trajetória simulada"></svg>
+        <div class="legend" aria-label="Legenda do diagrama de fase">
+          <span style="color:var(--blue)"><i class="line-key"></i>política com TFP baixa</span>
+          <span style="color:var(--orange)"><i class="line-key"></i>política com TFP alta</span>
+          <span><i class="line-key dashed"></i>sem chance de transição</span>
+          <span style="color:var(--green)"><i class="line-key"></i>realização simulada</span>
+          <span><i class="dot-key"></i>estado estacionário determinístico</span>
+        </div>
+
+        <div class="transport" aria-label="Controles da simulação">
+          <button class="icon-button" id="play" type="button" aria-label="Reproduzir simulação" title="Reproduzir ou pausar (barra de espaço)">▶</button>
+          <button class="icon-button" id="restart" type="button" aria-label="Voltar ao início" title="Voltar ao início">↺</button>
+          <button class="text-button" id="next-jump" type="button">Próximo salto</button>
+          <input id="time-slider" type="range" min="0" max="2400" value="0" aria-label="Tempo da simulação">
+          <output class="time-output" id="time-output">0,0 anos</output>
+          <svg id="regime-strip" aria-hidden="true"></svg>
+        </div>
+      </section>
+
+      <aside class="panel control-card" aria-labelledby="controls-title">
+        <h2 id="controls-title">O que está acontecendo agora?</h2>
+        <div class="state-readout" id="state-readout">
+          <p class="state-name" id="state-name">TFP baixa</p>
+          <p class="state-subtitle" id="state-subtitle">A = 1,00 · na política azul</p>
+          <div class="metrics">
+            <div class="metric"><span>Capital k</span><strong id="metric-k">—</strong></div>
+            <div class="metric"><span>Consumo c</span><strong id="metric-c">—</strong></div>
+            <div class="metric"><span>Movimento do capital</span><strong id="metric-drift">—</strong></div>
+            <div class="metric"><span>Próxima transição</span><strong id="metric-next">—</strong></div>
+          </div>
+          <p class="mechanism" id="mechanism"><strong>Entre saltos:</strong> capital e consumo percorrem o braço ativo.</p>
+        </div>
+
+        <div class="control-group">
+          <div class="control-label"><span>Persistência dos regimes</span><span id="preset-label">Calibração-base</span></div>
+          <div class="segmented" role="group" aria-label="Persistência dos regimes">
+            <button class="preset-button" type="button" data-preset="persistente">Persistentes</button>
+            <button class="preset-button active" type="button" data-preset="base">Base</button>
+            <button class="preset-button" type="button" data-preset="rapida">Rápidas</button>
+          </div>
+          <div class="hazards">
+            <span><strong id="hazard-low">—</strong>baixa → alta</span>
+            <span><strong id="hazard-high">—</strong>alta → baixa</span>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <div class="control-label"><span>Velocidade</span><span id="speed-label">1×</span></div>
+          <input id="speed" type="range" min="0.5" max="4" step="0.5" value="1" aria-label="Velocidade da animação">
+          <button class="text-button" id="new-path" type="button" style="width:100%;margin-top:10px">Nova realização da cadeia</button>
+        </div>
+
+        <div class="toggle-row">
+          <span>Linhas tracejadas: “e se este regime durasse para sempre?”</span>
+          <button class="toggle-button" id="toggle-deterministic" type="button" aria-pressed="true">Visíveis</button>
+        </div>
+      </aside>
+    </div>
+
+    <section class="panel distribution-card" aria-labelledby="distribution-title">
+      <div class="distribution-heading">
+        <div>
+          <h2 id="distribution-title">Onde a economia passa tempo no longo prazo?</h2>
+          <p class="intro">Distribuição estacionária conjunta induzida pelos braços, pelo movimento de capital e pelos saltos de TFP. A régua vertical acompanha o ponto corrente da simulação.</p>
+        </div>
+        <div class="distribution-note" id="distribution-note">60% em TFP baixa · 40% em TFP alta</div>
+      </div>
+      <div class="distribution-groups">
+        <section class="distribution-group" aria-labelledby="capital-distributions-title">
+          <div class="distribution-group-heading">
+            <h3 id="capital-distributions-title">Capital</h3>
+            <p>As três densidades têm área 1 e usam a mesma escala vertical; μ(k) = 0,6·μ(k|L) + 0,4·μ(k|H).</p>
+          </div>
+          <div class="distribution-triptych">
+            <figure id="capital-low-figure">
+              <figcaption><strong>TFP baixa · μ(k | L)</strong><span id="capital-low-percentile">condicional</span></figcaption>
+              <svg class="distribution-chart" id="capital-low-distribution" role="img" aria-label="Distribuição estacionária do capital condicional à TFP baixa"></svg>
+            </figure>
+            <figure id="capital-high-figure">
+              <figcaption><strong>TFP alta · μ(k | H)</strong><span id="capital-high-percentile">condicional</span></figcaption>
+              <svg class="distribution-chart" id="capital-high-distribution" role="img" aria-label="Distribuição estacionária do capital condicional à TFP alta"></svg>
+            </figure>
+            <figure>
+              <figcaption><strong>Incondicional · μ(k)</strong><span id="capital-total-percentile">posição atual: —</span></figcaption>
+              <svg class="distribution-chart" id="capital-total-distribution" role="img" aria-label="Distribuição estacionária incondicional do capital"></svg>
+            </figure>
+          </div>
+        </section>
+
+        <section class="distribution-group" aria-labelledby="consumption-distributions-title">
+          <div class="distribution-group-heading">
+            <h3 id="consumption-distributions-title">Consumo</h3>
+            <p>As três densidades usam a mesma escala vertical; a mistura usa as probabilidades estacionárias dos regimes.</p>
+          </div>
+          <div class="distribution-triptych">
+            <figure id="consumption-low-figure">
+              <figcaption><strong>TFP baixa · μ(c | L)</strong><span id="consumption-low-percentile">condicional</span></figcaption>
+              <svg class="distribution-chart" id="consumption-low-distribution" role="img" aria-label="Distribuição estacionária do consumo condicional à TFP baixa"></svg>
+            </figure>
+            <figure id="consumption-high-figure">
+              <figcaption><strong>TFP alta · μ(c | H)</strong><span id="consumption-high-percentile">condicional</span></figcaption>
+              <svg class="distribution-chart" id="consumption-high-distribution" role="img" aria-label="Distribuição estacionária do consumo condicional à TFP alta"></svg>
+            </figure>
+            <figure>
+              <figcaption><strong>Incondicional · μ(c)</strong><span id="consumption-total-percentile">posição atual: —</span></figcaption>
+              <svg class="distribution-chart" id="consumption-total-distribution" role="img" aria-label="Distribuição estacionária incondicional do consumo"></svg>
+            </figure>
+          </div>
+        </section>
+      </div>
+      <div class="distribution-legend">
+        <span><i class="square-key" style="display:inline-block;background:var(--blue)"></i> μ(· | TFP baixa)</span>
+        <span><i class="square-key" style="display:inline-block;background:var(--orange)"></i> μ(· | TFP alta)</span>
+        <span><i class="square-key" style="display:inline-block;background:var(--green)"></i> distribuição incondicional</span>
+        <span><i class="line-key" style="display:inline-block;color:var(--ink);height:2px"></i> posição simulada</span>
+      </div>
+    </section>
+
+    <section class="reading-grid" aria-label="Como ler o mecanismo">
+      <article class="reading-card">
+        <span class="reading-number">1</span>
+        <h3>Entre transições</h3>
+        <p>O regime é fixo por um intervalo aleatório. A política já incorpora a chance de sair dele, e o capital deriva ao longo do braço ativo.</p>
+        <span class="equation">k̇ = A<sub>s</sub>k<sup>α</sup> − δk − P<sub>s</sub>(k)</span>
+      </article>
+      <article class="reading-card">
+        <span class="reading-number">2</span>
+        <h3>No salto Markov não antecipado</h3>
+        <p>A TFP muda sem anúncio, mas não há destruição física de capital. Por isso k é contínuo; o controle c troca imediatamente de política. Num switch determinístico já antecipado, como no bloco seguinte da aula, c é contínuo na data de implementação.</p>
+        <span class="equation">k(T<sup>+</sup>) = k(T<sup>−</sup>), &nbsp; c(T<sup>+</sup>) = P<sub>j</sub>(k(T))</span>
+      </article>
+      <article class="reading-card">
+        <span class="reading-number">3</span>
+        <h3>Na distribuição estacionária</h3>
+        <p>Os dois drifts empurram a economia em direções diferentes. A alternância de regimes cria massa entre as regiões visitadas pelos dois braços.</p>
+        <span class="equation">0 = −∂<sub>k</sub>[k̇<sub>i</sub> μ<sub>i</sub>] + Σ<sub>j</sub>q<sub>ji</sub>μ<sub>j</sub></span>
+      </article>
+    </section>
+
+    <details>
+      <summary>Modelo e solução numérica usados no painel</summary>
+      <p>A HJB acoplada é ρV<sub>i</sub>(k) = max<sub>c</sub>{u(c) + V′<sub>i</sub>(k)[A<sub>i</sub>k<sup>α</sup> − δk − c]} + λ<sub>ij</sub>[V<sub>j</sub>(k) − V<sub>i</sub>(k)], com u′(c)=c<sup>−θ</sup>. As linhas sólidas são políticas estacionárias acopladas — “braços” apenas no sentido visual — e vêm de uma discretização monotônica <em>upwind</em> com iteração de política de Howard. As tracejadas são as variedades estáveis do problema determinístico sem hazard. As distribuições resolvem a equação de Kolmogorov progressiva do gerador da política. O resíduo numérico máximo da HJB fica abaixo de 2,0×10<sup>−11</sup>; o da distribuição, abaixo de 1,3×10<sup>−15</sup>. O notebook da aula continua sendo a fonte para o método de construção das variedades determinísticas; este HTML é uma ilustração de intuição.</p>
+    </details>
+
+    <footer>Material de apoio — Macro II, FGV EPGE. Simulação reproduzível: a mesma calibração e a mesma semente geram a mesma trajetória.</footer>
+  </main>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -6,6 +6,8 @@ visualizar o modelo de Ramsey quando a TFP segue uma cadeia de Markov de dois es
 - braços de política com e sem antecipação de futuras transições;
 - trajetória contínua de capital e salto do consumo entre políticas no instante da
   transição de TFP;
+- suporte ergódico compacto definido pelos zeros dos drifts ótimos, com comparação
+  aos estados estacionários das economias de TFP congelada;
 - distribuições estacionárias condicionais a cada regime e distribuição
   incondicional de capital e consumo, todas sincronizadas com a realização.
 

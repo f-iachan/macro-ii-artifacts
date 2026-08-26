@@ -20,6 +20,8 @@
     capitalHighFigure: document.getElementById("capital-high-figure"),
     consumptionLowFigure: document.getElementById("consumption-low-figure"),
     consumptionHighFigure: document.getElementById("consumption-high-figure"),
+    supportAxis: document.getElementById("support-axis"),
+    supportOrder: document.getElementById("support-order"),
     strip: document.getElementById("regime-strip"),
     play: document.getElementById("play"),
     restart: document.getElementById("restart"),
@@ -119,6 +121,24 @@
 
   function drift(preset, regime, capital) {
     return interpolate(DATA.grid, preset.drift[regime], capital);
+  }
+
+  function driftZero(values) {
+    for (var i = 1; i < values.length; i += 1) {
+      var left = values[i - 1];
+      var right = values[i];
+      if (left === 0) return DATA.grid[i - 1];
+      if (right === 0) return DATA.grid[i];
+      if (left * right < 0) {
+        var weight = -left / (right - left);
+        return DATA.grid[i - 1] + weight * (DATA.grid[i] - DATA.grid[i - 1]);
+      }
+    }
+    throw new Error("O drift não possui zero no domínio numérico.");
+  }
+
+  function supportBounds(preset) {
+    return [driftZero(preset.drift[0]), driftZero(preset.drift[1])];
   }
 
   function sampleStationaryStart(preset, rng) {
@@ -241,10 +261,37 @@
     var scales = scalesFor(svg, width, height, margins, [DATA.meta.kMin, DATA.meta.kMax], [0.42, yMax]);
     var preset = DATA.presets[state.preset];
     var point = state.path[state.index];
+    var bounds = supportBounds(preset);
     svg.setAttribute("viewBox", "0 0 " + width + " " + height);
     svg.innerHTML = "";
 
+    svg.appendChild(svgElement("rect", {
+      x: scales.x(bounds[0]), y: margins.top,
+      width: scales.x(bounds[1]) - scales.x(bounds[0]),
+      height: height - margins.top - margins.bottom,
+      fill: GREEN, opacity: 0.055
+    }));
     renderAxes(svg, width, height, margins, scales, [1, 3, 5, 7, 9], [0.5, 1, 1.5, 2], "capital, k", "consumo, c");
+    bounds.forEach(function (bound, index) {
+      svg.appendChild(svgElement("line", {
+        x1: scales.x(bound), x2: scales.x(bound),
+        y1: margins.top, y2: height - margins.bottom,
+        stroke: GREEN, "stroke-width": 1.4, "stroke-dasharray": "4 5", opacity: 0.72
+      }));
+      svg.appendChild(svgElement("text", {
+        x: scales.x(bound) + (index === 0 ? 6 : -6), y: margins.top + 14,
+        fill: GREEN, "font-size": 10, "font-weight": 700,
+        "text-anchor": index === 0 ? "start" : "end"
+      }, (index === 0 ? "k̲ = " : "k̄ = ") + format(bound, 2)));
+    });
+    svg.appendChild(svgElement("text", {
+      x: scales.x((bounds[0] + bounds[1]) / 2), y: scales.y(0.51),
+      fill: COLORS[0], "font-size": 11, "font-weight": 700, "text-anchor": "end"
+    }, "L: bL < 0  ←"));
+    svg.appendChild(svgElement("text", {
+      x: scales.x((bounds[0] + bounds[1]) / 2), y: scales.y(0.51),
+      fill: COLORS[1], "font-size": 11, "font-weight": 700, "text-anchor": "start", dx: 10
+    }, "→  bH > 0 :H"));
 
     if (state.showDeterministic) {
       for (var regime = 0; regime < 2; regime += 1) {
@@ -330,7 +377,7 @@
     return total > 0 ? 100 * below / total : 0;
   }
 
-  function renderDistribution(svg, xValues, mass, current, axisLabel, percentileElement, color, showMarker, sharedYMax) {
+  function renderDistribution(svg, xValues, mass, current, axisLabel, percentileElement, color, showMarker, sharedYMax, supportRange) {
     var width = Math.max(300, Math.round(svg.getBoundingClientRect().width || 420));
     var height = Math.round(svg.getBoundingClientRect().height || 145);
     var margins = { top: 10, right: 14, bottom: 32, left: 18 };
@@ -341,6 +388,21 @@
     svg.setAttribute("viewBox", "0 0 " + width + " " + height);
     svg.innerHTML = "";
 
+    if (supportRange) {
+      svg.appendChild(svgElement("rect", {
+        x: scales.x(supportRange[0]), y: margins.top,
+        width: scales.x(supportRange[1]) - scales.x(supportRange[0]),
+        height: height - margins.top - margins.bottom,
+        fill: GREEN, opacity: 0.055
+      }));
+      supportRange.forEach(function (bound) {
+        svg.appendChild(svgElement("line", {
+          x1: scales.x(bound), x2: scales.x(bound),
+          y1: margins.top, y2: height - margins.bottom,
+          stroke: GREEN, "stroke-width": 1, "stroke-dasharray": "3 4", opacity: 0.6
+        }));
+      });
+    }
     [0.25, 0.5, 0.75].forEach(function (share) {
       var y = margins.top + share * (height - margins.top - margins.bottom);
       svg.appendChild(svgElement("line", { x1: margins.left, x2: width - margins.right, y1: y, y2: y, stroke: css("--grid") }));
@@ -368,6 +430,76 @@
     } else {
       percentileElement.textContent = "condicional";
     }
+  }
+
+  function renderSupportAxis(preset, bounds) {
+    var svg = ui.supportAxis;
+    var width = Math.max(340, Math.round(svg.getBoundingClientRect().width || 980));
+    var height = Math.round(svg.getBoundingClientRect().height || 150);
+    var left = 46;
+    var right = 34;
+    var domain = [DATA.meta.kMin, DATA.meta.kMax];
+    var x = function (value) {
+      return left + (value - domain[0]) / (domain[1] - domain[0]) * (width - left - right);
+    };
+    var baseline = 76;
+    var steadyLow = DATA.steadyStates[0].k;
+    var steadyHigh = DATA.steadyStates[1].k;
+    svg.setAttribute("viewBox", "0 0 " + width + " " + height);
+    svg.innerHTML = "";
+
+    svg.appendChild(svgElement("line", {
+      x1: left, x2: width - right, y1: baseline, y2: baseline,
+      stroke: css("--border"), "stroke-width": 2
+    }));
+    svg.appendChild(svgElement("rect", {
+      x: x(bounds[0]), y: baseline - 13,
+      width: x(bounds[1]) - x(bounds[0]), height: 26,
+      fill: GREEN, opacity: 0.14, rx: 4
+    }));
+    svg.appendChild(svgElement("text", {
+      x: (x(bounds[0]) + x(bounds[1])) / 2, y: baseline - 22,
+      fill: GREEN, "font-size": 11, "font-weight": 700, "text-anchor": "middle"
+    }, "suporte ergódico compacto"));
+    svg.appendChild(svgElement("text", {
+      x: (x(bounds[0]) + x(steadyLow)) / 2, y: baseline + 4,
+      fill: COLORS[0], "font-size": 11, "font-weight": 700, "text-anchor": "middle"
+    }, "←  L: capital cai"));
+    svg.appendChild(svgElement("text", {
+      x: (x(steadyHigh) + x(bounds[1])) / 2, y: baseline + 4,
+      fill: COLORS[1], "font-size": 11, "font-weight": 700, "text-anchor": "middle"
+    }, "H: capital sobe  →"));
+
+    [
+      { value: bounds[0], symbol: "k̲", detail: "bL = 0", color: GREEN, top: true },
+      { value: steadyLow, symbol: "kL⁰", detail: "TFP baixa fixa", color: COLORS[0], top: false },
+      { value: steadyHigh, symbol: "kH⁰", detail: "TFP alta fixa", color: COLORS[1], top: false },
+      { value: bounds[1], symbol: "k̄", detail: "bH = 0", color: GREEN, top: true }
+    ].forEach(function (marker) {
+      var markerX = x(marker.value);
+      svg.appendChild(svgElement("line", {
+        x1: markerX, x2: markerX, y1: baseline - 18, y2: baseline + 18,
+        stroke: marker.color, "stroke-width": 2
+      }));
+      svg.appendChild(svgElement("circle", {
+        cx: markerX, cy: baseline, r: 4.5,
+        fill: css("--surface"), stroke: marker.color, "stroke-width": 2
+      }));
+      var labelY = marker.top ? 28 : 111;
+      svg.appendChild(svgElement("text", {
+        x: markerX, y: labelY, fill: marker.color,
+        "font-size": 12, "font-weight": 700, "text-anchor": "middle"
+      }, marker.symbol + " = " + format(marker.value, 2)));
+      svg.appendChild(svgElement("text", {
+        x: markerX, y: labelY + 15, fill: css("--muted"),
+        "font-size": 10, "text-anchor": "middle"
+      }, marker.detail));
+    });
+
+    ui.supportOrder.innerHTML = "k̲ " + format(bounds[0], 2)
+      + " &lt; k<sup>0</sup><sub>L</sub> " + format(steadyLow, 2)
+      + " &lt; k<sup>0</sup><sub>H</sub> " + format(steadyHigh, 2)
+      + " &lt; k̄ " + format(bounds[1], 2);
   }
 
   function renderStrip() {
@@ -404,6 +536,8 @@
   function updateReadout() {
     var point = state.path[state.index];
     var preset = DATA.presets[state.preset];
+    var bounds = supportBounds(preset);
+    renderSupportAxis(preset, bounds);
     var regimeName = point.regime === 0 ? "TFP baixa" : "TFP alta";
     var stateColor = COLORS[point.regime];
     document.documentElement.style.setProperty("--state-color", stateColor);
@@ -434,6 +568,7 @@
     renderPhase();
     var point = state.path[state.index];
     var preset = DATA.presets[state.preset];
+    var bounds = supportBounds(preset);
     var capital = preset.capitalDistribution;
     var consumption = preset.consumptionDistribution;
     var capitalBinWidth = capital.x[1] - capital.x[0];
@@ -446,9 +581,9 @@
     var consumptionTotal = consumption.mass[0].map(function (value, i) { return (value + consumption.mass[1][i]) / consumptionBinWidth; });
     var capitalYMax = 1.12 * Math.max.apply(null, capitalConditional[0].concat(capitalConditional[1], capitalTotal));
     var consumptionYMax = 1.12 * Math.max.apply(null, consumptionConditional[0].concat(consumptionConditional[1], consumptionTotal));
-    renderDistribution(ui.capitalLowDistribution, capital.x, capitalConditional[0], point.k, "k", ui.capitalLowPercentile, COLORS[0], point.regime === 0, capitalYMax);
-    renderDistribution(ui.capitalHighDistribution, capital.x, capitalConditional[1], point.k, "k", ui.capitalHighPercentile, COLORS[1], point.regime === 1, capitalYMax);
-    renderDistribution(ui.capitalTotalDistribution, capital.x, capitalTotal, point.k, "k", ui.capitalTotalPercentile, GREEN, true, capitalYMax);
+    renderDistribution(ui.capitalLowDistribution, capital.x, capitalConditional[0], point.k, "k", ui.capitalLowPercentile, COLORS[0], point.regime === 0, capitalYMax, bounds);
+    renderDistribution(ui.capitalHighDistribution, capital.x, capitalConditional[1], point.k, "k", ui.capitalHighPercentile, COLORS[1], point.regime === 1, capitalYMax, bounds);
+    renderDistribution(ui.capitalTotalDistribution, capital.x, capitalTotal, point.k, "k", ui.capitalTotalPercentile, GREEN, true, capitalYMax, bounds);
     renderDistribution(ui.consumptionLowDistribution, consumption.x, consumptionConditional[0], point.c, "c", ui.consumptionLowPercentile, COLORS[0], point.regime === 0, consumptionYMax);
     renderDistribution(ui.consumptionHighDistribution, consumption.x, consumptionConditional[1], point.c, "c", ui.consumptionHighPercentile, COLORS[1], point.regime === 1, consumptionYMax);
     renderDistribution(ui.consumptionTotalDistribution, consumption.x, consumptionTotal, point.c, "c", ui.consumptionTotalPercentile, GREEN, true, consumptionYMax);

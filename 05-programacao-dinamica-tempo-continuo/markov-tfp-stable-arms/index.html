@@ -342,7 +342,26 @@
       color: var(--green);
     }
 
-    .distribution-card { margin-top: 16px; padding: 18px 20px 16px; }
+    .support-card, .distribution-card { margin-top: 16px; padding: 18px 20px 16px; }
+    .support-heading {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .support-heading h2 { margin: 0; font-size: 1.05rem; letter-spacing: -0.015em; }
+    .support-heading p { margin: 4px 0 0; color: var(--muted); font-size: 0.82rem; line-height: 1.45; }
+    .support-order {
+      flex: 0 0 auto;
+      padding: 7px 10px;
+      border-radius: 9px;
+      background: var(--surface-2);
+      color: var(--muted);
+      font-family: "STIX Two Text", Cambria, Georgia, serif;
+      font-size: 0.76rem;
+      font-variant-numeric: tabular-nums;
+    }
+    #support-axis { display: block; width: 100%; height: 150px; margin-top: 8px; }
     .distribution-heading {
       display: flex;
       align-items: start;
@@ -477,10 +496,10 @@
     @media (max-width: 720px) {
       main { width: min(100% - 20px, 1440px); padding-top: 15px; }
       h1 { line-height: 1.02; }
-      .phase-card, .control-card, .distribution-card { padding: 15px; }
+      .phase-card, .control-card, .support-card, .distribution-card { padding: 15px; }
       #phase-chart { height: 420px; }
-      .panel-heading, .distribution-heading { display: block; }
-      .now-chip, .distribution-note { display: inline-flex; margin-top: 8px; }
+      .panel-heading, .support-heading, .distribution-heading { display: block; }
+      .now-chip, .support-order, .distribution-note { display: inline-flex; margin-top: 8px; }
       .transport { grid-template-columns: auto auto minmax(110px, 1fr) auto; }
       #next-jump { grid-column: 1 / -1; grid-row: 2; }
       #regime-strip { grid-column: 3; }
@@ -584,11 +603,44 @@
       </aside>
     </div>
 
+    <section class="panel support-card" aria-labelledby="support-title">
+      <div class="support-heading">
+        <div>
+          <h2 id="support-title">O que prende o capital no longo prazo?</h2>
+          <p>Os extremos vêm dos zeros dos drifts ótimos na economia com transições — não dos estados estacionários que congelam a TFP para sempre.</p>
+        </div>
+        <div class="support-order" id="support-order">k̲ &lt; k<sup>0</sup><sub>L</sub> &lt; k<sup>0</sup><sub>H</sub> &lt; k̄</div>
+      </div>
+      <svg id="support-axis" role="img" aria-label="Ordenação dos limites do suporte ergódico e dos estados estacionários determinísticos"></svg>
+
+      <div class="reading-grid" aria-label="Como interpretar o suporte ergódico">
+        <article class="reading-card">
+          <span class="reading-number">1</span>
+          <h3>Drifts apontam para dentro</h3>
+          <p>No interior, a TFP baixa empurra k para a esquerda e a alta para a direita. Um salto Markov não antecipado troca a velocidade e a política de consumo, mas não o nível de capital; isso difere do switch determinístico já antecipado.</p>
+          <span class="equation">b<sub>L</sub>(k)&lt;0&lt;b<sub>H</sub>(k), &nbsp; k∈(k̲,k̄)</span>
+        </article>
+        <article class="reading-card">
+          <span class="reading-number">2</span>
+          <h3>Estacionário não significa imóvel</h3>
+          <p>Somando as duas KFEs e impondo fluxo nulo nos extremos, a subida em H compensa exatamente a descida em L na população estacionária.</p>
+          <span class="equation">b<sub>L</sub>(k)g<sub>L</sub>(k)+b<sub>H</sub>(k)g<sub>H</sub>(k)=0</span>
+        </article>
+        <article class="reading-card">
+          <span class="reading-number">3</span>
+          <h3>O benchmark reaparece no limite</h3>
+          <p>Aqui c<sub>H</sub>(k)&gt;c<sub>L</sub>(k): L antecipa melhora e deixa k cair mais; H antecipa piora e poupa mais. Quando os hazards desaparecem, os limites voltam aos benchmarks.</p>
+          <span class="equation">z<sub>i</sub>f′(k)−δ = ρ+λ<sub>i</sub>(1−V′<sub>j</sub>/V′<sub>i</sub>)</span>
+          <span class="equation">λ<sub>L</sub>,λ<sub>H</sub>→0 ⇒ (k̲,k̄)→(k<sup>0</sup><sub>L</sub>,k<sup>0</sup><sub>H</sub>)</span>
+        </article>
+      </div>
+    </section>
+
     <section class="panel distribution-card" aria-labelledby="distribution-title">
       <div class="distribution-heading">
         <div>
           <h2 id="distribution-title">Onde a economia passa tempo no longo prazo?</h2>
-          <p class="intro">Distribuição estacionária conjunta induzida pelos braços, pelo movimento de capital e pelos saltos de TFP. A régua vertical acompanha o ponto corrente da simulação.</p>
+          <p class="intro">Distribuição estacionária conjunta induzida pelas políticas, pelo movimento contínuo de capital e pelos saltos de TFP. A régua vertical acompanha o ponto corrente da simulação.</p>
         </div>
         <div class="distribution-note" id="distribution-note">60% em TFP baixa · 40% em TFP alta</div>
       </div>
@@ -641,27 +693,6 @@
         <span><i class="square-key" style="display:inline-block;background:var(--green)"></i> distribuição incondicional</span>
         <span><i class="line-key" style="display:inline-block;color:var(--ink);height:2px"></i> posição simulada</span>
       </div>
-    </section>
-
-    <section class="reading-grid" aria-label="Como ler o mecanismo">
-      <article class="reading-card">
-        <span class="reading-number">1</span>
-        <h3>Entre transições</h3>
-        <p>O regime é fixo por um intervalo aleatório. A política já incorpora a chance de sair dele, e o capital deriva ao longo do braço ativo.</p>
-        <span class="equation">k̇ = A<sub>s</sub>k<sup>α</sup> − δk − P<sub>s</sub>(k)</span>
-      </article>
-      <article class="reading-card">
-        <span class="reading-number">2</span>
-        <h3>No salto Markov não antecipado</h3>
-        <p>A TFP muda sem anúncio, mas não há destruição física de capital. Por isso k é contínuo; o controle c troca imediatamente de política. Num switch determinístico já antecipado, como no bloco seguinte da aula, c é contínuo na data de implementação.</p>
-        <span class="equation">k(T<sup>+</sup>) = k(T<sup>−</sup>), &nbsp; c(T<sup>+</sup>) = P<sub>j</sub>(k(T))</span>
-      </article>
-      <article class="reading-card">
-        <span class="reading-number">3</span>
-        <h3>Na distribuição estacionária</h3>
-        <p>Os dois drifts empurram a economia em direções diferentes. A alternância de regimes cria massa entre as regiões visitadas pelos dois braços.</p>
-        <span class="equation">0 = −∂<sub>k</sub>[k̇<sub>i</sub> μ<sub>i</sub>] + Σ<sub>j</sub>q<sub>ji</sub>μ<sub>j</sub></span>
-      </article>
     </section>
 
     <details>

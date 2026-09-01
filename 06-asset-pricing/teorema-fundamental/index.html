@@ -69,16 +69,6 @@
       flex-wrap: wrap;
       gap: 0.12em;
     }
-    .hat { position: relative; display: inline-block; }
-    .hat::before {
-      content: "^";
-      position: absolute;
-      top: -0.66em;
-      left: 55%;
-      transform: translateX(-50%);
-      font-size: 0.7em;
-      font-style: normal;
-    }
     .mfrac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 0.15em; }
     .mfrac .num { padding: 0 0.25em; line-height: 1.15; }
     .mfrac .den { border-top: 1.5px solid var(--ink); padding: 0 0.25em; line-height: 1.15; }
@@ -378,7 +368,7 @@
           <div class="drag-hint">arraste para girar</div>
         </div>
         <div style="font-size:0.76em">
-          <p>Separação (Farkas): existe <span class="mi">z</span> = (<span class="mi">z</span><sub>0</sub>, <span class="mi">z</span><sub>1</sub>, <span class="mi">z</span><sub>2</sub>)&prime; &#8811; 0
+          <p>Separação estrita (de <span class="mr">&#119991;</span> e a simplex): existe <span class="mi">z</span> = (<span class="mi">z</span><sub>0</sub>, <span class="mi">z</span><sub>1</sub>, <span class="mi">z</span><sub>2</sub>)&prime; &#8811; 0
             ortogonal a <span class="mr">&#119991;</span>.</p>
           <p class="fragment">Aqui: <span class="mb">z</span> = (1,&nbsp;1/2,&nbsp;1/2)&prime; —
             a seta <span style="color:var(--green);font-weight:700">verde</span>, perpendicular ao plano.
@@ -399,30 +389,7 @@
       </div>
     </section>
 
-    <!-- ============ 8. Medida neutra ao risco ============ -->
-    <section>
-      <h2>Medida neutra ao risco</h2>
-      <p style="font-size:0.85em">Os preços de estado somam o preço do payoff constante 1:</p>
-      <div class="disp">
-        <span class="mi">P</span><sub>0</sub><sup><span class="mi">f</span></sup> = &Sigma;<sub><span class="mi">s</span></sub>&thinsp;<span class="mi">q</span><sub><span class="mi">s</span></sub>,
-        &nbsp;&nbsp;&nbsp;<span class="mi">R</span><sup><span class="mi">f</span></sup> =
-        <span class="mfrac"><span class="num">1</span><span class="den"><span class="mi">P</span><sub>0</sub><sup><span class="mi">f</span></sup></span></span>
-      </div>
-      <p class="fragment" style="font-size:0.85em">Normalizando <span class="mi">q</span> para o simplexo — pesos positivos que somam 1 — nasce uma <em>probabilidade artificial</em>:</p>
-      <div class="disp fragment">
-        <span class="hat mi">&pi;</span><sub><span class="mi">s</span></sub> =
-        <span class="mfrac"><span class="num"><span class="mi">q</span><sub><span class="mi">s</span></sub></span><span class="den">&Sigma;<sub><span class="mi">s</span>&prime;</sub>&thinsp;<span class="mi">q</span><sub><span class="mi">s</span>&prime;</sub></span></span>
-        &nbsp;&nbsp;&rArr;&nbsp;&nbsp;
-        <span class="mi">P</span><sub>0</sub><sup><span class="mi">j</span></sup> =
-        <span class="mfrac"><span class="num"><span class="hat mr">&#120124;</span>[<span class="mi">x</span><sup><span class="mi">j</span></sup>]</span><span class="den"><span class="mi">R</span><sup><span class="mi">f</span></sup></span></span>
-      </div>
-      <div class="fragment lesson">Sob <span class="hat mi">&pi;</span>, todo ativo rende o juro livre de risco em média:
-        preço = valor esperado descontado. No exemplo da cena anterior,
-        <span class="mi">q</span> = (0,5;&nbsp;0,5)&prime; &rArr; <span class="hat mi">&pi;</span> = (0,5;&nbsp;0,5)&prime; e
-        <span class="mi">R</span><sup><span class="mi">f</span></sup> = 1.</div>
-    </section>
-
-    <!-- ============ 9. Playground ============ -->
+    <!-- ============ 8. Playground ============ -->
     <section>
       <h2>Playground: procure a arbitragem</h2>
       <p style="font-size:0.7em;margin-bottom:0.3em">Dois ativos do exemplo dos slides — árvore
@@ -454,7 +421,7 @@
       </div>
     </section>
 
-    <!-- ============ 10. Desenhe você mesmo ============ -->
+    <!-- ============ 9. Desenhe você mesmo ============ -->
     <section>
       <h2>Desenhe você mesmo</h2>
       <p style="font-size:0.75em">O essencial da cena 3D em ~10 linhas de Python:</p>

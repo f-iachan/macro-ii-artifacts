@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Cota de Hansen–Jagannathan — Macro II</title>
+<style>
+  :root{
+    --ivory:#FFFFF0;
+    --blue:#0072B2;
+    --orange:#D55E00;
+    --green:#009E73;
+    --yellow:#F0E442;
+    --ink:#1a1a1a;
+    --panel:#ffffff;
+    --border:#d8d3c0;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--ivory);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:17px;
+    line-height:1.45;
+    padding:20px 28px 60px;
+  }
+  .wrap{max-width:1080px;margin:0 auto;}
+  h1{font-size:1.6em;margin:0 0 4px;color:var(--blue);font-weight:700;}
+  .subtitle{color:#555;margin:0 0 20px;font-size:1em;max-width:900px;}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:18px;}
+  .row{display:flex;flex-wrap:wrap;gap:18px;align-items:stretch;}
+  .col{flex:1 1 320px;min-width:0;}
+  .colChart{flex:1.5 1 420px;min-width:0;}
+  label{display:block;font-weight:600;margin:12px 0 3px;font-size:.96em;}
+  label:first-of-type{margin-top:2px;}
+  input[type=range]{width:100%;accent-color:var(--blue);height:22px;}
+  .val{color:var(--blue);font-weight:700;font-variant-numeric:tabular-nums;}
+  .valOrange{color:var(--orange);}
+  .refnote{font-size:.85em;color:#777;margin:2px 0 0;}
+  .note{font-size:.92em;color:#555;margin-top:10px;}
+  svg text{font-family:inherit;}
+  svg{width:100%;height:auto;display:block;}
+  .lesson{border-left:4px solid var(--blue);padding:10px 16px;background:#f4f9fd;border-radius:0 8px 8px 0;margin-top:6px;font-size:.97em;}
+  .lesson b{color:var(--blue);}
+  .lesson .bad{color:var(--orange);font-weight:700;}
+  .lesson .good{color:var(--green);font-weight:700;}
+  .staticnote{border-left:4px solid var(--border);padding:8px 14px;background:#fafaf5;border-radius:0 8px 8px 0;margin-top:14px;font-size:.9em;color:#555;}
+  .staticnote b{color:var(--ink);}
+  .stats{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:6px;}
+  .stat{flex:1 1 200px;background:#fafaf5;border:1px solid var(--border);border-radius:8px;padding:10px 14px;min-width:0;}
+  .stat .num{font-size:1.35em;font-weight:700;font-variant-numeric:tabular-nums;}
+  .stat .lab{font-size:.82em;color:#666;margin-top:2px;}
+  .stat.orange .num{color:var(--orange);}
+  .stat.green .num{color:var(--green);}
+  .stat.blue .num{color:var(--blue);}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;font-size:.85em;color:#555;margin-top:8px;}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .swatch{width:14px;height:3px;border-radius:2px;display:inline-block;}
+  .swatchDash{background-image:repeating-linear-gradient(to right, currentColor 0 6px, transparent 6px 10px);height:3px;}
+  .dot{width:10px;height:10px;border-radius:50%;display:inline-block;}
+  @media (max-width:640px){
+    body{padding:14px 12px 40px;font-size:16px;}
+    .card{padding:14px 12px;}
+    .stat{flex:1 1 100%;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Cota de Hansen–Jagannathan</h1>
+  <p class="subtitle">Companheiro dos slides de Asset Pricing (AP.tex). Para qualquer excesso de retorno de
+  preço zero, Cauchy–Schwarz aplicado à Euler equation dá
+  |E[R<sup>e</sup>]|/σ(R<sup>e</sup>) ≤ σ(m)/E[m] — e o supremo à esquerda, sobre todos os portfólios
+  admissíveis, é o índice de Sharpe máximo da economia. Sob o CCAPM lognormal, com
+  g<sub>t+1</sub>=log(c<sub>t+1</sub>/c<sub>t</sub>) normal e m<sub>t+1</sub>=βe<sup>−γg<sub>t+1</sub></sup>,
+  σ(m)/E[m] = √(e<sup>γ²σ<sub>g</sub>²</sup>−1). O gráfico mostra essa curva contra a cota.</p>
+
+  <div class="row">
+    <div class="col card">
+      <label for="sharpe">Índice de Sharpe alvo = <span class="val" id="vsharpe"></span></label>
+      <input type="range" id="sharpe" min="0.10" max="0.60" step="0.005" value="0.375">
+      <p class="refnote">Referência do slide: excesso de 6% a.a. sobre σ = 16% a.a. → 6%/16% ≈ 0,375.</p>
+
+      <label for="sigmag">Volatilidade do crescimento do consumo σ<sub>g</sub> = <span class="val" id="vsigmag"></span> a.a.</label>
+      <input type="range" id="sigmag" min="1.0" max="6.0" step="0.1" value="3.6">
+      <p class="refnote">Consumo agregado é suave: σ<sub>g</sub> histórica (Mehra–Prescott/Kocherlakota) ≈ 3,6% a.a.</p>
+
+      <label for="gammam">γ "razoável" (marcador) = <span class="valOrange val" id="vgammam" style="color:var(--green);"></span></label>
+      <input type="range" id="gammam" min="0" max="50" step="0.1" value="2">
+      <p class="refnote">Arraste para comparar com aversões ao risco tipicamente consideradas plausíveis (γ entre 1 e 5).</p>
+    </div>
+
+    <div class="colChart card">
+      <svg id="chart" viewBox="0 0 640 400"></svg>
+      <div class="legend">
+        <span><span class="swatch" style="background:var(--blue)"></span> σ(m)/E[m] (CCAPM lognormal)</span>
+        <span><span class="swatch swatchDash" style="color:var(--orange)"></span> cota alvo (Sharpe)</span>
+        <span><span class="dot" style="background:var(--orange)"></span> γ mínimo que satisfaz a cota</span>
+        <span><span class="dot" style="background:var(--green)"></span> seu γ marcado</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="stats">
+      <div class="stat blue">
+        <div class="num" id="statRatio"></div>
+        <div class="lab">σ(m)/E[m] no γ marcado</div>
+      </div>
+      <div class="stat orange">
+        <div class="num" id="statGammaStar"></div>
+        <div class="lab">γ mínimo para satisfazer a cota</div>
+      </div>
+      <div class="stat green">
+        <div class="num" id="statFactor"></div>
+        <div class="lab" id="statFactorLab">quanto falta em volatilidade do SDF</div>
+      </div>
+    </div>
+
+    <div class="lesson" id="lesson"></div>
+
+    <div class="staticnote">
+      <b>Necessária, não suficiente.</b> Satisfazer a cota é condição necessária para ausência de arbitragem —
+      ela não verifica se a <i>covariância</i> do SDF com cada retorno está correta, só sua volatilidade mínima.
+      Para referência: a estimação por GMM do slide (γ̂ ≈ 17,95) e a conta ilustrativa de Kocherlakota
+      (γ ≈ 27,4) folgam bastante essa cota com σ<sub>g</sub> = 3,6% — o desafio empírico do equity premium
+      puzzle está em acertar a covariância certa, não apenas em ter volatilidade suficiente no SDF.
+      Hansen e Jagannathan (1991).
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const fmt = (x,n=3) => x.toLocaleString('pt-BR',{minimumFractionDigits:n,maximumFractionDigits:n});
+
+function ratio(gamma, sigmaG){
+  const x = gamma*gamma*sigmaG*sigmaG;
+  return Math.sqrt(Math.expm1(x));
+}
+function gammaStarFn(S, sigmaG){
+  return Math.sqrt(Math.log1p(S*S)) / sigmaG;
+}
+
+function update(){
+  const S      = parseFloat($('sharpe').value);
+  const sgPct  = parseFloat($('sigmag').value);
+  const sg     = sgPct/100;
+  const gm     = parseFloat($('gammam').value);
+
+  $('vsharpe').textContent = fmt(S,3);
+  $('vsigmag').textContent = fmt(sgPct,1)+'%';
+  $('vgammam').textContent = fmt(gm,1);
+
+  const gStar = gammaStarFn(S, sg);
+  const rAtGm = ratio(gm, sg);
+
+  // adaptive plot domain: always keep intersection and marker comfortably visible
+  const xMax = Math.max(50, gStar*1.2, gm*1.15, 5);
+  const yMax = Math.max(S*1.3, ratio(Math.min(xMax, gStar*1.6), sg)*1.05, Math.min(ratio(gm,sg),ratio(xMax,sg))*1.15, 0.08);
+
+  // ---- readouts ----
+  $('statRatio').textContent = fmt(rAtGm,4);
+  $('statGammaStar').textContent = fmt(gStar,2);
+  let factor, factorLab;
+  if (rAtGm < S){
+    factor = S/rAtGm;
+    factorLab = 'σ(m)/E[m] precisa ser × maior p/ satisfazer a cota';
+  } else {
+    factor = rAtGm/S;
+    factorLab = 'cota satisfeita — folga em × sobre o mínimo exigido';
+  }
+  $('statFactor').textContent = fmt(factor,1)+'×';
+  $('statFactorLab').textContent = factorLab;
+
+  // ---- lesson ----
+  let lesson;
+  if (rAtGm < S){
+    lesson = 'Com γ = '+fmt(gm,1)+' e σ<sub>g</sub> = '+fmt(sgPct,1)+'% a.a., σ(m)/E[m] ≈ '+fmt(rAtGm,4)+
+      ' &mdash; <span class="bad">bem abaixo</span> da cota de '+fmt(S,3)+'. O SDF do CCAPM '+
+      '<b>não é volátil o suficiente</b>: para satisfazer Hansen&ndash;Jagannathan mantendo esse σ<sub>g</sub>, '+
+      'seria preciso γ ≥ <b>'+fmt(gStar,2)+'</b>, bem acima do que a maioria considera plausível (γ entre 1 e 5). '+
+      'É o <b>equity premium puzzle</b> visto pela volatilidade do SDF, em vez do prêmio médio de retornos.';
+  } else {
+    lesson = 'Com γ = '+fmt(gm,1)+' e σ<sub>g</sub> = '+fmt(sgPct,1)+'% a.a., σ(m)/E[m] ≈ '+fmt(rAtGm,4)+
+      ' &mdash; <span class="good">satisfaz</span> a cota de '+fmt(S,3)+' (mínimo γ ≈ '+fmt(gStar,2)+'). '+
+      'Mas satisfazer a cota é apenas a condição <b>necessária</b>: nada garante ainda que a '+
+      '<i>covariância</i> do SDF com os retornos esteja correta &mdash; e um γ tão alto reabre o '+
+      '<b>risk-free rate puzzle</b> do outro lado.';
+  }
+  $('lesson').innerHTML = lesson;
+
+  // ---- chart ----
+  drawChart(S, sg, gm, gStar, rAtGm, xMax, yMax);
+}
+
+function drawChart(S, sg, gm, gStar, rAtGm, xMax, yMax){
+  const plotLeft=64, plotRight=616, plotTop=18, plotBottom=336;
+  const sx = g => plotLeft + (g/xMax)*(plotRight-plotLeft);
+  const sy = v => plotBottom - (Math.min(v,yMax)/yMax)*(plotBottom-plotTop);
+
+  // curve path
+  const N = 140;
+  let d = '';
+  for (let i=0;i<=N;i++){
+    const g = xMax*i/N;
+    const v = ratio(g, sg);
+    const x = sx(g), y = sy(v);
+    d += (i===0 ? 'M' : 'L') + x.toFixed(2) + ',' + y.toFixed(2) + ' ';
+  }
+
+  // axis ticks
+  const nX = 6, nY = 5;
+  let xTicks = '', xGrid = '';
+  for (let i=0;i<=nX;i++){
+    const g = xMax*i/nX;
+    const x = sx(g);
+    xTicks += `<text x="${x.toFixed(1)}" y="${plotBottom+20}" font-size="12" fill="#666" text-anchor="middle">${g.toLocaleString('pt-BR',{maximumFractionDigits:0})}</text>`;
+    xGrid += `<line x1="${x.toFixed(1)}" y1="${plotTop}" x2="${x.toFixed(1)}" y2="${plotBottom}" stroke="#eee" stroke-width="1"/>`;
+  }
+  let yTicks = '', yGrid = '';
+  for (let i=0;i<=nY;i++){
+    const v = yMax*i/nY;
+    const y = sy(v);
+    yTicks += `<text x="${plotLeft-10}" y="${(y+4).toFixed(1)}" font-size="12" fill="#666" text-anchor="end">${v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}</text>`;
+    yGrid += `<line x1="${plotLeft}" y1="${y.toFixed(1)}" x2="${plotRight}" y2="${y.toFixed(1)}" stroke="#eee" stroke-width="1"/>`;
+  }
+
+  // excluded region: band below the target Sharpe line
+  const ySline = sy(S);
+  const excludedRect = `<rect x="${plotLeft}" y="${ySline.toFixed(1)}" width="${plotRight-plotLeft}" height="${(plotBottom-ySline).toFixed(1)}" fill="var(--orange)" fill-opacity="0.10"/>`;
+
+  // intersection marker
+  const gStarClamped = Math.min(gStar, xMax);
+  const ix = sx(gStarClamped), iy = sy(Math.min(S,yMax));
+
+  // reasonable-gamma marker
+  const mxv = Math.min(rAtGm, yMax);
+  const mx = sx(gm), my = sy(mxv);
+  const offScale = rAtGm > yMax;
+
+  const svg = $('chart');
+  svg.innerHTML = `
+    <rect x="0" y="0" width="640" height="400" fill="none"/>
+    ${xGrid}${yGrid}
+    ${excludedRect}
+    <text x="${plotRight-6}" y="${(plotBottom-8).toFixed(1)}" font-size="12" fill="var(--orange)" text-anchor="end" opacity="0.85">cota violada (γ pequeno)</text>
+    <line x1="${plotLeft}" y1="${ySline.toFixed(1)}" x2="${plotRight}" y2="${ySline.toFixed(1)}" stroke="var(--orange)" stroke-width="2" stroke-dasharray="6 5"/>
+    <text x="${plotLeft+6}" y="${(ySline-6).toFixed(1)}" font-size="12" fill="var(--orange)" font-weight="700">cota alvo = ${S.toLocaleString('pt-BR',{minimumFractionDigits:3,maximumFractionDigits:3})}</text>
+    <path d="${d}" fill="none" stroke="var(--blue)" stroke-width="2.6"/>
+    <line x1="${ix.toFixed(1)}" y1="${iy.toFixed(1)}" x2="${ix.toFixed(1)}" y2="${plotBottom}" stroke="var(--orange)" stroke-width="1.4" stroke-dasharray="3 3"/>
+    <circle cx="${ix.toFixed(1)}" cy="${iy.toFixed(1)}" r="6" fill="var(--orange)" stroke="#fff" stroke-width="1.5"/>
+    <text x="${ix.toFixed(1)}" y="${plotBottom+34}" font-size="12" fill="var(--orange)" font-weight="700" text-anchor="middle">γ*=${gStar.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}</text>
+    <line x1="${mx.toFixed(1)}" y1="${my.toFixed(1)}" x2="${mx.toFixed(1)}" y2="${plotBottom}" stroke="var(--green)" stroke-width="1.4" stroke-dasharray="3 3"/>
+    <circle cx="${mx.toFixed(1)}" cy="${my.toFixed(1)}" r="6" fill="var(--green)" stroke="#fff" stroke-width="1.5"/>
+    ${offScale ? `<text x="${mx.toFixed(1)}" y="${(my-10).toFixed(1)}" font-size="12" fill="var(--green)" font-weight="700" text-anchor="middle">▲ fora da escala</text>` : ''}
+    <line x1="${plotLeft}" y1="${plotTop}" x2="${plotLeft}" y2="${plotBottom}" stroke="#999" stroke-width="1.5"/>
+    <line x1="${plotLeft}" y1="${plotBottom}" x2="${plotRight}" y2="${plotBottom}" stroke="#999" stroke-width="1.5"/>
+    ${xTicks}${yTicks}
+    <text x="${(plotLeft+plotRight)/2}" y="392" font-size="13" fill="#444" text-anchor="middle">γ (aversão ao risco relativa)</text>
+    <text x="16" y="${(plotTop+plotBottom)/2}" font-size="13" fill="#444" text-anchor="middle" transform="rotate(-90 16 ${(plotTop+plotBottom)/2})">σ(m)/E[m]</text>
+  `;
+}
+
+['sharpe','sigmag','gammam'].forEach(id=>$(id).addEventListener('input', update));
+update();
+</script>
+</body>
+</html>

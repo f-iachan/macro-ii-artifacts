@@ -27,6 +27,9 @@
     <div class="topbar-inner">
       <a class="brand" href="#top">MACRO II · RBC · HANDOUT DIGITAL</a>
       <div class="resource-links">
+        <a href="../../../../handouts/rbc-cpos-loglinearizacao.pdf">PDF</a>
+        <a href="slides.html">Roteiro Reveal</a>
+        <a href="../../julia_rbc_coeficientes_indeterminados.ipynb">Notebook Julia</a>
         <a href="../rbc-irf-explorer/index.html">Laboratório de IRFs</a>
         <button id="print-button" class="print-button" type="button">Imprimir</button>
       </div>
@@ -617,7 +620,68 @@
         <h2>Log-linearização da condição intratemporal</h2>
         <p>Partimos da CPO do trabalho (3.2):</p>
         <div class="equation">
-     …507 tokens truncated…ma=1\).
+          \[
+            \chi C_t^\sigma N_t^\zeta
+            =
+            (1-\alpha)z_tK_t^\alpha N_t^{-\alpha}.
+          \]
+        </div>
+
+        <div class="derivation">
+          <div class="derivation-step">
+            <span class="step-label">1. Tomar logaritmos</span>
+            \[
+              \log\chi+\sigma\log C_t+\zeta\log N_t
+              =
+              \log(1-\alpha)+\log z_t+
+              \alpha\log K_t-\alpha\log N_t.
+            \]
+          </div>
+          <div class="derivation-step">
+            <span class="step-label">2. Escrever a mesma igualdade no estado estacionário</span>
+            \[
+              \log\chi+\sigma\log\bar C+\zeta\log\bar N
+              =
+              \log(1-\alpha)+\log\bar z+
+              \alpha\log\bar K-\alpha\log\bar N.
+            \]
+          </div>
+          <div class="derivation-step">
+            <span class="step-label">3. Subtrair o estado estacionário</span>
+            \[
+              \sigma\widehat C_t+\zeta\widehat N_t
+              =
+              \widehat z_t+\alpha\widehat K_t-\alpha\widehat N_t.
+            \]
+          </div>
+          <div class="derivation-step">
+            <span class="step-label">4. Reunir os termos em trabalho</span>
+            \[
+              (\zeta+\alpha)\widehat N_t+
+              \sigma\widehat C_t
+              =
+              \widehat z_t+\alpha\widehat K_t.
+            \]
+          </div>
+        </div>
+
+        <div id="eq-intra-linear" class="equation key">
+          <span class="eq-label">(5.1)</span>
+          \[
+            \boxed{
+              (\zeta+\alpha)\widehat N_t+
+              \sigma\widehat C_t
+              =
+              \widehat z_t+\alpha\widehat K_t
+            }.
+          \]
+        </div>
+        <div class="checkpoint">
+          <p>
+            <strong>Cheque do fator \(\sigma\).</strong> Ele multiplica
+            \(\widehat C_t\) porque a utilidade marginal é
+            \(C_t^{-\sigma}\). O coeficiente só é um no caso logarítmico
+            \(\sigma=1\).
           </p>
         </div>
 
@@ -1231,9 +1295,17 @@
           impulso-resposta pertencem aos artefatos computacionais.
         </p>
         <div class="next">
+          <a href="../../julia_rbc_coeficientes_indeterminados.ipynb">
+            <strong>Notebook Julia</strong>
+            <span>Derivação simbólica, Newton e coeficientes.</span>
+          </a>
           <a href="../rbc-irf-explorer/index.html">
             <strong>Laboratório de IRFs</strong>
             <span>Comparação dinâmica de parâmetros.</span>
+          </a>
+          <a href="slides.html">
+            <strong>Roteiro Reveal</strong>
+            <span>Sequência curta para o quadro.</span>
           </a>
         </div>
       </section>

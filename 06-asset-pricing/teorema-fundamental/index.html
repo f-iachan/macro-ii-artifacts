@@ -9,6 +9,49 @@
   <link rel="stylesheet" href="reveal/reveal.css">
   <link rel="stylesheet" href="reveal/theme/white.css">
   <style>
+    @font-face {
+      font-family: "Lato";
+      src: url("fonts/lato-regular.woff2") format("woff2");
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "Lato";
+      src: url("fonts/lato-bold.woff2") format("woff2");
+      font-style: normal;
+      font-weight: 700;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CMU Sans Serif";
+      src: url("fonts/cmu-sans-regular.woff2") format("woff2");
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CMU Sans Serif";
+      src: url("fonts/cmu-sans-oblique.woff2") format("woff2");
+      font-style: italic;
+      font-weight: 400;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CMU Sans Serif";
+      src: url("fonts/cmu-sans-bold.woff2") format("woff2");
+      font-style: normal;
+      font-weight: 700;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "CMU Sans Serif";
+      src: url("fonts/cmu-sans-bold-oblique.woff2") format("woff2");
+      font-style: italic;
+      font-weight: 700;
+      font-display: swap;
+    }
+
     :root {
       --blue: #0072b2;
       --orange: #d55e00;
@@ -40,7 +83,7 @@
       text-transform: none;
     }
     .reveal h1 { font-size: 1.95em; line-height: 1.08; }
-    .reveal h2 { font-size: 1.32em; margin-bottom: 0.5em; }
+    .reveal h2 { font-size: 1.20em; margin-bottom: 0.5em; }
     .reveal p, .reveal li { line-height: 1.32; }
     .reveal ul { display: block; }
     .reveal a { color: var(--blue); }
@@ -57,9 +100,9 @@
     .small { font-size: 0.72em; color: var(--muted); }
 
     /* ---------- matemática composta à mão ---------- */
-    .mi { font-family: Georgia, "Times New Roman", serif; font-style: italic; }
-    .mr { font-family: Georgia, "Times New Roman", serif; font-style: normal; }
-    .mb { font-family: Georgia, "Times New Roman", serif; font-weight: 700; font-style: italic; }
+    .mi { font-family: "CMU Sans Serif", sans-serif; font-style: italic; }
+    .mr { font-family: "CMU Sans Serif", sans-serif; font-style: normal; }
+    .mb { font-family: "CMU Sans Serif", sans-serif; font-weight: 700; font-style: italic; }
     sub, sup { font-size: 0.62em; }
     .disp {
       font-size: 1.06em;
@@ -189,7 +232,13 @@
 
     /* telas estreitas: uma coluna e deck mais estreito (ver Reveal.initialize) */
     @media (max-width: 520px) {
+      .reveal { font-size: 24px; }
+      .reveal h1 { font-size: 1.55em; }
+      .reveal h2 { font-size: 1.18em; }
+      .reveal .slides section { box-sizing: border-box; padding: 8px 14px; }
       .g3d, .pg { grid-template-columns: 1fr; }
+      .g3d > *, .pg > * { min-width: 0; }
+      .card { box-sizing: border-box; width: 100%; }
     }
   </style>
 </head>
@@ -242,8 +291,8 @@
             <span class="br"></span></span>
             <span style="margin-left:0.5em" class="small">custo hoje; payoff em cada estado amanhã</span>
           </div>
-          <div class="lesson">É <em>nesse</em> espaço — uma coordenada para hoje, uma por estado —
-            que a geometria do teorema acontece.</div>
+          <div class="lesson">A geometria do teorema está nesse espaço: uma coordenada para hoje
+            e uma para cada estado amanhã.</div>
         </div>
       </div>
     </section>
@@ -280,8 +329,8 @@
           <div class="drag-hint">arraste para girar</div>
         </div>
         <div>
-          <p style="font-size:0.8em">Só o ativo livre de risco (<span class="mi">r</span> = 1, preço 1,
-            payoff (1, 1)&prime;): comprar <span class="mi">&theta;</span> unidades gera</p>
+          <p style="font-size:0.8em">Considere apenas o ativo livre de risco, com preço 1 e
+            payoff (1, 1)&prime;. Comprar <span class="mi">&theta;</span> unidades gera</p>
           <div class="disp" style="font-size:0.95em">
             <span class="mi">&theta;</span>&nbsp;&middot;&nbsp;(&minus;1,&nbsp;1,&nbsp;1)&prime;
           </div>
@@ -291,7 +340,7 @@
               fluxo tem todas as componentes &ge; 0, com pelo menos uma &gt; 0 —
               um ponto de <span class="mr">&#119991;</span> dentro do
               <span style="color:var(--green);font-weight:700">ortante positivo</span> (fora da origem).</p>
-            <div class="lesson green">Sem arbitragem &hArr; a reta só toca o ortante positivo na origem.
+            <div class="lesson green">Sem arbitragem &hArr; a interseção entre a reta e o ortante positivo é apenas a origem.
               Gire a cena e verifique.</div>
           </div>
         </div>
@@ -307,7 +356,7 @@
           <div class="drag-hint">arraste para girar</div>
         </div>
         <div style="font-size:0.76em">
-          <p>Uma reta em &#8477;<sup>3</sup> cabe em <em>muitos</em> planos que evitam o ortante positivo.</p>
+          <p>Uma reta em &#8477;<sup>3</sup> está contida em <em>muitos</em> planos com normal estritamente positiva.</p>
           <p class="fragment">
             <span class="chip" style="background:rgba(213,94,0,.35)"></span><span class="legend" style="font-size:1em">
             plano 1, normal <span class="mi">z</span><sup>(1)</sup> = (1, 1/8, 7/8)&prime; &nbsp;&rArr;&nbsp;
@@ -335,23 +384,23 @@
           <div class="drag-hint">arraste para girar</div>
         </div>
         <div style="font-size:0.76em">
-          <p>Entra um <strong style="color:var(--orange)">ativo de Arrow</strong> que paga 1 no estado
-            <span class="mi">s</span>=1, com preço 1/2: sua reta é
-            <span class="mi">&theta;</span>(&minus;1/2, 1, 0)&prime; — <em>com os dois planos antigos
-            ainda em cena</em>.</p>
-          <p class="fragment">A nova reta <strong>fura</strong> os dois candidatos:
+          <p>Acrescente um <strong style="color:var(--orange)">ativo de Arrow</strong> que paga 1 no estado
+            <span class="mi">s</span>=1, com preço 1/2. Sua reta é
+            <span class="mi">&theta;</span>(&minus;1/2, 1, 0)&prime;; os dois planos anteriores
+            permanecem na figura para comparação.</p>
+          <p class="fragment">A nova reta não pertence a nenhum dos dois planos:
             <span class="mi">z</span><sup>(1)</sup>&middot;(&minus;&frac12;, 1, 0)&prime; = &minus;3/8 &ne; 0
             &nbsp;e&nbsp;
             <span class="mi">z</span><sup>(2)</sup>&middot;(&minus;&frac12;, 1, 0)&prime; = 3/10 &ne; 0.
-            Nenhum contém as trocas novas — <strong>os candidatos morrem</strong>.</p>
+            Portanto, nenhum deles separa o novo espaço de trocas.</p>
           <p class="fragment">O espaço de trocas <strong>cresceu</strong>:
             <span class="mr" style="color:var(--blue);font-weight:700">&#119991;</span>
             = span das duas retas = um <strong>plano</strong>:
-            {(&minus;<span class="mi">t</span>/2 &minus; <span class="mi">s</span>,&nbsp;
-            <span class="mi">t</span> + <span class="mi">s</span>,&nbsp;
-            <span class="mi">s</span>)}.</p>
+            {(&minus;<span class="mi">&alpha;</span>/2 &minus; <span class="mi">&phi;</span>,&nbsp;
+            <span class="mi">&alpha;</span> + <span class="mi">&phi;</span>,&nbsp;
+            <span class="mi">&phi;</span>): <span class="mi">&alpha;</span>,<span class="mi">&phi;</span>&isin;&#8477;}.</p>
           <div class="fragment lesson">
-            Um plano em &#8477;<sup>3</sup> só cabe em <em>um</em> hiperplano: ele mesmo.
+            Em &#8477;<sup>3</sup>, há um único hiperplano que contém esse plano: o próprio plano.
             Mais ativos &rArr; mais trocas possíveis &rArr; menos separadores.
             O <span class="mi">q</span> passa a ser <strong>único</strong>.
           </div>
@@ -368,7 +417,10 @@
           <div class="drag-hint">arraste para girar</div>
         </div>
         <div style="font-size:0.76em">
-          <p>Separação estrita (de <span class="mr">&#119991;</span> e a simplex): existe <span class="mi">z</span> = (<span class="mi">z</span><sub>0</sub>, <span class="mi">z</span><sub>1</sub>, <span class="mi">z</span><sub>2</sub>)&prime; &#8811; 0
+          <p>Defina o simplex &Delta; = {<span class="mi">c</span> &ge; 0:
+            &Sigma;<sub><span class="mi">i</span></sub><span class="mi">c</span><sub><span class="mi">i</span></sub> = 1}.
+            A separação estrita de <span class="mr">&#119991;</span> e &Delta; produz
+            <span class="mi">z</span> = (<span class="mi">z</span><sub>0</sub>, <span class="mi">z</span><sub>1</sub>, <span class="mi">z</span><sub>2</sub>)&prime; &#8811; 0
             ortogonal a <span class="mr">&#119991;</span>.</p>
           <p class="fragment">Aqui: <span class="mb">z</span> = (1,&nbsp;1/2,&nbsp;1/2)&prime; —
             a seta <span style="color:var(--green);font-weight:700">verde</span>, perpendicular ao plano.
@@ -380,10 +432,11 @@
               &nbsp;&rArr;&nbsp; <span class="mi">q</span><sub>1</sub> = <span class="num">0,5</span>,&nbsp;
               <span class="mi">q</span><sub>2</sub> = <span class="num">0,5</span>
             </div>
-            <div class="lesson">Cada unidade do ativo <span class="mi">j</span> vive em <span class="mr">&#119991;</span>:
+            <div class="lesson">O fluxo de caixa de uma unidade do ativo <span class="mi">j</span> pertence a <span class="mr">&#119991;</span>:
               &minus;<span class="mi">z</span><sub>0</sub><span class="mi">P</span><sub>0</sub><sup><span class="mi">j</span></sup> + &Sigma;<sub><span class="mi">s</span></sub> <span class="mi">z</span><sub><span class="mi">s</span></sub><span class="mi">x</span><sub><span class="mi">s</span></sub><sup><span class="mi">j</span></sup> = 0
               &nbsp;&rArr;&nbsp; <span class="mi">P</span><sub>0</sub>&prime; = <span class="mi">q</span>&prime;<span class="mi">X</span> com <span class="mi">q</span> &#8811; 0.
-              Esse é o teorema.</div>
+              Esta é a direção não trivial. A recíproca é direta: pesos estritamente positivos
+              não atribuem valor zero a um fluxo não negativo e não nulo.</div>
           </div>
         </div>
       </div>
@@ -391,24 +444,25 @@
 
     <!-- ============ 8. Playground ============ -->
     <section>
-      <h2>Playground: procure a arbitragem</h2>
+      <h2>Exemplo 2&times;2: ajuste os preços</h2>
       <p style="font-size:0.7em;margin-bottom:0.3em">Dois ativos do exemplo dos slides — árvore
         <span class="mi">x</span><sup><span class="mi">a</span></sup> = (2, 1)&prime; e livre de risco
         <span class="mi">x</span><sup><span class="mi">f</span></sup> = (1, 1)&prime;.
         Mova os preços e resolva <span class="mi">P</span><sub>0</sub>&prime; = <span class="mi">q</span>&prime;<span class="mi">X</span>.</p>
       <div class="pg">
         <div class="card">
-          <label><span class="mi">P</span><sub>0</sub><sup><span class="mi">a</span></sup> (árvore) = <span class="val" id="vpa"></span></label>
+          <label for="pa"><span class="mi">P</span><sub>0</sub><sup><span class="mi">a</span></sup> (árvore) = <span class="val" id="vpa"></span></label>
           <input type="range" id="pa" min="0.60" max="3.00" step="0.01" value="1.62">
-          <label><span class="mi">P</span><sub>0</sub><sup><span class="mi">f</span></sup> (livre de risco) = <span class="val" id="vpf"></span></label>
+          <label for="pf"><span class="mi">P</span><sub>0</sub><sup><span class="mi">f</span></sup> (livre de risco) = <span class="val" id="vpf"></span></label>
           <input type="range" id="pf" min="0.50" max="2.20" step="0.01" value="1.35">
           <p class="small" style="margin-top:0.5em">Os valores iniciais são os preços de
             <em>equilíbrio</em> da calibração dos slides
             (<span class="mi">&beta;</span>=0,96, <span class="mi">&gamma;</span>=2,
-            <span class="mi">&pi;</span><sub>h</sub>=0,5, <span class="mi">e</span><sub>0</sub>=1,5,
-            <span class="mi">e</span><sub>h</sub>=2, <span class="mi">e</span><sub>l</sub>=1).</p>
+            <span class="mi">&pi;</span><sub>h</sub>=0,5, <span class="mi">d</span><sub>0</sub>=1,5,
+            <span class="mi">d</span><sub>h</sub>=2, <span class="mi">d</span><sub>l</sub>=1), com a
+            árvore em oferta unitária e sem dotação externa.</p>
         </div>
-        <div class="card">
+        <div class="card" aria-live="polite">
           <div class="qout">
             <span class="mi">q</span><sub><span class="mi">h</span></sub> = <span class="mi">P</span><sub>0</sub><sup><span class="mi">a</span></sup> &minus; <span class="mi">P</span><sub>0</sub><sup><span class="mi">f</span></sup> = <span class="val num" id="vqh"></span><br>
             <span class="mi">q</span><sub><span class="mi">l</span></sub> = 2<span class="mi">P</span><sub>0</sub><sup><span class="mi">f</span></sup> &minus; <span class="mi">P</span><sub>0</sub><sup><span class="mi">a</span></sup> = <span class="val num" id="vql"></span>
@@ -718,7 +772,7 @@ Reveal.initialize({
   hash: true,
   center: false,
   transition: 'fade',
-  width: narrow ? 430 : 1050,
+  width: narrow ? 360 : 1050,
   height: narrow ? 900 : 720,
   margin: narrow ? 0.02 : 0.05
 });

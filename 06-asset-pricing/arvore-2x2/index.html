@@ -328,8 +328,9 @@
     var beta=parseFloat(byId("lucas-beta").value),delta=parseFloat(byId("lucas-delta").value),pl=1-ph;
     var d0=1.5,dh=1.5+delta,dl=1.5-delta,up=function(c){return Math.pow(c,-gamma);};
     var qh=beta*ph*up(dh)/up(d0),ql=beta*pl*up(dl)/up(d0),mh=qh/ph,ml=ql/pl;
-    var pa=qh*dh+ql*dl,pf=qh+ql,rf=1/pf,era=(ph*dh+pl*dl)/pa,premium=era-rf;
-    state.lucas={gamma:gamma,ph:ph,pl:pl,beta:beta,delta:delta,d0:d0,dh:dh,dl:dl,qh:qh,ql:ql,mh:mh,ml:ml,pa:pa,pf:pf,rf:rf,era:era,premium:premium};
+    var pa=qh*dh+ql*dl,pf=qh+ql,rf=1/pf,era=(ph*dh+pl*dl)/pa;
+    var premium=era-rf,relativePremium=era/rf-1;
+    state.lucas={gamma:gamma,ph:ph,pl:pl,beta:beta,delta:delta,d0:d0,dh:dh,dl:dl,qh:qh,ql:ql,mh:mh,ml:ml,pa:pa,pf:pf,rf:rf,era:era,premium:premium,relativePremium:relativePremium};
     byId("lucas-vgamma").textContent=fmt(gamma,1); byId("lucas-vpih").textContent=fmt(ph,2);
     byId("lucas-vbeta").textContent=fmt(beta,2); byId("lucas-vdelta").textContent=fmt(delta,2);
     byId("lucas-rank").textContent=delta===0 ? "posto(X) = 1 · caso-limite" : "posto(X) = 2 · completo";
@@ -344,12 +345,13 @@
       ["P<sub>0</sub><sup>f</sup>","q<sub>h</sub> + q<sub>l</sub>",fmt(pf)],
       ["R<sup>f</sup>","1/P<sub>0</sub><sup>f</sup>",fmt(rf)],
       ["E[R<sup>a</sup>]","E[d<sub>1</sub>]/P<sub>0</sub><sup>a</sup>",fmt(era)],
-      ["<span class=\"highlight\">Prêmio E[R<sup>a</sup>] − R<sup>f</sup></span>","cov(m,d<sub>1</sub>) &lt; 0","<span class=\"highlight\">" + fmt(premium) + "</span>"]
+      ["Prêmio aditivo","E[R<sup>a</sup>] − R<sup>f</sup>",fmt(premium)],
+      ["<span class=\"highlight\">Prêmio relativo</span>","E[R<sup>a</sup>]/R<sup>f</sup> − 1","<span class=\"highlight\">" + fmt(100*relativePremium,2) + "%</span>"]
     ];
     byId("lucas-output").innerHTML=rows.map(function(row){return "<tr><td>"+row[0]+"</td><td style=\"text-align:left;color:#59636e\">"+row[1]+"</td><td>"+row[2]+"</td></tr>";}).join("");
     if (delta===0) { byId("lucas-lesson").innerHTML="Sem risco agregado (Δ = 0), m<sub>h</sub> = m<sub>l</sub> = β: o prêmio é zero e R<sup>f</sup> = 1/β."; }
     else if (gamma===0) { byId("lucas-lesson").innerHTML="Com γ = 0, m é constante: risco sem covariância com utilidade marginal não recebe prêmio."; }
-    else { byId("lucas-lesson").innerHTML="O estado de consumo baixo é caro por unidade de probabilidade (m<sub>l</sub> &gt; m<sub>h</sub>). A árvore paga mais no estado barato, por isso E[R<sup>a</sup>] &gt; R<sup>f</sup>."; }
+    else { byId("lucas-lesson").innerHTML="O estado de consumo baixo é caro por unidade de probabilidade (m<sub>l</sub> &gt; m<sub>h</sub>). Ao elevar γ, o prêmio <em>relativo</em> aumenta; o aditivo pode cair porque R<sup>f</sup> também cai."; }
     updateComparison();
   }
   function updateAgents() {

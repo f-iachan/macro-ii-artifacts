@@ -1,163 +1,443 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta name="robots" content="noindex, nofollow">
 <meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Árvore de Lucas 2×2 — Macro II</title>
+<meta name="description" content="Exploração interativa de mercados completos e incompletos em dois exemplos de apreçamento de ativos.">
+<title>Completude em dois exemplos — Macro II</title>
 <style>
-  :root{
-    --ivory:#FFFFF0;
-    --blue:#0072B2;
-    --redorange:#D55E00;
-    --green:#009E73;
-    --yellow:#F0E442;
-    --ink:#1a1a1a;
-    --panel:#ffffff;
-    --border:#d8d3c0;
+  :root {
+    --ivory: #fffff0; --paper: #ffffff; --ink: #17212b; --muted: #59636e;
+    --blue: #0072b2; --blue-dark: #005b8e; --blue-soft: #eaf5fb;
+    --orange: #d55e00; --orange-soft: #fff1e7;
+    --green: #009e73; --green-soft: #e7f7f2; --purple: #7a5195;
+    --line: #d8d3c0; --shadow: 0 8px 28px rgba(30,43,55,.08); --radius: 14px;
   }
-  *{box-sizing:border-box;}
-  html,body{
-    margin:0;padding:0;
-    background:var(--ivory);
-    color:var(--ink);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    font-size:17px;
-    line-height:1.45;
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; color: var(--ink); font: 17px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background: radial-gradient(circle at 12% 0%,rgba(0,114,178,.08),transparent 28rem),var(--ivory);
   }
-  .wrap{max-width:1100px;margin:0 auto;padding:20px 28px 60px;}
-  h1{font-size:1.6em;margin:0 0 4px;color:var(--blue);font-weight:700;}
-  .subtitle{color:#555;margin:0 0 20px;font-size:1em;}
-  .card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:18px;}
-  .row{display:flex;flex-wrap:wrap;gap:18px;}
-  .col{flex:1 1 320px;}
-  label{display:block;font-weight:600;margin:10px 0 2px;}
-  input[type=range]{width:100%;}
-  .val{color:var(--redorange);font-weight:700;font-variant-numeric:tabular-nums;}
-  table{border-collapse:collapse;width:100%;margin-top:8px;}
-  th,td{border-bottom:1px solid var(--border);padding:6px 10px;text-align:right;font-variant-numeric:tabular-nums;}
-  th:first-child,td:first-child{text-align:left;}
-  th{color:var(--blue);}
-  .hl{color:var(--redorange);font-weight:700;}
-  .note{font-size:.92em;color:#555;margin-top:10px;}
-  svg text{font-family:inherit;}
-  .lesson{border-left:4px solid var(--blue);padding:8px 14px;background:#f4f9fd;border-radius:0 8px 8px 0;margin-top:10px;font-size:.95em;}
+  button,input { font: inherit; }
+  .wrap { width: min(1180px,calc(100% - 36px)); margin: 0 auto; padding: 28px 0 72px; }
+  header { padding: 14px 0 20px; }
+  .kicker { margin: 0 0 5px; color: var(--orange); font-size: .78rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+  h1 { margin: 0; color: var(--blue-dark); font-size: clamp(1.9rem,4vw,3.25rem); line-height: 1.05; letter-spacing: -.035em; }
+  .subtitle { max-width: 820px; margin: 14px 0 0; color: var(--muted); font-size: 1.02rem; }
+  .theory-bridge { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: center; margin: 6px 0 20px; padding: 14px 18px; border: 1px solid #b9dceb; border-radius: var(--radius); background: rgba(234,245,251,.78); }
+  .theory-bridge .mark { display: grid; width: 42px; height: 42px; place-items: center; border-radius: 50%; background: var(--blue); color: #fff; font-weight: 800; }
+  .theory-bridge p { margin: 0; }
+  .tabs { position: sticky; z-index: 10; top: 0; display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin: 0 0 22px; padding: 8px; border: 1px solid var(--line); border-radius: 15px; background: rgba(255,255,240,.94); box-shadow: 0 5px 18px rgba(30,43,55,.08); backdrop-filter: blur(10px); }
+  .tab { min-height: 46px; padding: 8px 10px; border: 0; border-radius: 10px; background: transparent; color: var(--muted); cursor: pointer; font-weight: 750; transition: background .15s ease,color .15s ease,transform .15s ease; }
+  .tab:hover { background: #fff; color: var(--blue-dark); }
+  .tab:focus-visible { outline: 3px solid rgba(0,114,178,.28); outline-offset: 2px; }
+  .tab[aria-selected="true"] { background: var(--blue); color: #fff; box-shadow: 0 4px 12px rgba(0,114,178,.22); }
+  .panel[hidden] { display: none; }
+  .section-head { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-start; justify-content: space-between; margin: 0 0 16px; }
+  .section-head h2 { margin: 0; color: var(--blue-dark); font-size: clamp(1.45rem,3vw,2rem); line-height: 1.15; }
+  .section-head p { max-width: 790px; margin: 6px 0 0; color: var(--muted); }
+  .rank-badge { flex: 0 0 auto; padding: 7px 11px; border: 1px solid currentColor; border-radius: 999px; color: var(--green); background: var(--green-soft); font-size: .82rem; font-weight: 800; }
+  .rank-badge.incomplete { color: var(--orange); background: var(--orange-soft); }
+  .grid { display: grid; grid-template-columns: repeat(12,1fr); gap: 18px; margin-bottom: 18px; }
+  .span-4 { grid-column: span 4; } .span-5 { grid-column: span 5; } .span-6 { grid-column: span 6; }
+  .span-7 { grid-column: span 7; } .span-8 { grid-column: span 8; } .span-12 { grid-column: 1/-1; }
+  .card { min-width: 0; padding: 18px 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); box-shadow: var(--shadow); }
+  .card h3 { margin: 0 0 10px; color: var(--blue-dark); font-size: 1.05rem; }
+  .card > :last-child { margin-bottom: 0; }
+  .setup { border-top: 4px solid var(--blue); }
+  .controls label { display: flex; gap: 8px; justify-content: space-between; margin: 13px 0 4px; color: #34414d; font-size: .92rem; font-weight: 700; }
+  .controls label:first-of-type { margin-top: 0; }
+  input[type="range"] { width: 100%; accent-color: var(--blue); cursor: pointer; }
+  .val { color: var(--orange); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .small { color: var(--muted); font-size: .88rem; }
+  .formula { overflow-x: auto; margin: 10px 0; padding: 10px 12px; border-left: 4px solid var(--blue); border-radius: 0 8px 8px 0; background: var(--blue-soft); color: #173e55; font-family: "Cambria Math",Cambria,Georgia,serif; font-size: 1.02rem; text-align: center; white-space: nowrap; }
+  .formula.orange { border-left-color: var(--orange); background: var(--orange-soft); color: #6c3514; }
+  .equation-steps { margin: 0; padding: 0; list-style: none; counter-reset: derivation; }
+  .equation-steps li { position: relative; margin: 0 0 11px; padding: 0 0 11px 38px; border-bottom: 1px solid #ece9dc; counter-increment: derivation; }
+  .equation-steps li:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: 0; }
+  .equation-steps li::before { position: absolute; top: 0; left: 0; display: grid; width: 25px; height: 25px; place-items: center; border-radius: 50%; background: var(--blue); color: #fff; content: counter(derivation); font-size: .78rem; font-weight: 800; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  th,td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: right; vertical-align: top; }
+  th { color: var(--blue-dark); font-size: .86rem; }
+  th:first-child,td:first-child { text-align: left; }
+  tbody tr:last-child td { border-bottom: 0; }
+  .results { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin: 12px 0; }
+  .metric { min-width: 0; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: #fffdf6; }
+  .metric .name { display: block; min-height: 2.4em; color: var(--muted); font-size: .78rem; font-weight: 700; line-height: 1.2; }
+  .metric .number { display: block; overflow: hidden; margin-top: 4px; color: var(--blue-dark); font-size: 1.3rem; font-weight: 850; font-variant-numeric: tabular-nums; text-overflow: ellipsis; }
+  .lesson { margin-top: 13px; padding: 11px 14px; border-left: 4px solid var(--green); border-radius: 0 8px 8px 0; background: var(--green-soft); color: #185845; font-size: .94rem; }
+  .warning { margin-top: 14px; padding: 14px 16px; border: 1px solid #e8b48f; border-left: 6px solid var(--orange); border-radius: 9px; background: var(--orange-soft); color: #623315; }
+  .warning strong { display: block; margin-bottom: 3px; color: #873d0d; }
+  .agent-one { color: var(--blue-dark); font-weight: 800; } .agent-two { color: var(--orange); font-weight: 800; }
+  .highlight { color: var(--orange); font-weight: 800; }
+  .svg-wrap { min-height: 250px; }
+  svg { display: block; width: 100%; height: auto; }
+  svg text { font-family: inherit; }
+  .comparison-table td:nth-child(2),.comparison-table td:nth-child(3) { width: 38%; text-align: left; }
+  .takeaway { padding: 18px 20px; border: 1px solid #b9dceb; border-radius: var(--radius); background: linear-gradient(100deg,var(--blue-soft),#fff); color: #173e55; font-size: 1.03rem; }
+  .takeaway strong { color: var(--blue-dark); }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 8px; color: var(--muted); font-size: .8rem; }
+  .legend span::before { display: inline-block; width: 10px; height: 10px; margin-right: 6px; border-radius: 50%; background: var(--legend-color); content: ""; }
+  @media (max-width:900px) { .span-4,.span-5,.span-6,.span-7,.span-8 { grid-column: 1/-1; } }
+  @media (max-width:620px) {
+    body { font-size: 16px; } .wrap { width: min(100% - 22px,1180px); padding-top: 14px; }
+    .tabs { gap: 4px; padding: 5px; } .tab { min-height: 50px; padding: 6px 4px; font-size: .8rem; line-height: 1.15; }
+    .card { padding: 15px; } .results { grid-template-columns: 1fr; } .metric .name { min-height: 0; }
+    th,td { padding: 7px 6px; font-size: .88rem; } .theory-bridge { grid-template-columns: 1fr; } .theory-bridge .mark { display: none; }
+  }
+  @media print {
+    body { background: #fff; } .wrap { width: 100%; padding: 0; } .tabs { display: none; }
+    .panel[hidden] { display: block; } .panel { break-before: page; } .card { box-shadow: none; break-inside: avoid; }
+    input[type="range"] { display: none; }
+  }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>Árvore de Lucas 2×2</h1>
-  <p class="subtitle">Companheiro do exemplo dos slides de Asset Pricing (AP.tex).
-  Agente representativo, dois estados, árvore pagando (2, 1) e ativo livre de risco (1, 1),
-  ambos em oferta líquida zero. CRRA: u&prime;(c) = c<sup>&minus;&gamma;</sup>.
-  Em equilíbrio, c = e em todos os nós.</p>
-
-  <div class="row">
-    <div class="col card">
-      <label>Aversão ao risco &gamma; = <span class="val" id="vgamma"></span></label>
-      <input type="range" id="gamma" min="0" max="10" step="0.1" value="2">
-      <label>Probabilidade do estado bom &pi;<sub>h</sub> = <span class="val" id="vpih"></span></label>
-      <input type="range" id="pih" min="0.05" max="0.95" step="0.05" value="0.5">
-      <label>Desconto &beta; = <span class="val" id="vbeta"></span></label>
-      <input type="range" id="beta" min="0.80" max="1.00" step="0.01" value="0.96">
-      <label>Dispersão da dotação em t=1 (e<sub>h</sub>=1,5+d, e<sub>l</sub>=1,5&minus;d), d = <span class="val" id="vd"></span></label>
-      <input type="range" id="dspread" min="0" max="0.5" step="0.05" value="0.5">
-      <p class="note">Com d=0,5: (e<sub>h</sub>, e<sub>l</sub>)=(2, 1), o exemplo dos slides.
-      A árvore paga a dotação de t=1; e<sub>0</sub>=3/2 fixo. Com d=0 não há risco agregado.</p>
-    </div>
-
-    <div class="col card">
-      <svg id="tree" viewBox="0 0 380 240" width="100%"></svg>
-    </div>
+<main class="wrap">
+  <header>
+    <p class="kicker">Macro II · Apreçamento de ativos</p>
+    <h1>Completude em dois exemplos</h1>
+    <p class="subtitle">O mesmo princípio abstrato em dois ambientes concretos: preços de ativos restringem os preços de estado por <strong>P<sub>0</sub><sup>T</sup> = q<sup>T</sup>X</strong>. O posto de <strong>X</strong> determina se essas restrições identificam um único <strong>q</strong> ou apenas um conjunto deles.</p>
+  </header>
+  <div class="theory-bridge">
+    <span class="mark" aria-hidden="true">X</span>
+    <p><strong>Do abstrato ao específico.</strong> Primeiro vêm não arbitragem, o Teorema Fundamental e a definição de completude. Aqui aplicamos essa estrutura, na ordem, à árvore de Lucas e ao caso de dois agentes.</p>
   </div>
+  <nav class="tabs" aria-label="Seções do artefato" role="tablist">
+    <button class="tab" id="tab-lucas" role="tab" aria-selected="true" aria-controls="panel-lucas" data-panel="lucas">1 · Árvore de Lucas</button>
+    <button class="tab" id="tab-agents" role="tab" aria-selected="false" aria-controls="panel-agents" data-panel="agents" tabindex="-1">2 · Dois agentes</button>
+    <button class="tab" id="tab-compare" role="tab" aria-selected="false" aria-controls="panel-compare" data-panel="compare" tabindex="-1">3 · Comparação</button>
+  </nav>
 
-  <div class="card">
-    <table id="out">
-      <thead><tr><th>Objeto</th><th>Fórmula</th><th>Valor</th></tr></thead>
-      <tbody></tbody>
-    </table>
-    <div class="lesson" id="lesson"></div>
-  </div>
-</div>
+  <section class="panel" id="panel-lucas" role="tabpanel" aria-labelledby="tab-lucas">
+    <div class="section-head">
+      <div><h2>Exemplo 1: árvore de Lucas 2×2</h2><p>Agente representativo, dois estados, uma árvore em oferta unitária e um título seguro em oferta líquida zero. A árvore é a única fonte de consumo.</p></div>
+      <span class="rank-badge" id="lucas-rank">posto(X) = 2 · completo</span>
+    </div>
+    <div class="grid">
+      <div class="card controls setup span-4">
+        <h3>Parâmetros</h3>
+        <label for="lucas-gamma">Aversão ao risco γ <span class="val" id="lucas-vgamma"></span></label>
+        <input type="range" id="lucas-gamma" min="0" max="10" step="0.1" value="2">
+        <label for="lucas-pih">Probabilidade π<sub>h</sub> <span class="val" id="lucas-vpih"></span></label>
+        <input type="range" id="lucas-pih" min="0.05" max="0.95" step="0.05" value="0.5">
+        <label for="lucas-beta">Desconto β <span class="val" id="lucas-vbeta"></span></label>
+        <input type="range" id="lucas-beta" min="0.80" max="1.00" step="0.01" value="0.96">
+        <label for="lucas-delta">Dispersão Δ <span class="val" id="lucas-vdelta"></span></label>
+        <input type="range" id="lucas-delta" min="0" max="0.5" step="0.05" value="0.5">
+        <p class="small">d<sub>0</sub> = 1,5; d<sub>h</sub> = 1,5 + Δ; d<sub>l</sub> = 1,5 − Δ. CRRA: u′(c) = c<sup>−γ</sup>.</p>
+      </div>
+      <div class="card svg-wrap span-8">
+        <h3>Árvore e preços de estado</h3>
+        <svg id="lucas-tree" viewBox="0 0 650 265" role="img" aria-label="Árvore de Lucas com dois estados"></svg>
+      </div>
+    </div>
+    <div class="grid">
+      <div class="card span-5">
+        <h3>Da escolha ao equilíbrio</h3>
+        <ol class="equation-steps">
+          <li>Compras líquidas: θ<sup>a</sup> = a − 1 e θ<sup>f</sup> = f.<div class="formula">c<sub>0</sub> = d<sub>0</sub> − P<sub>0</sub><sup>a</sup>θ<sup>a</sup> − P<sub>0</sub><sup>f</sup>θ<sup>f</sup></div></li>
+          <li>Em cada estado s:<div class="formula">c<sub>s</sub> = d<sub>s</sub> + d<sub>s</sub>θ<sup>a</sup> + θ<sup>f</sup></div></li>
+          <li>Fechamento: a = 1 e f = 0, portanto θ<sup>a</sup> = θ<sup>f</sup> = 0 e c = d.</li>
+          <li>Avaliando as CPOs no consumo de equilíbrio:<div class="formula">q<sub>s</sub> = βπ<sub>s</sub>u′(d<sub>s</sub>)/u′(d<sub>0</sub>)</div></li>
+        </ol>
+      </div>
+      <div class="card span-7">
+        <h3>Resultados</h3>
+        <div class="formula">X = [(d<sub>h</sub>,d<sub>l</sub>)<sup>T</sup>, (1,1)<sup>T</sup>], &nbsp; P<sub>0</sub><sup>a</sup> = q<sub>h</sub>d<sub>h</sub> + q<sub>l</sub>d<sub>l</sub>, &nbsp; P<sub>0</sub><sup>f</sup> = q<sub>h</sub> + q<sub>l</sub></div>
+        <table aria-label="Resultados da árvore de Lucas"><thead><tr><th>Objeto</th><th>Fórmula</th><th>Valor</th></tr></thead><tbody id="lucas-output"></tbody></table>
+        <div class="lesson" id="lucas-lesson"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-agents" role="tabpanel" aria-labelledby="tab-agents" hidden>
+    <div class="section-head">
+      <div><h2>Exemplo 2: dois agentes, riscos opostos</h2><p>Mesmas preferências CRRA e mesmas crenças. As dotações são espelhadas e o único ativo negociado é o título seguro (1,1), em oferta líquida zero.</p></div>
+      <span class="rank-badge incomplete">posto(X) = 1 · incompleto</span>
+    </div>
+    <div class="grid">
+      <div class="card controls setup span-4">
+        <h3>Parâmetros</h3>
+        <label for="agents-beta">Desconto β <span class="val" id="agents-vbeta"></span></label>
+        <input type="range" id="agents-beta" min="0.80" max="1.00" step="0.01" value="0.96">
+        <label for="agents-gamma">Aversão ao risco γ <span class="val" id="agents-vgamma"></span></label>
+        <input type="range" id="agents-gamma" min="0" max="10" step="0.1" value="2">
+        <label for="agents-delta">Dispersão das dotações δ <span class="val" id="agents-vdelta"></span></label>
+        <input type="range" id="agents-delta" min="0" max="0.45" step="0.01" value="0.10">
+        <p class="small">Em t = 0, e<sub>0</sub><sup>1</sup> = e<sub>0</sub><sup>2</sup> = 1. Em t = 1, cada agente recebe 1 ± δ. O intervalo do controle mantém todas as dotações estritamente positivas.</p>
+      </div>
+      <div class="card span-8">
+        <h3>Dotações espelhadas</h3>
+        <table aria-label="Dotações dos dois agentes"><thead><tr><th></th><th>t = 0</th><th>estado 1</th><th>estado 2</th></tr></thead><tbody id="endowment-table"></tbody></table>
+        <div class="formula">x<sup>f</sup> = (1,1)<sup>T</sup>, &nbsp; π<sub>1</sub> = π<sub>2</sub> = 1/2, &nbsp; θ<sub>1</sub> + θ<sub>2</sub> = 0</div>
+        <p class="small">O risco é idiossincrático: a dotação agregada vale 2 em ambos os estados, mas não há ativos suficientes para trocar consumo estado a estado.</p>
+      </div>
+    </div>
+    <div class="grid">
+      <div class="card span-6">
+        <h3>Equilíbrio e taxa segura</h3>
+        <ol class="equation-steps">
+          <li>Para cada agente i:<div class="formula">c<sub>0</sub><sup>i</sup> = 1 − P<sub>0</sub><sup>f</sup>θ<sub>i</sub>, &nbsp; c<sub>s</sub><sup>i</sup> = e<sub>s</sub><sup>i</sup> + θ<sub>i</sub></div></li>
+          <li>Estrita concavidade torna cada demanda única; por simetria, as duas demandas são iguais. Como a oferta líquida é zero:<div class="formula">θ<sub>1</sub> + θ<sub>2</sub> = 0 &nbsp; ⇒ &nbsp; θ<sub>1</sub> = θ<sub>2</sub> = 0</div></li>
+          <li>A Euler do título, avaliada em c<sub>0</sub><sup>i</sup> = 1 e c<sub>s</sub><sup>i</sup> = e<sub>s</sub><sup>i</sup>, dá:<div class="formula">P<sub>0</sub><sup>f</sup> = β/2 [(1+δ)<sup>−γ</sup> + (1−δ)<sup>−γ</sup>]</div></li>
+        </ol>
+        <div class="results">
+          <div class="metric"><span class="name">Posições de equilíbrio</span><span class="number" id="agents-theta">θ₁ = θ₂ = 0</span></div>
+          <div class="metric"><span class="name">Preço seguro P₀ᶠ</span><span class="number" id="agents-pf"></span></div>
+          <div class="metric"><span class="name">Retorno seguro Rᶠ</span><span class="number" id="agents-rf"></span></div>
+        </div>
+        <div class="lesson" id="agents-precaution"></div>
+      </div>
+      <div class="card span-6">
+        <h3>TMSs diferentes, mesmo preço negociado</h3>
+        <div class="formula">q<sub>s</sub><sup>i</sup> = (β/2) u′(c<sub>s</sub><sup>i</sup>)/u′(c<sub>0</sub><sup>i</sup>)</div>
+        <table aria-label="Preços de estado individuais"><thead><tr><th></th><th>estado 1</th><th>estado 2</th><th>soma</th></tr></thead><tbody id="agents-q-table"></tbody></table>
+        <p>Para qualquer payoff negociável z = a(1,1):</p>
+        <div class="formula">(q<sup>1</sup>)<sup>T</sup>z = (q<sup>2</sup>)<sup>T</sup>z = aP<sub>0</sub><sup>f</sup></div>
+        <p class="small" id="agents-q-lesson"></p>
+      </div>
+    </div>
+    <div class="grid">
+      <div class="card span-5">
+        <h3>Payoff fora do span</h3>
+        <p>Considere y = (1,0)<sup>T</sup>. Ele não é múltiplo de (1,1), portanto não pertence ao span dos ativos negociados.</p>
+        <div class="results">
+          <div class="metric"><span class="name">Avaliação marginal do agente 1</span><span class="number agent-one" id="agents-y1"></span></div>
+          <div class="metric"><span class="name">Avaliação marginal do agente 2</span><span class="number agent-two" id="agents-y2"></span></div>
+          <div class="metric"><span class="name">Diferença absoluta</span><span class="number" id="agents-ydiff"></span></div>
+        </div>
+        <div class="formula orange">(q<sup>1</sup>)<sup>T</sup>y = q<sub>1</sub><sup>1</sup> &nbsp; ≠ &nbsp; q<sub>1</sub><sup>2</sup> = (q<sup>2</sup>)<sup>T</sup>y</div>
+        <div class="warning"><strong>Atenção: estas não são duas cotações de mercado.</strong> São avaliações marginais usando as TMSs do equilíbrio em que y não é negociado. Se y passar a ser listado, o mercado torna-se completo; as trocas, o consumo e as TMSs mudam. É preciso resolver um novo equilíbrio.</div>
+      </div>
+      <div class="card svg-wrap span-7">
+        <h3>O conjunto de preços de estado compatíveis</h3>
+        <svg id="agents-qplot" viewBox="0 0 620 390" role="img" aria-label="Reta de preços de estado no mercado incompleto"></svg>
+        <div class="legend">
+          <span style="--legend-color:var(--blue)">q¹ do agente 1</span>
+          <span style="--legend-color:var(--orange)">q² do agente 2</span>
+          <span style="--legend-color:var(--green)">q &gt; 0 que apreçam o título</span>
+        </div>
+        <p class="small">O preço observado do título impõe apenas q<sub>1</sub> + q<sub>2</sub> = P<sub>0</sub><sup>f</sup>. Em dois estados, isso é uma reta; positividade seleciona o segmento entre os eixos.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-compare" role="tabpanel" aria-labelledby="tab-compare" hidden>
+    <div class="section-head">
+      <div><h2>Comparação: ponto ou conjunto?</h2><p>Cada ativo negociado acrescenta uma equação linear em q. Independência dos payoffs, e não o número bruto de ativos, é o que determina quantas restrições distintas temos.</p></div>
+    </div>
+    <div class="grid">
+      <div class="card span-6">
+        <h3>Mercado completo: duas equações independentes</h3>
+        <svg id="compare-complete" viewBox="0 0 600 390" role="img" aria-label="Duas retas identificam um preço de estado único"></svg>
+        <div class="formula">q<sub>h</sub> + q<sub>l</sub> = P<sub>0</sub><sup>f</sup>, &nbsp; d<sub>h</sub>q<sub>h</sub> + d<sub>l</sub>q<sub>l</sub> = P<sub>0</sub><sup>a</sup></div>
+        <p class="small" id="complete-caption">Como d<sub>h</sub> ≠ d<sub>l</sub>, as retas não são paralelas. Sua interseção é o único q que apreça árvore e título.</p>
+      </div>
+      <div class="card span-6">
+        <h3>Mercado incompleto: uma equação</h3>
+        <svg id="compare-incomplete" viewBox="0 0 600 390" role="img" aria-label="Uma reta deixa vários preços de estado possíveis"></svg>
+        <div class="formula orange">q<sub>1</sub> + q<sub>2</sub> = P<sub>0</sub><sup>f</sup></div>
+        <p class="small">Todos os pontos estritamente positivos da reta apreçam o título negociado. A coordenada q<sub>1</sub>, que valorizaria y = (1,0), não é identificada.</p>
+      </div>
+    </div>
+    <div class="card span-12">
+      <table class="comparison-table" aria-label="Comparação entre os dois exemplos">
+        <thead><tr><th></th><th>Árvore de Lucas</th><th>Dois agentes</th></tr></thead>
+        <tbody>
+          <tr><td>Payoffs negociados</td><td>(d<sub>h</sub>,d<sub>l</sub>) e (1,1)</td><td>apenas (1,1)</td></tr>
+          <tr><td>Span</td><td>ℝ² quando d<sub>h</sub> ≠ d<sub>l</sub></td><td>reta span{(1,1)}</td></tr>
+          <tr><td>Preços de estado</td><td>q único</td><td>múltiplos q positivos</td></tr>
+          <tr><td>Payoff novo y = (1,0)</td><td>já é replicável e tem preço único</td><td>fora do span; o preço não é identificado pelos ativos existentes</td></tr>
+          <tr><td>O que os agentes precisam compartilhar</td><td>um mesmo q para todos os payoffs</td><td>somente a avaliação dos payoffs no span negociado</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="takeaway"><strong>A conclusão comum:</strong> não arbitragem garante ao menos um q positivo. Completude torna esse q único; incompletude preserva preços únicos para os ativos negociados, mas não identifica a avaliação de payoffs fora de seu span.</div>
+  </section>
+</main>
 
 <script>
-const $ = id => document.getElementById(id);
-const fmt = (x,n=4) => x.toLocaleString('pt-BR',{minimumFractionDigits:n,maximumFractionDigits:n});
+(function () {
+  "use strict";
+  var byId = function (id) { return document.getElementById(id); };
+  var clamp = function (x,lo,hi) { return Math.max(lo,Math.min(hi,x)); };
+  var fmt = function (x,digits) {
+    var n = digits === undefined ? 4 : digits;
+    return Number(x).toLocaleString("pt-BR",{minimumFractionDigits:n,maximumFractionDigits:n});
+  };
+  var state = { lucas: null, agents: null };
 
-function update(){
-  const g  = parseFloat($('gamma').value);
-  const ph = parseFloat($('pih').value);
-  const b  = parseFloat($('beta').value);
-  const d  = parseFloat($('dspread').value);
-  const pl = 1-ph;
-  const e0 = 1.5, eh = 1.5+d, el = 1.5-d;
-
-  $('vgamma').textContent = fmt(g,1);
-  $('vpih').textContent   = fmt(ph,2);
-  $('vbeta').textContent  = fmt(b,2);
-  $('vd').textContent     = fmt(d,2);
-
-  const up = c => Math.pow(c,-g);          // u'(c) = c^{-gamma}
-  const qh = b*ph*up(eh)/up(e0);
-  const ql = b*pl*up(el)/up(e0);
-  const mh = qh/ph, ml = ql/pl;            // pricing kernel por estado
-  // payoffs: árvore x^a = (eh, el); livre de risco (1,1)
-  const pa = qh*eh + ql*el;
-  const pf = qh + ql;
-  const Rf = 1/pf;
-  const ERa = (ph*eh + pl*el)/pa;
-  const prem = ERa - Rf;
-
-  const rows = [
-    ['q<sub>h</sub> (preço do estado bom)',  'βπ<sub>h</sub>u\'(e<sub>h</sub>)/u\'(e<sub>0</sub>)', fmt(qh)],
-    ['q<sub>l</sub> (preço do estado ruim)', 'βπ<sub>l</sub>u\'(e<sub>l</sub>)/u\'(e<sub>0</sub>)', fmt(ql)],
-    ['m<sub>h</sub> = q<sub>h</sub>/π<sub>h</sub>', 'kernel no estado bom',  fmt(mh)],
-    ['m<sub>l</sub> = q<sub>l</sub>/π<sub>l</sub>', 'kernel no estado ruim', fmt(ml)],
-    ['p<sup>a</sup> (árvore)', 'q<sub>h</sub>e<sub>h</sub> + q<sub>l</sub>e<sub>l</sub>', fmt(pa)],
-    ['p<sup>f</sup> (livre de risco)', 'q<sub>h</sub> + q<sub>l</sub>', fmt(pf)],
-    ['R<sup>f</sup>', '1/p<sup>f</sup>', fmt(Rf)],
-    ['E[R<sup>a</sup>]', 'E[x<sup>a</sup>]/p<sup>a</sup>', fmt(ERa)],
-    ['<span class="hl">Prêmio de risco E[R<sup>a</sup>] − R<sup>f</sup></span>', 'cov(m, x<sup>a</sup>) &lt; 0', '<span class="hl">'+fmt(prem)+'</span>'],
-  ];
-  $('out').querySelector('tbody').innerHTML =
-    rows.map(r=>`<tr><td>${r[0]}</td><td style="text-align:left;color:#777">${r[1]}</td><td>${r[2]}</td></tr>`).join('');
-
-  let lesson;
-  if (d===0){
-    lesson = 'Sem risco agregado (d=0): m<sub>h</sub>=m<sub>l</sub>=β, o prêmio é zero e '+
-             'R<sup>f</sup>=1/β. Todo o prêmio do caso geral vem da <b>covariância</b> entre payoff e kernel.';
-  } else if (g===0){
-    lesson = 'Com γ=0 (neutralidade ao risco): m é constante, q<sub>s</sub>=βπ<sub>s</sub> e o prêmio é zero '+
-             'mesmo com payoff arriscado — risco sem covariância com u\'(c) não é remunerado.';
-  } else {
-    lesson = 'O estado ruim é o estado <b>caro</b> por unidade de probabilidade (m<sub>l</sub> &gt; m<sub>h</sub>): '+
-             'consumo escasso vale mais. A árvore paga mais no estado barato, logo seu preço embute desconto '+
-             'por risco e E[R<sup>a</sup>] &gt; R<sup>f</sup>. Aumente γ ou d e veja o prêmio crescer.';
+  function activatePanel(name,focusTab,updateHash) {
+    Array.prototype.slice.call(document.querySelectorAll(".tab")).forEach(function (tab) {
+      var selected = tab.getAttribute("data-panel") === name;
+      tab.setAttribute("aria-selected",selected ? "true" : "false");
+      tab.tabIndex = selected ? 0 : -1;
+      byId("panel-" + tab.getAttribute("data-panel")).hidden = !selected;
+      if (selected && focusTab) { tab.focus(); }
+    });
+    if (name === "compare") { updateComparison(); }
+    if (updateHash && window.history && window.history.replaceState) {
+      window.history.replaceState(null,"","#"+name);
+    }
   }
-  $('lesson').innerHTML = lesson;
+  document.querySelector(".tabs").addEventListener("click",function (event) {
+    var tab = event.target.closest(".tab");
+    if (tab) { activatePanel(tab.getAttribute("data-panel"),false,true); }
+  });
+  document.querySelector(".tabs").addEventListener("keydown",function (event) {
+    if (["ArrowRight","ArrowLeft","Home","End"].indexOf(event.key) < 0) { return; }
+    event.preventDefault();
+    var tabs = Array.prototype.slice.call(document.querySelectorAll(".tab"));
+    var current = tabs.indexOf(document.activeElement);
+    var next = current;
+    if (event.key === "ArrowRight") { next = (current + 1) % tabs.length; }
+    if (event.key === "ArrowLeft") { next = (current - 1 + tabs.length) % tabs.length; }
+    if (event.key === "Home") { next = 0; }
+    if (event.key === "End") { next = tabs.length - 1; }
+    activatePanel(tabs[next].getAttribute("data-panel"),true,true);
+  });
 
-  // ---- árvore SVG ----
-  const svg = $('tree');
-  const nodeR = 26;
-  const x0=70, y0=120, x1=290, yh=48, yl=192;
-  const line = (x1,y1,x2,y2,txt,ty) =>
-    `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#999" stroke-width="1.5"/>`+
-    `<text x="${(x1+x2)/2}" y="${ty}" font-size="13" fill="#555" text-anchor="middle">${txt}</text>`;
-  const node = (x,y,c,lab,val) =>
-    `<circle cx="${x}" cy="${y}" r="${nodeR}" fill="${c}" fill-opacity="0.12" stroke="${c}" stroke-width="2"/>`+
-    `<text x="${x}" y="${y-2}" font-size="12" text-anchor="middle" fill="${c}" font-weight="700">${lab}</text>`+
-    `<text x="${x}" y="${y+14}" font-size="12" text-anchor="middle">${val}</text>`;
-  svg.innerHTML =
-    line(x0+nodeR,y0-10,x1-nodeR,yh+8,`π<tspan baseline-shift="sub" font-size="9">h</tspan> = ${fmt(ph,2)}`,64) +
-    line(x0+nodeR,y0+10,x1-nodeR,yl-8,`π<tspan baseline-shift="sub" font-size="9">l</tspan> = ${fmt(pl,2)}`,182) +
-    node(x0,y0,'#0072B2','t=0', 'e₀='+fmt(e0,2)) +
-    node(x1,yh,'#009E73','h', 'e=' + fmt(eh,2)) +
-    node(x1,yl,'#D55E00','l', 'e=' + fmt(el,2)) +
-    `<text x="${x1+40}" y="${yh+4}" font-size="12" fill="#555">q<tspan baseline-shift="sub" font-size="9">h</tspan>=${fmt(qh,3)}</text>`+
-    `<text x="${x1+40}" y="${yl+4}" font-size="12" fill="#555">q<tspan baseline-shift="sub" font-size="9">l</tspan>=${fmt(ql,3)}</text>`;
-}
-['gamma','pih','beta','dspread'].forEach(id=>$(id).addEventListener('input',update));
-update();
+  function svgLine(x1,y1,x2,y2,color,width,dash) {
+    return "<line x1=\"" + x1 + "\" y1=\"" + y1 + "\" x2=\"" + x2 + "\" y2=\"" + y2 +
+      "\" stroke=\"" + color + "\" stroke-width=\"" + width + "\"" +
+      (dash ? " stroke-dasharray=\"" + dash + "\"" : "") + "/>";
+  }
+  function lucasTreeSvg(data) {
+    var x0=105,y0=132,x1=470,yh=55,yl=210,radius=33,svg="";
+    svg += svgLine(x0+radius,y0-8,x1-radius,yh+8,"#9aa1a8",2,"");
+    svg += svgLine(x0+radius,y0+8,x1-radius,yl-8,"#9aa1a8",2,"");
+    svg += "<text x=\"290\" y=\"76\" text-anchor=\"middle\" font-size=\"15\" fill=\"#59636e\">π<tspan baseline-shift=\"sub\" font-size=\"11\">h</tspan> = " + fmt(data.ph,2) + "</text>";
+    svg += "<text x=\"290\" y=\"201\" text-anchor=\"middle\" font-size=\"15\" fill=\"#59636e\">π<tspan baseline-shift=\"sub\" font-size=\"11\">l</tspan> = " + fmt(data.pl,2) + "</text>";
+    function node(x,y,color,top,bottom) {
+      return "<circle cx=\"" + x + "\" cy=\"" + y + "\" r=\"" + radius + "\" fill=\"" + color + "\" fill-opacity=\".12\" stroke=\"" + color + "\" stroke-width=\"2.5\"/>" +
+        "<text x=\"" + x + "\" y=\"" + (y-4) + "\" text-anchor=\"middle\" font-size=\"14\" fill=\"" + color + "\" font-weight=\"800\">" + top + "</text>" +
+        "<text x=\"" + x + "\" y=\"" + (y+15) + "\" text-anchor=\"middle\" font-size=\"13\" fill=\"#17212b\">" + bottom + "</text>";
+    }
+    svg += node(x0,y0,"#0072b2","t = 0","d₀ = " + fmt(data.d0,2));
+    svg += node(x1,yh,"#009e73","estado h","dₕ = " + fmt(data.dh,2));
+    svg += node(x1,yl,"#d55e00","estado l","dₗ = " + fmt(data.dl,2));
+    svg += "<text x=\"525\" y=\"50\" font-size=\"14\" fill=\"#34414d\">qₕ = <tspan font-weight=\"800\">" + fmt(data.qh,4) + "</tspan></text>";
+    svg += "<text x=\"525\" y=\"205\" font-size=\"14\" fill=\"#34414d\">qₗ = <tspan font-weight=\"800\">" + fmt(data.ql,4) + "</tspan></text>";
+    return svg;
+  }
+  function updateLucas() {
+    var gamma=parseFloat(byId("lucas-gamma").value),ph=parseFloat(byId("lucas-pih").value);
+    var beta=parseFloat(byId("lucas-beta").value),delta=parseFloat(byId("lucas-delta").value),pl=1-ph;
+    var d0=1.5,dh=1.5+delta,dl=1.5-delta,up=function(c){return Math.pow(c,-gamma);};
+    var qh=beta*ph*up(dh)/up(d0),ql=beta*pl*up(dl)/up(d0),mh=qh/ph,ml=ql/pl;
+    var pa=qh*dh+ql*dl,pf=qh+ql,rf=1/pf,era=(ph*dh+pl*dl)/pa,premium=era-rf;
+    state.lucas={gamma:gamma,ph:ph,pl:pl,beta:beta,delta:delta,d0:d0,dh:dh,dl:dl,qh:qh,ql:ql,mh:mh,ml:ml,pa:pa,pf:pf,rf:rf,era:era,premium:premium};
+    byId("lucas-vgamma").textContent=fmt(gamma,1); byId("lucas-vpih").textContent=fmt(ph,2);
+    byId("lucas-vbeta").textContent=fmt(beta,2); byId("lucas-vdelta").textContent=fmt(delta,2);
+    byId("lucas-rank").textContent=delta===0 ? "posto(X) = 1 · caso-limite" : "posto(X) = 2 · completo";
+    byId("lucas-rank").className=delta===0 ? "rank-badge incomplete" : "rank-badge";
+    byId("lucas-tree").innerHTML=lucasTreeSvg(state.lucas);
+    var rows=[
+      ["q<sub>h</sub>","βπ<sub>h</sub>u′(d<sub>h</sub>)/u′(d<sub>0</sub>)",fmt(qh)],
+      ["q<sub>l</sub>","βπ<sub>l</sub>u′(d<sub>l</sub>)/u′(d<sub>0</sub>)",fmt(ql)],
+      ["m<sub>h</sub> = q<sub>h</sub>/π<sub>h</sub>","kernel no estado bom",fmt(mh)],
+      ["m<sub>l</sub> = q<sub>l</sub>/π<sub>l</sub>","kernel no estado ruim",fmt(ml)],
+      ["P<sub>0</sub><sup>a</sup>","q<sub>h</sub>d<sub>h</sub> + q<sub>l</sub>d<sub>l</sub>",fmt(pa)],
+      ["P<sub>0</sub><sup>f</sup>","q<sub>h</sub> + q<sub>l</sub>",fmt(pf)],
+      ["R<sup>f</sup>","1/P<sub>0</sub><sup>f</sup>",fmt(rf)],
+      ["E[R<sup>a</sup>]","E[d<sub>1</sub>]/P<sub>0</sub><sup>a</sup>",fmt(era)],
+      ["<span class=\"highlight\">Prêmio E[R<sup>a</sup>] − R<sup>f</sup></span>","cov(m,d<sub>1</sub>) &lt; 0","<span class=\"highlight\">" + fmt(premium) + "</span>"]
+    ];
+    byId("lucas-output").innerHTML=rows.map(function(row){return "<tr><td>"+row[0]+"</td><td style=\"text-align:left;color:#59636e\">"+row[1]+"</td><td>"+row[2]+"</td></tr>";}).join("");
+    if (delta===0) { byId("lucas-lesson").innerHTML="Sem risco agregado (Δ = 0), m<sub>h</sub> = m<sub>l</sub> = β: o prêmio é zero e R<sup>f</sup> = 1/β."; }
+    else if (gamma===0) { byId("lucas-lesson").innerHTML="Com γ = 0, m é constante: risco sem covariância com utilidade marginal não recebe prêmio."; }
+    else { byId("lucas-lesson").innerHTML="O estado de consumo baixo é caro por unidade de probabilidade (m<sub>l</sub> &gt; m<sub>h</sub>). A árvore paga mais no estado barato, por isso E[R<sup>a</sup>] &gt; R<sup>f</sup>."; }
+    updateComparison();
+  }
+  function updateAgents() {
+    var beta=parseFloat(byId("agents-beta").value),gamma=parseFloat(byId("agents-gamma").value),delta=parseFloat(byId("agents-delta").value);
+    var high=1+delta,low=1-delta,qLowMU=beta*.5*Math.pow(high,-gamma),qHighMU=beta*.5*Math.pow(low,-gamma);
+    var q1=[qLowMU,qHighMU],q2=[qHighMU,qLowMU],pf=qLowMU+qHighMU,rf=1/pf,betaRf=beta*rf,y1=q1[0],y2=q2[0];
+    state.agents={beta:beta,gamma:gamma,delta:delta,high:high,low:low,q1:q1,q2:q2,pf:pf,rf:rf,betaRf:betaRf,y1:y1,y2:y2};
+    byId("agents-vbeta").textContent=fmt(beta,2); byId("agents-vgamma").textContent=fmt(gamma,1); byId("agents-vdelta").textContent=fmt(delta,2);
+    byId("endowment-table").innerHTML="<tr><td class=\"agent-one\">Agente 1</td><td>1,00</td><td>"+fmt(high,2)+"</td><td>"+fmt(low,2)+"</td></tr>" +
+      "<tr><td class=\"agent-two\">Agente 2</td><td>1,00</td><td>"+fmt(low,2)+"</td><td>"+fmt(high,2)+"</td></tr>" +
+      "<tr><td><strong>Agregado</strong></td><td><strong>2,00</strong></td><td><strong>2,00</strong></td><td><strong>2,00</strong></td></tr>";
+    byId("agents-pf").textContent=fmt(pf); byId("agents-rf").textContent=fmt(rf);
+    byId("agents-q-table").innerHTML="<tr><td class=\"agent-one\">q¹</td><td>"+fmt(q1[0])+"</td><td>"+fmt(q1[1])+"</td><td>"+fmt(pf)+"</td></tr>" +
+      "<tr><td class=\"agent-two\">q²</td><td>"+fmt(q2[0])+"</td><td>"+fmt(q2[1])+"</td><td>"+fmt(pf)+"</td></tr>";
+    byId("agents-y1").textContent=fmt(y1); byId("agents-y2").textContent=fmt(y2); byId("agents-ydiff").textContent=fmt(Math.abs(y2-y1));
+    if (delta===0 || gamma===0) {
+      byId("agents-precaution").innerHTML="Neste limite, não há dispersão relevante de utilidade marginal: βR<sup>f</sup> = "+fmt(betaRf,4)+" e as avaliações individuais coincidem.";
+      byId("agents-q-lesson").innerHTML="Aqui q¹ = q² porque "+(delta===0 ? "as dotações não têm risco" : "a utilidade marginal é constante")+". A incompletude permanece uma propriedade de X, mas este equilíbrio particular não revela desacordo.";
+    } else {
+      byId("agents-precaution").innerHTML="Demanda precaucional: convexidade de u′ implica βR<sup>f</sup> = "+fmt(betaRf,4)+" &lt; 1. Aumentar γ ou δ eleva P<sub>0</sub><sup>f</sup> e reduz R<sup>f</sup>.";
+      byId("agents-q-lesson").innerHTML="q¹ ≠ q²: cada estado é ruim para um agente diferente. Ainda assim, as somas coincidem e ambos dão exatamente o mesmo valor a todo payoff no span negociado.";
+    }
+    drawIncompletePlot(byId("agents-qplot"),state.agents,true); updateComparison();
+  }
+  function plotFrame(maxValue,xLabel,yLabel) {
+    var left=72,right=570,top=30,bottom=330,width=right-left,height=bottom-top;
+    var px=function(x){return left+width*x/maxValue;},py=function(y){return bottom-height*y/maxValue;},svg="";
+    svg+=svgLine(left,bottom,right,bottom,"#66717c",1.5,""); svg+=svgLine(left,bottom,left,top,"#66717c",1.5,"");
+    for (var k=0;k<=4;k+=1) {
+      var v=maxValue*k/4,x=px(v),y=py(v);
+      svg+=svgLine(x,bottom,x,top,"#e5e2d7",1,k===0?"":"3 5"); svg+=svgLine(left,y,right,y,"#e5e2d7",1,k===0?"":"3 5");
+      svg+="<text x=\""+x+"\" y=\""+(bottom+23)+"\" text-anchor=\"middle\" font-size=\"12\" fill=\"#59636e\">"+fmt(v,2)+"</text>";
+      if(k>0){svg+="<text x=\""+(left-10)+"\" y=\""+(y+4)+"\" text-anchor=\"end\" font-size=\"12\" fill=\"#59636e\">"+fmt(v,2)+"</text>";}
+    }
+    svg+="<text x=\""+right+"\" y=\"374\" text-anchor=\"end\" font-size=\"15\" font-weight=\"700\" fill=\"#34414d\">"+xLabel+"</text>";
+    svg+="<text x=\"18\" y=\""+top+"\" font-size=\"15\" font-weight=\"700\" fill=\"#34414d\">"+yLabel+"</text>";
+    return {svg:svg,px:px,py:py,left:left,right:right,top:top,bottom:bottom};
+  }
+  function drawIncompletePlot(element,data,detailed) {
+    if(!data){return;} var maxValue=Math.max(1.05*data.pf,.55),frame=plotFrame(maxValue,"q₁","q₂"),svg=frame.svg;
+    var a=.008*data.pf,b=.992*data.pf;
+    svg+=svgLine(frame.px(a),frame.py(data.pf-a),frame.px(b),frame.py(data.pf-b),"#009e73",5,"");
+    svg+="<text x=\""+frame.px(data.pf*.55)+"\" y=\""+(frame.py(data.pf*.45)-14)+"\" text-anchor=\"middle\" font-size=\"14\" fill=\"#007252\" font-weight=\"800\">q₁ + q₂ = P₀ᶠ</text>";
+    function point(q,color,label,dx,dy) {
+      var x=frame.px(q[0]),y=frame.py(q[1]);
+      return "<circle cx=\""+x+"\" cy=\""+y+"\" r=\"8\" fill=\""+color+"\" stroke=\"#fff\" stroke-width=\"3\"/>" +
+        "<text x=\""+(x+dx)+"\" y=\""+(y+dy)+"\" font-size=\"14\" fill=\""+color+"\" font-weight=\"850\">"+label+"</text>";
+    }
+    var coincident=Math.abs(data.q1[0]-data.q2[0])<1e-9;
+    svg+=coincident?point(data.q1,"#7a5195","q¹ = q²",12,-10):point(data.q1,"#0072b2","q¹",12,-10)+point(data.q2,"#d55e00","q²",12,22);
+    if(detailed) {
+      var y1x=frame.px(data.y1),y2x=frame.px(data.y2);
+      svg+=svgLine(y1x,frame.py(data.q1[1]),y1x,frame.bottom,"#0072b2",1.5,"5 5");
+      svg+=svgLine(y2x,frame.py(data.q2[1]),y2x,frame.bottom,"#d55e00",1.5,"5 5");
+      svg+="<text x=\""+clamp(y1x-8,frame.left+20,frame.right-70)+"\" y=\""+(frame.bottom-12)+"\" text-anchor=\"end\" font-size=\"12\" fill=\"#0072b2\">valor de y por 1</text>";
+      svg+="<text x=\""+clamp(y2x+8,frame.left+70,frame.right-20)+"\" y=\""+(frame.bottom-30)+"\" text-anchor=\"start\" font-size=\"12\" fill=\"#d55e00\">valor de y por 2</text>";
+    }
+    element.innerHTML=svg;
+  }
+  function drawCompletePlot(element,data) {
+    if(!data){return;}
+    if(Math.abs(data.dh-data.dl)<1e-9) {
+      drawIncompletePlot(element,{pf:data.pf,q1:[data.qh,data.ql],q2:[data.qh,data.ql],y1:data.qh,y2:data.qh},false);
+      byId("complete-caption").innerHTML="Com Δ = 0, os dois payoffs são colineares: X perde posto e as duas restrições coincidem. O mercado deixa de ser completo neste caso-limite.";
+      return;
+    }
+    byId("complete-caption").innerHTML="Como d<sub>h</sub> ≠ d<sub>l</sub>, as retas não são paralelas. Sua interseção é o único q que apreça árvore e título.";
+    var safeX=data.pf,safeY=data.pf,treeX=data.pa/data.dh,treeY=data.pa/data.dl;
+    var maxValue=Math.max(safeX,safeY,treeX,treeY,data.qh,data.ql)*1.12,frame=plotFrame(maxValue,"qₕ","qₗ"),svg=frame.svg;
+    svg+=svgLine(frame.px(0),frame.py(safeY),frame.px(safeX),frame.py(0),"#009e73",4,"");
+    svg+=svgLine(frame.px(0),frame.py(treeY),frame.px(treeX),frame.py(0),"#7a5195",4,"");
+    svg+="<text x=\""+frame.px(safeX*.73)+"\" y=\""+(frame.py(safeY*.27)-12)+"\" font-size=\"13\" fill=\"#007252\" font-weight=\"800\">título</text>";
+    svg+="<text x=\""+frame.px(treeX*.18)+"\" y=\""+(frame.py(treeY*.82)-12)+"\" font-size=\"13\" fill=\"#7a5195\" font-weight=\"800\">árvore</text>";
+    svg+="<circle cx=\""+frame.px(data.qh)+"\" cy=\""+frame.py(data.ql)+"\" r=\"9\" fill=\"#d55e00\" stroke=\"#fff\" stroke-width=\"3\"/>";
+    svg+="<text x=\""+(frame.px(data.qh)+13)+"\" y=\""+(frame.py(data.ql)-12)+"\" font-size=\"14\" fill=\"#d55e00\" font-weight=\"850\">q único</text>";
+    element.innerHTML=svg;
+  }
+  function updateComparison() {
+    if(!state.lucas||!state.agents){return;}
+    drawCompletePlot(byId("compare-complete"),state.lucas);
+    drawIncompletePlot(byId("compare-incomplete"),state.agents,false);
+  }
+  ["lucas-gamma","lucas-pih","lucas-beta","lucas-delta"].forEach(function(id){byId(id).addEventListener("input",updateLucas);});
+  ["agents-beta","agents-gamma","agents-delta"].forEach(function(id){byId(id).addEventListener("input",updateAgents);});
+  updateLucas(); updateAgents();
+  var initialPanel=window.location.hash.replace("#","");
+  if (["lucas","agents","compare"].indexOf(initialPanel)>=0) { activatePanel(initialPanel,false,false); }
+}());
 </script>
 </body>
 </html>

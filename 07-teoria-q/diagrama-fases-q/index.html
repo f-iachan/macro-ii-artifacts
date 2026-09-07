@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="color-scheme" content="light dark">
+  <title>Diagrama de fases da teoria q</title>
+  <style>
+    :root {
+      --paper: #fffff7; --surface: #ffffff; --surface-soft: #f4f3e9; --ink: #202124; --muted: #687077;
+      --border: #d9d8cc; --grid: #e8e7dc; --blue: #0072b2; --orange: #d55e00; --green: #009e73;
+      --grey: #9a9a90; --focus: #7a5cff; --shadow: 0 10px 35px rgba(32,33,36,.08);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; color-scheme: light;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --paper:#171816; --surface:#21231f; --surface-soft:#2a2d27; --ink:#f2f2e9; --muted:#b5bab1; --border:#454a42;
+        --grid:#373b35; --blue:#56b4e9; --orange:#e69f5c; --green:#45c69a; --grey:#7c7f78; --shadow:0 10px 35px rgba(0,0,0,.24); color-scheme: dark; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); }
+    button, input, select { font: inherit; }
+    .shell { width: min(1380px, calc(100% - 32px)); margin: 0 auto; padding: 28px 0 48px; }
+    .eyebrow { margin: 0 0 6px; color: var(--blue); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; }
+    h1 { margin: 0; font-size: clamp(1.6rem, 3.4vw, 2.6rem); font-weight: 500; letter-spacing: -.03em; line-height: 1.05; }
+    .lead { max-width: 900px; color: var(--muted); line-height: 1.5; margin: 10px 0 18px; }
+    .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow); }
+    .controls { padding: 16px 18px; margin-bottom: 14px; display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px 18px; }
+    .ctl label { display: flex; justify-content: space-between; font-size: .86rem; color: var(--muted); margin-bottom: 4px; }
+    .ctl label b { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+    .ctl input[type=range] { width: 100%; accent-color: var(--blue); }
+    .ctl.shock input[type=range] { accent-color: var(--orange); }
+    .ctl .hint { font-size: .74rem; color: var(--muted); margin-top: 2px; }
+    .grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: 14px; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+    .plot { padding: 12px 14px 8px; }
+    .plot h2 { margin: 0 0 4px; font-size: 1rem; font-weight: 600; }
+    .plot p.sub { margin: 0 0 6px; font-size: .8rem; color: var(--muted); }
+    canvas { width: 100%; height: auto; display: block; }
+    .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: .8rem; color: var(--muted); padding: 6px 2px 4px; }
+    .legend span::before { content: ""; display: inline-block; width: 18px; height: 3px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); }
+    .legend span.dash::before { background: repeating-linear-gradient(90deg, var(--c) 0 4px, transparent 4px 7px); }
+    .readout { padding: 12px 18px; margin-top: 14px; font-size: .88rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 8px 18px; }
+    .readout div b { font-variant-numeric: tabular-nums; }
+    .notes { margin-top: 16px; padding: 14px 18px; font-size: .9rem; line-height: 1.55; }
+    .notes h3 { margin: 0 0 6px; font-size: .95rem; }
+    .notes ul { margin: 0; padding-left: 18px; }
+    .btns { display: flex; gap: 8px; align-items: end; }
+    .btns button { padding: 7px 12px; border-radius: 9px; border: 1px solid var(--border); background: var(--surface-soft); color: var(--ink); cursor: pointer; }
+    .btns button.primary { background: var(--blue); color: #fff; border-color: var(--blue); }
+    i.m { font-style: italic; }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <p class="eyebrow">Macro II · 07 Teoria q · tempo contínuo</p>
+  <h1>Diagrama de fases da teoria <i class="m">q</i></h1>
+  <p class="lead">Caso quadrático, <i class="m">g</i>(<i class="m">x</i>) = (<i class="m">κ</i>/2)<i class="m">x</i><sup>2</sup>, com congestão <i class="m">π</i>(<i class="m">K</i>) = <i class="m">c</i>·<i class="m">K</i><sup>−α</sup>.
+    Sistema: <i class="m">K̇</i>/<i class="m">K</i> = (<i class="m">q</i>−1)/<i class="m">κ</i> − <i class="m">δ</i> e
+    <i class="m">q̇</i> = (<i class="m">r</i>+<i class="m">δ</i>)<i class="m">q</i> − <i class="m">π</i>(<i class="m">K</i>) − (<i class="m">q</i>−1)<sup>2</sup>/(2<i class="m">κ</i>).
+    O parâmetro <i class="m">c</i> é escolhido para que o estado estacionário inicial tenha <i class="m">K</i>* = 1. Mova os controles e observe o braço estável e o salto de <i class="m">q</i>.</p>
+
+  <div class="panel controls">
+    <div class="ctl"><label>κ (convexidade do custo) <b id="v-kappa"></b></label><input id="kappa" type="range" min="0.5" max="6" step="0.1" value="2"></div>
+    <div class="ctl"><label>δ (depreciação) <b id="v-delta"></b></label><input id="delta" type="range" min="0.01" max="0.15" step="0.005" value="0.05"></div>
+    <div class="ctl"><label>r (juros) <b id="v-r"></b></label><input id="r" type="range" min="0.01" max="0.2" step="0.005" value="0.08"></div>
+    <div class="ctl"><label>α (curvatura de π) <b id="v-alpha"></b></label><input id="alpha" type="range" min="0.2" max="2" step="0.1" value="0.5"></div>
+    <div class="ctl shock"><label>Choque permanente em π <b id="v-shock"></b></label><input id="shock" type="range" min="-30" max="30" step="1" value="-10"><div class="hint">0 = sem choque; negativo = queda de produtividade</div></div>
+    <div class="ctl shock"><label>Anúncio: choque ocorre em T <b id="v-T"></b></label><input id="T" type="range" min="0" max="15" step="0.5" value="0"><div class="hint">T = 0: não antecipado. T &gt; 0: anunciado em t = 0, ocorre em T</div></div>
+    <div class="btns"><button id="reset">Restaurar padrão</button><button id="toggleField" class="primary">Campo de direções: on</button></div>
+  </div>
+
+  <div class="grid">
+    <div class="panel plot">
+      <h2>Plano (K, q)</h2>
+      <p class="sub">Eixo horizontal K; eixo vertical q. Ponto preto: estado estacionário. Linha preta: trajetória de equilíbrio após o choque.</p>
+      <canvas id="phase" width="900" height="600"></canvas>
+      <div class="legend">
+        <span style="--c:var(--blue)">K̇ = 0 (q = 1+κδ)</span>
+        <span style="--c:var(--orange)">q̇ = 0 (depois do choque)</span>
+        <span class="dash" style="--c:var(--orange)">q̇ = 0 (antes)</span>
+        <span style="--c:var(--green)">braço estável (sela)</span>
+        <span class="dash" style="--c:var(--grey)">î = r+δ: dobra de q̇ = 0</span>
+      </div>
+    </div>
+    <div class="panel plot">
+      <h2>Trajetórias no tempo</h2>
+      <p class="sub">q(t) em laranja (eixo esquerdo) e K(t) em azul (eixo direito). Linha vertical: data T do choque anunciado.</p>
+      <canvas id="time" width="700" height="600"></canvas>
+      <div class="legend"><span style="--c:var(--orange)">q(t)</span><span style="--c:var(--blue)">K(t)</span></div>
+    </div>
+  </div>
+
+  <div class="panel readout" id="readout"></div>
+
+  <div class="panel notes">
+    <h3>O que observar</h3>
+    <ul>
+      <li><b>K̇ = 0 é horizontal.</b> Com custo homogêneo, a taxa de investimento depende só de q; o capital para de crescer em q* = 1+κδ, qualquer que seja K.</li>
+      <li><b>q* não depende de π nem de r.</b> Um choque permanente em π move K*, não q*: q salta e depois volta ao mesmo nível.</li>
+      <li><b>Sela.</b> det J = K*·φ′(q*)·π′(K*) &lt; 0 sempre que π′ &lt; 0. A desigualdade r+δ &gt; î só diz em que ramo do lócus q̇ = 0 estamos: perto do estado estacionário, î* = δ e a inclinação é π′(K*)/r &lt; 0. O lócus dobra em q = 1+κ(r+δ).</li>
+      <li><b>Choque anunciado.</b> Para T &gt; 0, q se move no anúncio (t = 0), a economia segue a dinâmica antiga (com π antigo) até T, e chega ao novo braço estável exatamente em T; K é contínuo em T. É o mesmo raciocínio dos eventos antecipados do deck 05.</li>
+      <li><b>κ maior</b> deixa o ajuste mais lento (|λ₋| menor) e o braço estável <i>mais íngreme</i> (inclinação λ₋κ/K*); <b>r maior</b> gira o lócus q̇ = 0 e reduz K*.</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const P = { kappa: 2, delta: 0.05, r: 0.08, alpha: 0.5, shock: -10, T: 0 };
+  let showField = true;
+  const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+  // ---------- modelo ----------
+  function model(p, c) {
+    const { kappa, delta, r, alpha } = p;
+    const pi = K => c * Math.pow(K, -alpha);
+    const dpi = K => -alpha * c * Math.pow(K, -alpha - 1);
+    const dK = (K, q) => K * ((q - 1) / kappa - delta);
+    const dq = (K, q) => (r + delta) * q - pi(K) - (q - 1) ** 2 / (2 * kappa);
+    const qs = 1 + kappa * delta;
+    const pis = (r + delta) * qs - kappa * delta * delta / 2;
+    const Ks = Math.pow(c / pis, 1 / alpha);
+    return { pi, dpi, dK, dq, qs, Ks, c };
+  }
+  function cBase(p) { const { kappa, delta, r } = p; return (r + delta) * (1 + kappa * delta) - kappa * delta * delta / 2; } // K* = 1
+  function rk4(f, y, h) {
+    const k1 = f(y), k2 = f([y[0] + h / 2 * k1[0], y[1] + h / 2 * k1[1]]);
+    const k3 = f([y[0] + h / 2 * k2[0], y[1] + h / 2 * k2[1]]), k4 = f([y[0] + h * k3[0], y[1] + h * k3[1]]);
+    return [y[0] + h / 6 * (k1[0] + 2 * k2[0] + 2 * k3[0] + k4[0]), y[1] + h / 6 * (k1[1] + 2 * k2[1] + 2 * k3[1] + k4[1])];
+  }
+  function stableVec(m, p) {
+    // J = [[0, K*/kappa], [-pi'(K*), r]]
+    const a = 0, b = m.Ks / p.kappa, c = -m.dpi(m.Ks), d = p.r;
+    const tr = a + d, det = a * d - b * c;
+    const lam = (tr - Math.sqrt(tr * tr - 4 * det)) / 2; // negativo
+    return { lam, v: [b, lam - a] }; // (J - lam I) v = 0 => primeira linha: -lam v1 + b v2 = 0
+  }
+  function saddle(m, p, box) {
+    const { v } = stableVec(m, p); const n = Math.hypot(v[0], v[1]); const u = [v[0] / n, v[1] / n];
+    const f = y => [m.dK(y[0], y[1]), m.dq(y[0], y[1])];
+    const pts = [];
+    for (const s of [1, -1]) {
+      let y = [m.Ks + s * 1e-4 * u[0], m.qs + s * 1e-4 * u[1]]; const br = [y];
+      for (let i = 0; i < 60000; i++) {
+        y = rk4(f, y, -0.01);
+        if (y[0] < box.K0 * 0.7 || y[0] > box.K1 * 1.3 || y[1] < box.q0 - 0.3 || y[1] > box.q1 + 0.3) break;
+        br.push(y);
+      }
+      pts.push(br);
+    }
+    const all = pts[0].slice().reverse().concat(pts[1]).sort((a, b) => a[0] - b[0]); // ordenado em K (monótono)
+    const qOf = K => { // interpolação linear
+      if (K <= all[0][0]) return all[0][1]; if (K >= all[all.length - 1][0]) return all[all.length - 1][1];
+      let lo = 0, hi = all.length - 1; while (hi - lo > 1) { const mid = (lo + hi) >> 1; (all[mid][0] <= K ? lo = mid : hi = mid); }
+      const t = (K - all[lo][0]) / (all[hi][0] - all[lo][0]); return all[lo][1] + t * (all[hi][1] - all[lo][1]);
+    };
+    return { branches: pts, qOf };
+  }
+  function qNull(m, p, K) { // raízes de (r+d) q - (q-1)^2/(2k) = pi(K)
+    const k = p.kappa, rd = p.r + p.delta; const a = -1 / (2 * k), b = rd + 1 / k, c = -1 / (2 * k) - m.pi(K);
+    const D = b * b - 4 * a * c; if (D < 0) return null;
+    const s = Math.sqrt(D); return [(-b + s) / (2 * a), (-b - s) / (2 * a)]; // [menor, maior]
+  }
+
+  // ---------- solução do experimento ----------
+  function solve(p) {
+    const c0 = cBase(p), c1 = c0 * (1 + p.shock / 100);
+    const m0 = model(p, c0), m1 = model(p, c1);
+    const box = { K0: Math.min(m0.Ks, m1.Ks) * 0.45, K1: Math.max(m0.Ks, m1.Ks) * 1.7, q0: Math.min(m0.qs, 1) - 0.2, q1: Math.max(m0.qs, 1 + p.kappa * (p.r + p.delta)) + 0.12 };
+    const S1 = saddle(m1, p, box), S0 = saddle(m0, p, box);
+    const Tmax = 60, h = 0.02; const path = []; let ts = [];
+    const f0 = y => [m0.dK(y[0], y[1]), m0.dq(y[0], y[1])], f1 = y => [m1.dK(y[0], y[1]), m1.dq(y[0], y[1])];
+    let q0;
+    if (p.shock === 0) { q0 = m0.qs; }
+    else if (p.T === 0) { q0 = S1.qOf(m0.Ks); }
+    else { // bisseção em q(0): integrar dinâmica antiga até T, cair no novo braço estável
+      const resid = qq => { let y = [m0.Ks, qq]; for (let t = 0; t < p.T - 1e-9; t += h) y = rk4(f0, y, h); return y[1] - S1.qOf(y[0]); };
+      let lo = m0.qs - 0.6, hi = m0.qs + 0.6;
+      if (resid(lo) > 0 || resid(hi) < 0) { lo = m0.qs - 1.5; hi = m0.qs + 1.5; }
+      for (let i = 0; i < 80; i++) { const mid = (lo + hi) / 2; (resid(mid) > 0 ? hi = mid : lo = mid); }
+      q0 = (lo + hi) / 2;
+    }
+    let y = [m0.Ks, q0]; path.push(y); ts.push(0);
+    for (let t = 0; t < Tmax; t += h) { y = rk4(t < p.T - 1e-9 ? f0 : f1, y, h); path.push(y); ts.push(t + h); }
+    return { m0, m1, S0, S1, box, path, ts, q0 };
+  }
+
+  // ---------- desenho ----------
+  function axes(ctx, W, H, box, pad) {
+    const x = K => pad.l + (K - box.K0) / (box.K1 - box.K0) * (W - pad.l - pad.r);
+    const y = q => H - pad.b - (q - box.q0) / (box.q1 - box.q0) * (H - pad.t - pad.b);
+    ctx.strokeStyle = css('--grid'); ctx.lineWidth = 1; ctx.font = '13px system-ui'; ctx.fillStyle = css('--muted');
+    const ticks = (a, b, n) => { const s = niceStep((b - a) / n); const out = []; for (let v = Math.ceil(a / s) * s; v <= b + 1e-9; v += s) out.push(+v.toFixed(6)); return out; };
+    for (const K of ticks(box.K0, box.K1, 6)) { ctx.beginPath(); ctx.moveTo(x(K), pad.t); ctx.lineTo(x(K), H - pad.b); ctx.stroke(); ctx.textAlign = 'center'; ctx.fillText(fmt(K), x(K), H - pad.b + 18); }
+    for (const q of ticks(box.q0, box.q1, 6)) { ctx.beginPath(); ctx.moveTo(pad.l, y(q)); ctx.lineTo(W - pad.r, y(q)); ctx.stroke(); ctx.textAlign = 'right'; ctx.fillText(fmt(q), pad.l - 6, y(q) + 4); }
+    ctx.strokeStyle = css('--border'); ctx.strokeRect(pad.l, pad.t, W - pad.l - pad.r, H - pad.t - pad.b);
+    return { x, y };
+  }
+  function niceStep(raw) { const e = Math.pow(10, Math.floor(Math.log10(raw))); const m = raw / e; return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * e; }
+  const fmt = v => (Math.abs(v) >= 100 ? v.toFixed(0) : Math.abs(v) >= 10 ? v.toFixed(1) : v.toFixed(2)).replace('.', ',');
+  function line(ctx, pts, color, w, dash) { ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = w; ctx.setLineDash(dash || []); ctx.beginPath(); let first = true; for (const p of pts) { if (!p) { first = true; continue; } first ? ctx.moveTo(p[0], p[1]) : ctx.lineTo(p[0], p[1]); first = false; } ctx.stroke(); ctx.restore(); }
+
+  function drawPhase(sol, p) {
+    const cv = $('phase'), ctx = cv.getContext('2d'); const W = cv.width, H = cv.height; const pad = { l: 56, r: 16, t: 16, b: 40 };
+    ctx.clearRect(0, 0, W, H); const { box, m0, m1, S0, S1 } = sol; const { x, y } = axes(ctx, W, H, box, pad);
+    ctx.fillStyle = css('--muted'); ctx.font = '13px system-ui'; ctx.textAlign = 'center'; ctx.fillText('capital agregado K', (pad.l + W - pad.r) / 2, H - 6);
+    ctx.save(); ctx.translate(14, (pad.t + H - pad.b) / 2); ctx.rotate(-Math.PI / 2); ctx.fillText('q', 0, 0); ctx.restore();
+    // campo de direções (dinâmica pós-choque)
+    if (showField) {
+      const m = p.shock === 0 ? m0 : m1; const n = 18; ctx.strokeStyle = css('--grey'); ctx.fillStyle = css('--grey'); ctx.lineWidth = 1; ctx.globalAlpha = .55;
+      for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+        const K = box.K0 + (i + .5) / n * (box.K1 - box.K0), q = box.q0 + (j + .5) / n * (box.q1 - box.q0);
+        let u = m.dK(K, q) / (box.K1 - box.K0), w = m.dq(K, q) / (box.q1 - box.q0); const s = Math.hypot(u, w) + 1e-12; u /= s; w /= s;
+        const L = 11, px = x(K), py = y(q), ex = px + u * L, ey = py - w * L;
+        ctx.beginPath(); ctx.moveTo(px - u * L * .3, py + w * L * .3); ctx.lineTo(ex, ey); ctx.stroke();
+        const ang = Math.atan2(-w, u); ctx.beginPath(); ctx.moveTo(ex, ey); ctx.lineTo(ex - 5 * Math.cos(ang - .5), ey - 5 * Math.sin(ang - .5)); ctx.lineTo(ex - 5 * Math.cos(ang + .5), ey - 5 * Math.sin(ang + .5)); ctx.closePath(); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+    // lócus q̇=0 (antes tracejado, depois sólido) — dois ramos
+    const nullPts = (m, which) => { const out = []; for (let i = 0; i <= 500; i++) { const K = box.K0 + i / 500 * (box.K1 - box.K0); const r = qNull(m, p, K); out.push(r ? [x(K), y(r[which])] : null); } return out; };
+    if (p.shock !== 0) { line(ctx, nullPts(m0, 0), css('--orange'), 1.5, [5, 5]); line(ctx, nullPts(m0, 1), css('--orange'), 1.5, [5, 5]); }
+    const mA = p.shock === 0 ? m0 : m1;
+    line(ctx, nullPts(mA, 0), css('--orange'), 2.4); line(ctx, nullPts(mA, 1), css('--orange'), 2.4);
+    // K̇=0 e dobra
+    line(ctx, [[pad.l, y(m0.qs)], [W - pad.r, y(m0.qs)]], css('--blue'), 2.4);
+    const qb = 1 + p.kappa * (p.r + p.delta); if (qb < box.q1) line(ctx, [[pad.l, y(qb)], [W - pad.r, y(qb)]], css('--grey'), 1, [3, 5]);
+    // braço estável (do sistema vigente após o choque)
+    const S = p.shock === 0 ? S0 : S1; for (const br of S.branches) line(ctx, br.map(pt => [x(pt[0]), y(pt[1])]), css('--green'), 2.6);
+    // trajetória
+    if (p.shock !== 0) {
+      line(ctx, sol.path.filter((_, i) => i % 2 === 0).map(pt => [x(pt[0]), y(pt[1])]), css('--ink'), 1.8);
+      // salto inicial
+      ctx.save(); ctx.strokeStyle = css('--orange'); ctx.lineWidth = 2; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(x(m0.Ks), y(m0.qs)); ctx.lineTo(x(m0.Ks), y(sol.q0)); ctx.stroke(); ctx.restore();
+      dot(ctx, x(m1.Ks), y(m1.qs), css('--ink'), 'EE novo', -12, -10);
+      dot(ctx, x(m0.Ks), y(m0.qs), css('--ink'), 'EE antigo', 8, -10);
+    } else dot(ctx, x(m0.Ks), y(m0.qs), css('--ink'), '(K*, q*)', 8, -10);
+    function dot(ctx, px, py, color, label, dx, dy) { ctx.fillStyle = color; ctx.beginPath(); ctx.arc(px, py, 4.5, 0, 7); ctx.fill(); ctx.font = '13px system-ui'; ctx.textAlign = dx < 0 ? 'right' : 'left'; ctx.fillText(label, px + dx, py + dy); }
+  }
+  function drawTime(sol, p) {
+    const cv = $('time'), ctx = cv.getContext('2d'); const W = cv.width, H = cv.height; const pad = { l: 52, r: 56, t: 16, b: 40 };
+    ctx.clearRect(0, 0, W, H); const ts = sol.ts, path = sol.path; const Tshow = 60;
+    const qs = path.map(v => v[1]), Ks = path.map(v => v[0]);
+    const qb = { lo: Math.min(...qs, sol.m0.qs) - 0.02, hi: Math.max(...qs, sol.m0.qs) + 0.02 };
+    const Kb = { lo: Math.min(...Ks) * 0.97, hi: Math.max(...Ks) * 1.03 + 1e-6 };
+    const x = t => pad.l + t / Tshow * (W - pad.l - pad.r), yq = q => H - pad.b - (q - qb.lo) / (qb.hi - qb.lo) * (H - pad.t - pad.b), yK = K => H - pad.b - (K - Kb.lo) / (Kb.hi - Kb.lo) * (H - pad.t - pad.b);
+    ctx.strokeStyle = css('--grid'); ctx.lineWidth = 1; ctx.font = '13px system-ui'; ctx.fillStyle = css('--muted');
+    for (let t = 0; t <= Tshow; t += 10) { ctx.beginPath(); ctx.moveTo(x(t), pad.t); ctx.lineTo(x(t), H - pad.b); ctx.stroke(); ctx.textAlign = 'center'; ctx.fillText(t, x(t), H - pad.b + 18); }
+    for (let i = 0; i <= 5; i++) { const q = qb.lo + i / 5 * (qb.hi - qb.lo), K = Kb.lo + i / 5 * (Kb.hi - Kb.lo); const yy = yq(q); ctx.beginPath(); ctx.moveTo(pad.l, yy); ctx.lineTo(W - pad.r, yy); ctx.stroke();
+      ctx.textAlign = 'right'; ctx.fillStyle = css('--orange'); ctx.fillText(fmt(q), pad.l - 6, yy + 4); ctx.textAlign = 'left'; ctx.fillStyle = css('--blue'); ctx.fillText(fmt(K), W - pad.r + 6, yy + 4); ctx.fillStyle = css('--muted'); }
+    ctx.strokeStyle = css('--border'); ctx.strokeRect(pad.l, pad.t, W - pad.l - pad.r, H - pad.t - pad.b);
+    ctx.textAlign = 'center'; ctx.fillText('tempo', (pad.l + W - pad.r) / 2, H - 6);
+    if (p.T > 0 && p.shock !== 0) line(ctx, [[x(p.T), pad.t], [x(p.T), H - pad.b]], css('--grey'), 1, [4, 4]);
+    line(ctx, [[pad.l, yq(sol.m0.qs)], [W - pad.r, yq(sol.m0.qs)]], css('--orange'), 1, [2, 4]);
+    const step = 3; line(ctx, path.filter((_, i) => i % step === 0).map((v, i) => [x(ts[i * step]), yq(v[1])]), css('--orange'), 2.2);
+    line(ctx, path.filter((_, i) => i % step === 0).map((v, i) => [x(ts[i * step]), yK(v[0])]), css('--blue'), 2.2);
+  }
+  function readout(sol, p) {
+    const { m0, m1 } = sol; const slope = m0.dpi(m0.Ks) / p.r; const { lam } = stableVec(m0, p);
+    const rows = [
+      ['q* = 1+κδ', fmt(m0.qs) + ' (não muda com o choque)'],
+      ['K* antes → depois', fmt(m0.Ks) + ' → ' + fmt(m1.Ks)],
+      ['π(K*) no estado estacionário (invariante ao choque)', fmt(m0.pi(m0.Ks))],
+      ['c antes → depois', fmt(m0.c) + ' → ' + fmt(m1.c)],
+      ['inclinação de q̇ = 0 no EE, π′(K*)/r', fmt(slope)],
+      ['autovalor estável λ₋', fmt(lam) + ' (meia-vida ≈ ' + fmt(Math.log(2) / -lam) + ')'],
+      ['dobra de q̇ = 0 em q = 1+κ(r+δ)', fmt(1 + p.kappa * (p.r + p.delta))],
+      ['q(0) após o anúncio', p.shock === 0 ? '—' : fmt(sol.q0) + (p.T > 0 ? ' (chega ao novo braço em T = ' + fmt(p.T) + ')' : ' (salta para o novo braço)')],
+    ];
+    $('readout').innerHTML = rows.map(r => '<div>' + r[0] + ': <b>' + r[1] + '</b></div>').join('');
+  }
+
+  function render() {
+    for (const k of ['kappa', 'delta', 'r', 'alpha', 'shock', 'T']) { P[k] = parseFloat($(k).value); }
+    $('v-kappa').textContent = fmt(P.kappa); $('v-delta').textContent = fmt(P.delta); $('v-r').textContent = fmt(P.r); $('v-alpha').textContent = fmt(P.alpha);
+    $('v-shock').textContent = (P.shock > 0 ? '+' : '') + P.shock + '%'; $('v-T').textContent = P.T === 0 ? 'não antecipado' : fmt(P.T);
+    const sol = solve(P); drawPhase(sol, P); drawTime(sol, P); readout(sol, P);
+  }
+  for (const k of ['kappa', 'delta', 'r', 'alpha', 'shock', 'T']) $(k).addEventListener('input', render);
+  $('reset').addEventListener('click', () => { $('kappa').value = 2; $('delta').value = 0.05; $('r').value = 0.08; $('alpha').value = 0.5; $('shock').value = -10; $('T').value = 0; render(); });
+  $('toggleField').addEventListener('click', () => { showField = !showField; $('toggleField').textContent = 'Campo de direções: ' + (showField ? 'on' : 'off'); render(); });
+  if (window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
+  render();
+})();
+</script>
+</body>
+</html>

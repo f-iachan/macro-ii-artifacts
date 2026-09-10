@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Custo de ajustamento: G, G₁, G₂ e retornos constantes de escala</title>
+<style>
+  :root{
+    --paper:#FDFDEC;
+    --ink:#22303a;
+    --blue:#1D7FC3;
+    --blue-deep:#12557f;
+    --orange:#E0730C;
+    --rule:#cfd6cf;
+    --soft:#f6f6e0;
+    --green:#2f6b3c;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font:16px/1.55 "Lato","Segoe UI",Helvetica,Arial,sans-serif;
+    padding:28px 20px 56px;
+  }
+  .wrap{max-width:1120px;margin:0 auto}
+  h1{font-size:1.72rem;font-weight:600;color:var(--blue);margin:0 0 .15em;letter-spacing:-.01em}
+  h2{font-size:1.12rem;font-weight:600;color:var(--blue);margin:0 0 .5em}
+  h3{font-size:.92rem;font-weight:600;color:var(--blue-deep);margin:0 0 .35em}
+  .lede{max-width:78ch;margin:0 0 1.35em;color:#3d4a52}
+  .m{font-family:Georgia,"Latin Modern Roman",serif;font-style:italic}
+  .mn{font-family:Georgia,serif;font-style:normal}
+
+  .identity{
+    display:flex;gap:14px;align-items:center;flex-wrap:wrap;
+    border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);
+    padding:10px 2px;margin:0 0 20px;color:#36434b;
+  }
+  .identity .formula{font-family:Georgia,"Latin Modern Roman",serif;font-size:1.08rem}
+  .identity .meaning{font-size:.92rem;color:#59646b}
+
+  .grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,1fr);gap:26px;align-items:start}
+  @media (max-width:860px){.grid{grid-template-columns:1fr}}
+
+  .panel{background:var(--soft);border:1px solid var(--rule);border-radius:3px;padding:18px 20px}
+  figure{margin:0}
+  svg{width:100%;height:auto;display:block}
+
+  .controls{display:flex;flex-direction:column;gap:14px;margin-bottom:18px}
+  label{display:block;font-size:.9rem;margin-bottom:4px}
+  input[type=range]{width:100%;accent-color:var(--blue)}
+  input[type=range]:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  button{
+    font:inherit;font-size:.85rem;background:transparent;color:var(--blue-deep);
+    border:1px solid var(--blue);border-radius:2px;padding:3px 10px;cursor:pointer;
+  }
+  button:hover{background:var(--blue);color:#fff}
+  button:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+
+  table{border-collapse:collapse;width:100%;font-size:.94rem}
+  th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--rule)}
+  th{font-weight:600;font-size:.82rem;color:#5a6670}
+  td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .swatch{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:7px;vertical-align:baseline}
+  .s-blue{background:var(--blue)}
+  .s-orange{background:var(--orange)}
+
+  .bridge{
+    margin:12px 0 0;padding:10px 12px;background:#fff;border-left:3px solid var(--orange);
+    font-size:.90rem;color:#44515a;
+  }
+  .bridge .eq{display:block;font-family:Georgia,"Latin Modern Roman",serif;font-size:.98rem;margin-bottom:3px;color:#26343d}
+
+  .bar{display:flex;height:30px;border:1px solid var(--rule);margin:10px 0 6px;font-size:.78rem;color:#fff}
+  .bar div{display:flex;align-items:center;justify-content:center;overflow:hidden;min-width:0}
+  .bar .i{background:var(--blue)}
+  .bar .g{background:var(--orange)}
+
+  .merge{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:12px}
+  @media (max-width:620px){.merge{grid-template-columns:1fr}}
+  .firm{border:1px solid var(--rule);padding:10px 12px;background:#fff}
+  .firm h3{margin:0 0 6px;font-size:.88rem;font-weight:600;color:var(--blue-deep)}
+  .firm p{margin:2px 0;font-size:.9rem;font-variant-numeric:tabular-nums}
+
+  .note{font-size:.9rem;color:#4a565e;max-width:78ch}
+  .check{font-size:.88rem;color:var(--green);font-variant-numeric:tabular-nums}
+  section{margin-top:30px}
+
+  details.optional{margin-top:30px;background:var(--soft);border:1px solid var(--rule);border-radius:3px;padding:0}
+  details.optional summary{
+    cursor:pointer;list-style:none;padding:16px 20px;font-weight:600;color:var(--blue);
+  }
+  details.optional summary::-webkit-details-marker{display:none}
+  details.optional summary::before{content:"＋";display:inline-block;width:1.2em;color:var(--orange)}
+  details.optional[open] summary::before{content:"−"}
+  details.optional .inside{padding:0 20px 18px}
+
+  .takeaway{
+    margin-top:24px;padding:13px 16px;border-left:4px solid var(--blue);background:#fff;
+    font-size:.94rem;color:#39464e;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>O custo de ajustamento em uma reta</h1>
+<p class="lede">Toda a informação <strong>por unidade de capital</strong> está na curva <span class="m">g</span> e na sua tangente:
+<span class="m">g</span>(î) é o custo de ajustamento por unidade de <span class="m">k</span>, a inclinação é <span class="m">G</span><sub class="mn">1</sub> e o intercepto é <span class="m">G</span><sub class="mn">2</sub>.
+Mova a taxa de investimento e veja os três objetos se moverem juntos.</p>
+
+<div class="identity">
+  <span class="formula"><span class="m">G</span>(<span class="m">i</span>,<span class="m">k</span>) = <span class="m">k</span> <span class="m">g</span>(î), &nbsp; î = <span class="m">i</span>/<span class="m">k</span></span>
+  <span class="meaning">RCE: se <span class="m">i</span> e <span class="m">k</span> dobram juntos, <span class="m">G</span> dobra — o custo por unidade de capital não muda.</span>
+</div>
+
+<div class="grid">
+
+  <div class="panel">
+    <figure>
+      <div id="plot"></div>
+      <figcaption class="note" style="margin-top:10px">
+        <span class="swatch s-blue"></span><span class="m">g</span>(î) = <span class="m">G</span>(<span class="m">i</span>,<span class="m">k</span>)/<span class="m">k</span>.
+        <span class="swatch s-orange" style="margin-left:14px"></span>tangente em î. Como <span class="m">g</span> é convexa e <span class="m">g</span>(0) = 0, a tangente passa <em>abaixo</em> da origem: geometricamente, é por isso que <span class="m">G</span><sub class="mn">2</sub> ≤ 0.
+      </figcaption>
+    </figure>
+  </div>
+
+  <div>
+    <div class="panel">
+      <div class="controls">
+        <div>
+          <label for="ihat">taxa de investimento î = <span id="ihat-val">0,300</span></label>
+          <input id="ihat" type="range" min="0" max="0.5" step="0.005" value="0.3">
+          <div class="chips" style="margin-top:8px">
+            <button data-i="0.08">î = δ = 0,08 (reposição)</button>
+            <button data-i="0.40">î = 0,40 (boom)</button>
+            <button data-i="0">î = 0</button>
+          </div>
+        </div>
+        <div>
+          <label for="phi">curvatura φ em <span class="m">g</span>(î) = φ î²/2: <span id="phi-val">1,0</span></label>
+          <input id="phi" type="range" min="0.4" max="2.6" step="0.1" value="1">
+        </div>
+      </div>
+
+      <table>
+        <tr><th>objeto</th><th>leitura</th><th style="text-align:right">valor</th></tr>
+        <tr><td><span class="m">g</span>(î) = <span class="m">G</span>/<span class="m">k</span></td><td>altura da curva</td><td class="num" id="v-g"></td></tr>
+        <tr><td><span class="m">G</span><sub class="mn">1</sub> = <span class="m">g</span>′(î)</td><td>inclinação da tangente</td><td class="num" id="v-g1"></td></tr>
+        <tr><td><span class="m">G</span><sub class="mn">2</sub></td><td>intercepto em î = 0</td><td class="num" id="v-g2"></td></tr>
+        <tr><td><span class="m">q</span><sup class="mn">m</sup> = 1 + <span class="m">g</span>′(î)</td><td>1 + custo marginal</td><td class="num" id="v-q"></td></tr>
+      </table>
+
+      <div class="bridge">
+        <span class="eq"><span class="m">G</span><sub class="mn">1</sub> = ∂<span class="m">G</span>/∂<span class="m">i</span>|<sub class="mn">k</sub> = <span class="m">g</span>′(î)</span>
+        Mais investimento com a planta dada: a taxa <span class="m">i</span>/<span class="m">k</span> sobe.
+        <span class="eq" style="margin-top:7px"><span class="m">G</span><sub class="mn">2</sub> = ∂<span class="m">G</span>/∂<span class="m">k</span>|<sub class="mn">i</sub> = <span class="m">g</span>(î) − î<span class="m">g</span>′(î)</span>
+        Mais capital instalado com o mesmo <span class="m">i</span>: a taxa <span class="m">i</span>/<span class="m">k</span> cai; a mesma instalação fica mais fácil de absorver.
+      </div>
+
+      <p class="check" style="margin:12px 0 0">
+        Euler: <span class="m">g</span>(î) = <span class="m">G</span><sub class="mn">2</sub> + <span class="m">G</span><sub class="mn">1</sub>î &nbsp;→&nbsp; <span id="v-euler"></span>
+      </p>
+    </div>
+
+    <div class="panel" style="margin-top:18px">
+      <h2>O que a firma usa para investir</h2>
+      <div class="bar" id="bar">
+        <div class="i" id="bar-i"></div>
+        <div class="g" id="bar-g"></div>
+      </div>
+      <p class="note" style="margin:0" id="units-text"></p>
+    </div>
+  </div>
+</div>
+
+<section class="panel">
+  <h2>Retornos constantes: sem ganho de escala na instalação</h2>
+  <p class="note" style="margin-top:0">
+    Duas firmas idênticas de tamanho <span class="m">k</span> = 1, cada uma investindo à mesma taxa î, têm juntas o mesmo custo que uma firma fundida de tamanho <span class="m">k</span> = 2 investindo o dobro.
+    O <strong>custo total</strong> <span class="m">G</span> dobra; o custo por unidade de capital <span class="m">G</span>/<span class="m">k</span> = <span class="m">g</span>(î) permanece igual.
+  </p>
+  <div class="merge">
+    <div class="firm"><h3>Firma A</h3>
+      <p><span class="m">k</span> = 1, <span class="m">i</span> = <span id="mA-i"></span></p>
+      <p>î = <span id="mA-ih"></span></p>
+      <p>custo <span class="m">G</span> = <span id="mA-G"></span></p>
+    </div>
+    <div class="firm"><h3>Firma B</h3>
+      <p><span class="m">k</span> = 1, <span class="m">i</span> = <span id="mB-i"></span></p>
+      <p>î = <span id="mB-ih"></span></p>
+      <p>custo <span class="m">G</span> = <span id="mB-G"></span></p>
+    </div>
+    <div class="firm" style="border-color:var(--blue)"><h3>A + B fundidas</h3>
+      <p><span class="m">k</span> = 2, <span class="m">i</span> = <span id="mM-i"></span></p>
+      <p>î = <span id="mM-ih"></span></p>
+      <p>custo <span class="m">G</span> = <span id="mM-G"></span></p>
+    </div>
+  </div>
+  <p class="check" id="merge-check" style="margin-bottom:0"></p>
+  <p class="note" style="margin-bottom:0">Em símbolos: <span class="m">G</span>(2<span class="m">i</span>,2<span class="m">k</span>) = 2<span class="m">G</span>(<span class="m">i</span>,<span class="m">k</span>), enquanto <span class="m">g</span>((2<span class="m">i</span>)/(2<span class="m">k</span>)) = <span class="m">g</span>(<span class="m">i</span>/<span class="m">k</span>).</p>
+</section>
+
+<details class="optional">
+  <summary>Conexão opcional com q marginal</summary>
+  <div class="inside">
+    <h2 style="margin-top:0">A relação um-para-um entre <span class="m">q</span><sup class="mn">m</sup> e a taxa de investimento</h2>
+    <div style="max-width:520px"><div id="plot2"></div></div>
+    <p class="note" style="margin-bottom:0">
+      A CPO em <span class="m">k</span>′ dá <span class="m">q</span><sup class="mn">m</sup> = 1 + <span class="m">g</span>′(î). No caso quadrático, î = (<span class="m">q</span><sup class="mn">m</sup> − 1)/φ, logo dî/d<span class="m">q</span><sup class="mn">m</sup> = 1/φ.
+      Quanto maior φ, menor a resposta do investimento a um mesmo movimento de <span class="m">q</span><sup class="mn">m</sup>. Quando φ → 0, a relação no plano (<span class="m">q</span><sup class="mn">m</sup>, î) torna-se vertical em <span class="m">q</span><sup class="mn">m</sup> = 1: sem custo de ajustamento, o capital pode saltar e <span class="m">q</span><sup class="mn">m</sup> não precisa se afastar de 1.
+    </p>
+  </div>
+</details>
+
+<div class="takeaway">
+  <strong>Leitura econômica:</strong> <span class="m">G</span><sub class="mn">1</sub> é o custo marginal de acelerar o investimento com a planta dada; <span class="m">G</span><sub class="mn">2</sub> é o benefício marginal de ter uma base de capital maior para absorver o mesmo investimento. RCE diz que ampliar planta e investimento na mesma proporção não cria economia de escala na instalação.
+</div>
+
+</div>
+
+<script>
+// ---- modelo: g(i) = phi*i^2/2 -------------------------------------------
+const g   = (i,p) => p*i*i/2;
+const g1  = (i,p) => p*i;
+const G2  = (i,p) => g(i,p) - g1(i,p)*i;   // = -phi*i^2/2
+const qm  = (i,p) => 1 + g1(i,p);
+
+// ---- formatação pt-BR ----------------------------------------------------
+const fmt = (x,d=4) => x.toFixed(d).replace('.',',').replace('-','\u2212');
+
+// ---- utilitários de SVG --------------------------------------------------
+function axesFrame({w,h,ml,mr,mt,mb}){ return {x0:ml,x1:w-mr,y0:h-mb,y1:mt}; }
+
+function renderMain(i,p){
+  const w=660,h=430,M={w,h,ml:62,mr:26,mt:18,mb:52}, f=axesFrame(M);
+  const xMin=-0.035,xMax=0.55;
+  const yMax=Math.max(g(0.5,p)*1.18,0.05), yMin=-0.62*yMax;
+  const X = v => f.x0+(v-xMin)/(xMax-xMin)*(f.x1-f.x0);
+  const Y = v => f.y0-(v-yMin)/(yMax-yMin)*(f.y0-f.y1);
+
+  let pts=[];
+  for(let j=0;j<=120;j++){
+    const x=xMin+(xMax-xMin)*j/120;
+    if(x<0) continue;
+    pts.push(`${X(x)},${Y(g(x,p))}`);
+  }
+
+  const a=g1(i,p), b=G2(i,p);           // y = b + a*x
+  const tx0=xMin, tx1=xMax;
+  const xticks=[0,0.1,0.2,0.3,0.4,0.5];
+  const ytickStep = yMax>0.3?0.1:(yMax>0.12?0.05:0.02);
+  let yticks=[];
+  for(let v=Math.ceil(yMin/ytickStep)*ytickStep; v<=yMax; v+=ytickStep) yticks.push(+v.toFixed(3));
+
+  document.getElementById('plot').innerHTML = `
+  <svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Gráfico de g e sua tangente">
+    ${yticks.map(v=>`<line x1="${f.x0}" x2="${f.x1}" y1="${Y(v)}" y2="${Y(v)}" stroke="#e3e6d8"/>
+      <text x="${f.x0-8}" y="${Y(v)+4}" font-size="11" fill="#7b858c" text-anchor="end">${fmt(v,2)}</text>`).join('')}
+    ${xticks.map(v=>`<text x="${X(v)}" y="${f.y0+18}" font-size="11" fill="#7b858c" text-anchor="middle">${fmt(v,2)}</text>`).join('')}
+    <line x1="${f.x0}" x2="${f.x1}" y1="${Y(0)}" y2="${Y(0)}" stroke="#9aa4a9"/>
+    <line x1="${X(0)}" x2="${X(0)}" y1="${f.y0}" y2="${f.y1}" stroke="#9aa4a9"/>
+
+    <line x1="${X(tx0)}" y1="${Y(b+a*tx0)}" x2="${X(tx1)}" y2="${Y(b+a*tx1)}" stroke="#E0730C" stroke-width="2"/>
+    <polyline points="${pts.join(' ')}" fill="none" stroke="#1D7FC3" stroke-width="2.6"/>
+
+    <line x1="${X(i)}" y1="${Y(g(i,p))}" x2="${X(i)}" y2="${Y(0)}" stroke="#1D7FC3" stroke-dasharray="3 3" opacity=".55"/>
+    <line x1="${X(0)}" y1="${Y(b)}" x2="${X(i)}" y2="${Y(b)}" stroke="#E0730C" stroke-dasharray="3 3" opacity=".5"/>
+
+    <circle cx="${X(i)}" cy="${Y(g(i,p))}" r="5" fill="#1D7FC3"/>
+    <circle cx="${X(0)}" cy="${Y(b)}" r="5" fill="#E0730C"/>
+
+    <text x="${X(0)-10}" y="${Y(b)+4}" font-size="13" fill="#E0730C" text-anchor="end" font-family="Georgia,serif">G₂ = ${fmt(b,3)}</text>
+    <text x="${X(i)+10}" y="${Y(g(i,p))-9}" font-size="13" fill="#12557f" font-family="Georgia,serif">g(î) = ${fmt(g(i,p),3)}</text>
+    <text x="${X(0.50)}" y="${Y(b+a*0.50)-10}" font-size="13" fill="#E0730C" text-anchor="end" font-family="Georgia,serif">inclinação G₁ = ${fmt(a,3)}</text>
+
+    <text x="${(f.x0+f.x1)/2}" y="${h-10}" font-size="12.5" fill="#4a565e" text-anchor="middle">taxa de investimento î = i/k</text>
+    <text x="16" y="${(f.y0+f.y1)/2}" font-size="12.5" fill="#4a565e" text-anchor="middle"
+          transform="rotate(-90 16 ${(f.y0+f.y1)/2})">custo de ajustamento por unidade de capital</text>
+  </svg>`;
+}
+
+function renderResponse(p){
+  const el=document.getElementById('plot2');
+  if(!el) return;
+  const w=520,h=240,M={w,h,ml:52,mr:18,mt:14,mb:44}, f=axesFrame(M);
+  const qMax=2.2, iMax=0.5;
+  const X=v=>f.x0+(v-1)/(qMax-1)*(f.x1-f.x0);
+  const Y=v=>f.y0-v/iMax*(f.y0-f.y1);
+  const line=(ph,col,wd)=>{
+    const iEnd=Math.min(iMax,(qMax-1)/ph);
+    return `<line x1="${X(1)}" y1="${Y(0)}" x2="${X(1+ph*iEnd)}" y2="${Y(iEnd)}" stroke="${col}" stroke-width="${wd}"/>`;
+  };
+  el.innerHTML=`
+  <svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Taxa de investimento como função de q marginal">
+    <line x1="${f.x0}" x2="${f.x1}" y1="${f.y0}" y2="${f.y0}" stroke="#9aa4a9"/>
+    <line x1="${f.x0}" x2="${f.x0}" y1="${f.y0}" y2="${f.y1}" stroke="#9aa4a9"/>
+    ${[1,1.3,1.6,1.9,2.2].map(v=>`<text x="${X(v)}" y="${f.y0+18}" font-size="11" fill="#7b858c" text-anchor="middle">${fmt(v,1)}</text>`).join('')}
+    ${[0,0.25,0.5].map(v=>`<text x="${f.x0-8}" y="${Y(v)+4}" font-size="11" fill="#7b858c" text-anchor="end">${fmt(v,2)}</text>`).join('')}
+    ${line(0.5,'#b9c6ce',2)}${line(2.5,'#b9c6ce',2)}${line(p,'#1D7FC3',2.8)}
+    <text x="${f.x1-4}" y="${f.y0-6}" font-size="12" fill="#7b858c" text-anchor="end">φ baixo → reta mais íngreme</text>
+    <text x="${(f.x0+f.x1)/2}" y="${h-8}" font-size="12.5" fill="#4a565e" text-anchor="middle" font-family="Georgia,serif">q marginal</text>
+    <text x="14" y="${(f.y0+f.y1)/2}" font-size="12.5" fill="#4a565e" text-anchor="middle"
+          transform="rotate(-90 14 ${(f.y0+f.y1)/2})">î</text>
+  </svg>`;
+}
+
+function renderReadouts(i,p){
+  document.getElementById('v-g').textContent  = fmt(g(i,p));
+  document.getElementById('v-g1').textContent = fmt(g1(i,p));
+  document.getElementById('v-g2').textContent = fmt(G2(i,p));
+  document.getElementById('v-q').textContent  = fmt(qm(i,p));
+
+  const lhs=g(i,p), rhs=G2(i,p)+g1(i,p)*i;
+  document.getElementById('v-euler').textContent =
+    `${fmt(lhs,5)} = ${fmt(G2(i,p),5)} + ${fmt(g1(i,p)*i,5)} ${Math.abs(lhs-rhs)<1e-12?'\u2713':'\u2717'}`;
+
+  // Barra: para realizar investimento bruto i, a firma usa i + G unidades do bem.
+  const costPerI = i>0 ? 1+g(i,p)/i : 1;
+  const share = i>0 ? (costPerI-1)/costPerI : 0;
+  const bi=document.getElementById('bar-i'), bg=document.getElementById('bar-g');
+  bi.style.flexBasis=`${(1-share)*100}%`; bg.style.flexBasis=`${share*100}%`;
+  bi.textContent = 'i'; bg.textContent = share>0.06?'G':'';
+  document.getElementById('units-text').innerHTML =
+    i>0
+      ? `Para realizar <span class="m">i</span> unidades de investimento bruto — as unidades que entram em <span class="m">k</span>′ = <span class="m">i</span> + (1−δ)<span class="m">k</span> — a firma usa <span class="m">i</span> + <span class="m">G</span> unidades do bem de investimento. Aqui isso equivale a <b>${fmt(costPerI,3)}</b> unidades do bem por unidade de investimento bruto; <b>${fmt(share*100,1)}%</b> do gasto é custo de ajustamento. Por isso <span class="m">G</span> aparece dentro de <span class="m">p<sub class="mn">k</sub></span>(<span class="m">i</span> + <span class="m">G</span>): está em unidades do bem, não em reais.`
+      : `Com î = 0 não há investimento bruto nem custo de ajustamento: <span class="m">G</span> = 0 e <span class="m">q</span><sup class="mn">m</sup> = 1.`;
+
+  // Fusão: k=1 para cada firma; a firma fundida tem k=2 e i=2*î.
+  const set=(id,v)=>document.getElementById(id).textContent=v;
+  set('mA-i',fmt(i,3)); set('mA-ih',fmt(i,3)); set('mA-G',fmt(g(i,p),4));
+  set('mB-i',fmt(i,3)); set('mB-ih',fmt(i,3)); set('mB-G',fmt(g(i,p),4));
+  set('mM-i',fmt(2*i,3)); set('mM-ih',fmt(i,3)); set('mM-G',fmt(2*g(i,p),4));
+  const soma=2*g(i,p), fundida=2*g(i,p);
+  document.getElementById('merge-check').textContent =
+    `G_A + G_B = ${fmt(soma,4)}   e   G_fundida = ${fmt(fundida,4)}   ${Math.abs(soma-fundida)<1e-12?'\u2713 iguais':'\u2717'}`;
+}
+
+// ---- ligação -------------------------------------------------------------
+const $i=document.getElementById('ihat'), $p=document.getElementById('phi');
+function draw(){
+  const i=+$i.value, p=+$p.value;
+  document.getElementById('ihat-val').textContent=fmt(i,3);
+  document.getElementById('phi-val').textContent=fmt(p,1);
+  renderMain(i,p); renderResponse(p); renderReadouts(i,p);
+}
+$i.addEventListener('input',draw);
+$p.addEventListener('input',draw);
+document.querySelectorAll('button[data-i]').forEach(b=>
+  b.addEventListener('click',()=>{$i.value=b.dataset.i; draw();}));
+draw();
+
+// ---- checagens rápidas (console) ----------------------------------------
+(function tests(){
+  const eq=(a,b,t=1e-10)=>Math.abs(a-b)<t;
+  console.assert(eq(g(0.3,1),0.045),'g(0,3)=0,045');
+  console.assert(eq(g1(0.3,1),0.3),'g1=0,3');
+  console.assert(eq(G2(0.3,1),-0.045),'G2=-0,045');
+  console.assert(eq(g(0.3,1),G2(0.3,1)+g1(0.3,1)*0.3),'Euler');
+  console.assert(eq(G2(0,1),0)&&eq(qm(0,1),1),'î=0: G2=0, q=1');
+  for(const p of [0.5,1,2.5]) for(const i of [0.05,0.2,0.45])
+    console.assert(G2(i,p)<=1e-12,'G2<=0');
+  console.log('checagens OK');
+})();
+</script>
+</body>
+</html>

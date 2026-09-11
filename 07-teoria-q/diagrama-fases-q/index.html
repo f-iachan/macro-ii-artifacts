@@ -5,284 +5,313 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
   <meta name="color-scheme" content="light dark">
-  <title>Diagrama de fases da teoria q</title>
+  <title>Dinâmica da teoria q em tempo contínuo</title>
   <style>
     :root {
-      --paper: #fffff7; --surface: #ffffff; --surface-soft: #f4f3e9; --ink: #202124; --muted: #687077;
-      --border: #d9d8cc; --grid: #e8e7dc; --blue: #0072b2; --orange: #d55e00; --green: #009e73;
-      --grey: #9a9a90; --focus: #7a5cff; --shadow: 0 10px 35px rgba(32,33,36,.08);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; color-scheme: light;
+      --paper:#fffff7; --surface:#fff; --soft:#f4f3e9; --ink:#202124; --muted:#687077;
+      --border:#d9d8cc; --grid:#e8e7dc; --blue:#0072b2; --orange:#d55e00;
+      --green:#009e73; --purple:#7a5cff; --grey:#99998f; --danger:#b42318;
+      --shadow:0 10px 35px rgba(32,33,36,.08);
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+      color-scheme:light;
     }
-    @media (prefers-color-scheme: dark) {
-      :root { --paper:#171816; --surface:#21231f; --surface-soft:#2a2d27; --ink:#f2f2e9; --muted:#b5bab1; --border:#454a42;
-        --grid:#373b35; --blue:#56b4e9; --orange:#e69f5c; --green:#45c69a; --grey:#7c7f78; --shadow:0 10px 35px rgba(0,0,0,.24); color-scheme: dark; }
+    @media (prefers-color-scheme:dark) {
+      :root { --paper:#171816; --surface:#21231f; --soft:#2a2d27; --ink:#f2f2e9;
+        --muted:#b5bab1; --border:#454a42; --grid:#373b35; --blue:#56b4e9;
+        --orange:#e69f5c; --green:#45c69a; --purple:#a99aff; --grey:#7c7f78;
+        --danger:#ff8a80; --shadow:0 10px 35px rgba(0,0,0,.24); color-scheme:dark; }
     }
-    * { box-sizing: border-box; }
-    body { margin: 0; background: var(--paper); color: var(--ink); }
-    button, input, select { font: inherit; }
-    .shell { width: min(1380px, calc(100% - 32px)); margin: 0 auto; padding: 28px 0 48px; }
-    .eyebrow { margin: 0 0 6px; color: var(--blue); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; }
-    h1 { margin: 0; font-size: clamp(1.6rem, 3.4vw, 2.6rem); font-weight: 500; letter-spacing: -.03em; line-height: 1.05; }
-    .lead { max-width: 900px; color: var(--muted); line-height: 1.5; margin: 10px 0 18px; }
-    .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow); }
-    .controls { padding: 16px 18px; margin-bottom: 14px; display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px 18px; }
-    .ctl label { display: flex; justify-content: space-between; font-size: .86rem; color: var(--muted); margin-bottom: 4px; }
-    .ctl label b { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
-    .ctl input[type=range] { width: 100%; accent-color: var(--blue); }
-    .ctl.shock input[type=range] { accent-color: var(--orange); }
-    .ctl .hint { font-size: .74rem; color: var(--muted); margin-top: 2px; }
-    .grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: 14px; }
-    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
-    .plot { padding: 12px 14px 8px; }
-    .plot h2 { margin: 0 0 4px; font-size: 1rem; font-weight: 600; }
-    .plot p.sub { margin: 0 0 6px; font-size: .8rem; color: var(--muted); }
-    canvas { width: 100%; height: auto; display: block; }
-    .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: .8rem; color: var(--muted); padding: 6px 2px 4px; }
-    .legend span::before { content: ""; display: inline-block; width: 18px; height: 3px; margin-right: 6px; vertical-align: middle; border-radius: 2px; background: var(--c); }
-    .legend span.dash::before { background: repeating-linear-gradient(90deg, var(--c) 0 4px, transparent 4px 7px); }
-    .readout { padding: 12px 18px; margin-top: 14px; font-size: .88rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 8px 18px; }
-    .readout div b { font-variant-numeric: tabular-nums; }
-    .notes { margin-top: 16px; padding: 14px 18px; font-size: .9rem; line-height: 1.55; }
-    .notes h3 { margin: 0 0 6px; font-size: .95rem; }
-    .notes ul { margin: 0; padding-left: 18px; }
-    .btns { display: flex; gap: 8px; align-items: end; }
-    .btns button { padding: 7px 12px; border-radius: 9px; border: 1px solid var(--border); background: var(--surface-soft); color: var(--ink); cursor: pointer; }
-    .btns button.primary { background: var(--blue); color: #fff; border-color: var(--blue); }
-    i.m { font-style: italic; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--paper); color:var(--ink); }
+    button,input,select { font:inherit; }
+    .shell { width:min(1440px,calc(100% - 28px)); margin:auto; padding:25px 0 46px; }
+    .eyebrow { margin:0 0 6px; color:var(--blue); font-size:.77rem; letter-spacing:.08em; text-transform:uppercase; }
+    h1 { margin:0; font-size:clamp(1.55rem,3.3vw,2.55rem); font-weight:520; letter-spacing:-.03em; line-height:1.05; }
+    .lead { max-width:1100px; color:var(--muted); line-height:1.5; margin:10px 0 17px; }
+    .panel { background:var(--surface); border:1px solid var(--border); border-radius:15px; box-shadow:var(--shadow); }
+    .controls { padding:15px 17px; margin-bottom:14px; display:grid; grid-template-columns:repeat(auto-fit,minmax(185px,1fr)); gap:11px 17px; }
+    .ctl.wide { grid-column:span 2; }
+    .ctl label { display:flex; justify-content:space-between; gap:8px; font-size:.84rem; color:var(--muted); margin-bottom:4px; }
+    .ctl label b { color:var(--ink); font-weight:620; font-variant-numeric:tabular-nums; }
+    .ctl input[type=range],.ctl select { width:100%; accent-color:var(--blue); }
+    .ctl select { border:1px solid var(--border); border-radius:8px; background:var(--soft); color:var(--ink); padding:6px 8px; }
+    .ctl.shock input { accent-color:var(--orange); }
+    .hint { color:var(--muted); font-size:.73rem; line-height:1.35; margin-top:2px; }
+    .btns { display:flex; gap:8px; align-items:end; }
+    button { padding:7px 12px; border-radius:9px; border:1px solid var(--border); background:var(--soft); color:var(--ink); cursor:pointer; }
+    button.primary { background:var(--blue); color:#fff; border-color:var(--blue); }
+    .status { margin:0 0 14px; padding:10px 15px; color:var(--muted); font-size:.87rem; line-height:1.45; }
+    .status.error { color:var(--danger); border-color:var(--danger); }
+    .grid { display:grid; grid-template-columns:1.32fr 1fr; gap:14px; }
+    @media (max-width:920px) { .grid { grid-template-columns:1fr; } .ctl.wide { grid-column:span 1; } }
+    .plot { padding:12px 14px 9px; }
+    .plot.full { grid-column:1/-1; }
+    .plot h2 { margin:0 0 4px; font-size:1rem; font-weight:630; }
+    .plot p.sub { margin:0 0 6px; color:var(--muted); font-size:.79rem; }
+    canvas { display:block; width:100%; height:auto; }
+    .legend { display:flex; flex-wrap:wrap; gap:6px 15px; padding:6px 2px 3px; color:var(--muted); font-size:.78rem; }
+    .legend span::before { content:""; display:inline-block; width:18px; height:3px; margin-right:6px; vertical-align:middle; border-radius:2px; background:var(--c); }
+    .legend span.dash::before { background:repeating-linear-gradient(90deg,var(--c) 0 4px,transparent 4px 7px); }
+    .readout { padding:12px 17px; margin-top:14px; display:grid; grid-template-columns:repeat(auto-fit,minmax(225px,1fr)); gap:8px 18px; font-size:.85rem; }
+    .readout b { font-variant-numeric:tabular-nums; }
+    .notes { margin-top:15px; padding:13px 17px; font-size:.88rem; line-height:1.5; }
+    .notes h3 { margin:0 0 6px; font-size:.94rem; }
+    .notes ul { margin:0; padding-left:18px; }
+    .tests { white-space:pre-wrap; font:12px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace; margin-top:15px; padding:13px 16px; }
+    i.m { font-style:italic; }
   </style>
 </head>
 <body>
 <div class="shell">
-  <p class="eyebrow">Macro II · 07 Teoria q · tempo contínuo</p>
-  <h1>Diagrama de fases da teoria <i class="m">q</i></h1>
-  <p class="lead">Caso quadrático, <i class="m">g</i>(<i class="m">x</i>) = (<i class="m">κ</i>/2)<i class="m">x</i><sup>2</sup>, com congestão <i class="m">π</i>(<i class="m">K</i>) = <i class="m">c</i>·<i class="m">K</i><sup>−α</sup>.
-    Sistema: <i class="m">K̇</i>/<i class="m">K</i> = (<i class="m">q</i>−1)/<i class="m">κ</i> − <i class="m">δ</i> e
-    <i class="m">q̇</i> = (<i class="m">r</i>+<i class="m">δ</i>)<i class="m">q</i> − <i class="m">π</i>(<i class="m">K</i>) − (<i class="m">q</i>−1)<sup>2</sup>/(2<i class="m">κ</i>).
-    O parâmetro <i class="m">c</i> é escolhido para que o estado estacionário inicial tenha <i class="m">K</i>* = 1. Mova os controles e observe o braço estável e o salto de <i class="m">q</i>.</p>
+  <p class="eyebrow">Macro II · Teoria q · dinâmica em tempo contínuo</p>
+  <h1>Choques, anúncios e crédito no plano (<i class="m">K</i>, <i class="m">q</i>)</h1>
+  <p class="lead">
+    Caso homogêneo quadrático, <i class="m">g</i>(<i class="m">x</i>)=(<i class="m">κ</i>/2)<i class="m">x</i><sup>2</sup>,
+    com <i class="m">π</i>(<i class="m">K</i>)=<i class="m">c</i><i class="m">K</i><sup>−α</sup> e
+    <i class="m">x</i>=(<i class="m">q</i>+<i class="m">θ</i>−1)/<i class="m">κ</i>.
+    O nível <i class="m">c</i>=0,1405 fica fixo quando os parâmetros mudam: os controles são ceteris paribus.
+  </p>
 
   <div class="panel controls">
-    <div class="ctl"><label>κ (convexidade do custo) <b id="v-kappa"></b></label><input id="kappa" type="range" min="0.5" max="6" step="0.1" value="2"></div>
-    <div class="ctl"><label>δ (depreciação) <b id="v-delta"></b></label><input id="delta" type="range" min="0.01" max="0.15" step="0.005" value="0.05"></div>
-    <div class="ctl"><label>r (juros) <b id="v-r"></b></label><input id="r" type="range" min="0.01" max="0.2" step="0.005" value="0.08"></div>
-    <div class="ctl"><label>α (curvatura de π) <b id="v-alpha"></b></label><input id="alpha" type="range" min="0.2" max="2" step="0.1" value="0.5"></div>
-    <div class="ctl shock"><label>Choque permanente em π <b id="v-shock"></b></label><input id="shock" type="range" min="-30" max="30" step="1" value="-10"><div class="hint">0 = sem choque; negativo = queda de produtividade</div></div>
-    <div class="ctl shock"><label>Anúncio: choque ocorre em T <b id="v-T"></b></label><input id="T" type="range" min="0" max="15" step="0.5" value="0"><div class="hint">T = 0: não antecipado. T &gt; 0: anunciado em t = 0, ocorre em T</div></div>
-    <div class="btns"><button id="reset">Restaurar padrão</button><button id="toggleField" class="primary">Campo de direções: on</button></div>
+    <div class="ctl wide">
+      <label for="scenario">Experimento <b id="scenario-short"></b></label>
+      <select id="scenario">
+        <optgroup label="Referência"><option value="none">Sem choque</option></optgroup>
+        <optgroup label="Romer 9.5–9.9">
+          <option value="pi_perm_surprise" selected>π permanente, surpresa em t=0</option>
+          <option value="pi_temp_now">π temporário, de t=0 até T</option>
+          <option value="r_perm_surprise">Queda permanente de r, surpresa em t=0</option>
+          <option value="theta_perm_surprise">Crédito θ permanente, surpresa em t=0</option>
+          <option value="theta_temp_now">Crédito θ temporário, de t=0 até T</option>
+        </optgroup>
+        <optgroup label="Extensões">
+          <option value="pi_perm_announced">π permanente anunciado em t=0 para T</option>
+          <option value="r_perm_announced">r permanente anunciado em t=0 para T</option>
+          <option value="r_temp_now">r temporário, de t=0 até T</option>
+        </optgroup>
+      </select>
+    </div>
+    <div class="ctl"><label>κ <b id="v-kappa"></b></label><input id="kappa" type="range" min="0.5" max="6" step="0.1" value="2"></div>
+    <div class="ctl"><label>δ <b id="v-delta"></b></label><input id="delta" type="range" min="0.01" max="0.15" step="0.005" value="0.05"></div>
+    <div class="ctl"><label>r de referência <b id="v-r"></b></label><input id="r" type="range" min="0.01" max="0.20" step="0.005" value="0.08"></div>
+    <div class="ctl"><label>α <b id="v-alpha"></b></label><input id="alpha" type="range" min="0.2" max="2" step="0.1" value="0.5"></div>
+    <div class="ctl shock"><label>mudança em π <b id="v-pishock"></b></label><input id="pishock" type="range" min="-30" max="30" step="1" value="-10"><div class="hint">Mudança percentual permanente ou temporária em c.</div></div>
+    <div class="ctl shock"><label>mudança em r <b id="v-rshock"></b></label><input id="rshock" type="range" min="-75" max="100" step="5" value="-25"><div class="hint">Percentual de r; o preset de Romer usa uma queda.</div></div>
+    <div class="ctl shock"><label>crédito θ <b id="v-theta"></b></label><input id="theta" type="range" min="-0.20" max="0.35" step="0.01" value="0.10"><div class="hint">θ&gt;0 reduz o custo marginal de aquisição e eleva x dado q.</div></div>
+    <div class="ctl shock"><label>data T <b id="v-T"></b></label><input id="T" type="range" min="0.5" max="20" step="0.5" value="8"></div>
+    <div class="ctl"><label for="field">Campo de direções <b id="field-label"></b></label><select id="field"><option value="auto" selected>Regime vigente em t=0</option><option value="base">Regime de referência</option><option value="alt">Regime alterado</option></select></div>
+    <div class="btns"><button id="reset">Restaurar</button><button id="toggleField" class="primary">Campo: on</button></div>
   </div>
 
+  <div id="status" class="panel status"></div>
   <div class="grid">
-    <div class="panel plot">
-      <h2>Plano (K, q)</h2>
-      <p class="sub">Eixo horizontal K; eixo vertical q. Ponto preto: estado estacionário. Linha preta: trajetória de equilíbrio após o choque.</p>
-      <canvas id="phase" width="900" height="600"></canvas>
-      <div class="legend">
-        <span style="--c:var(--blue)">K̇ = 0 (q = 1+κδ)</span>
-        <span style="--c:var(--orange)">q̇ = 0 (depois do choque)</span>
-        <span class="dash" style="--c:var(--orange)">q̇ = 0 (antes)</span>
-        <span style="--c:var(--green)">braço estável (sela)</span>
-        <span class="dash" style="--c:var(--grey)">î = r+δ: dobra de q̇ = 0</span>
-      </div>
-    </div>
-    <div class="panel plot">
-      <h2>Trajetórias no tempo</h2>
-      <p class="sub">q(t) em laranja (eixo esquerdo) e K(t) em azul (eixo direito). Linha vertical: data T do choque anunciado.</p>
-      <canvas id="time" width="700" height="600"></canvas>
-      <div class="legend"><span style="--c:var(--orange)">q(t)</span><span style="--c:var(--blue)">K(t)</span></div>
-    </div>
+    <div class="panel plot"><h2>Plano (K, q)</h2><p class="sub" id="phase-sub"></p><canvas id="phase" width="930" height="610"></canvas><div class="legend" id="phase-legend"></div></div>
+    <div class="panel plot"><h2>Capital e q no tempo</h2><p class="sub">Linhas contínuas evoluem no tempo; tracejadas são saltos instantâneos. As verticais cinza marcam eventos.</p><canvas id="time" width="730" height="610"></canvas><div class="legend"><span style="--c:var(--orange)">q(t), eixo esquerdo</span><span style="--c:var(--blue)">K(t), eixo direito</span><span class="dash" style="--c:var(--orange)">salto de q</span></div></div>
+    <div class="panel plot full"><h2>Investimento</h2><p class="sub">Taxa bruta x(t)=(q(t)+θ(t)−1)/κ; K cresce quando x&gt;δ. Traço interrompido indica salto.</p><canvas id="investment" width="1500" height="360"></canvas><div class="legend"><span style="--c:var(--purple)">x(t)=i(t)/K(t)</span><span class="dash" style="--c:var(--purple)">salto de x</span><span class="dash" style="--c:var(--grey)">δ</span><span style="--c:var(--green)">cruzamento x=δ</span></div></div>
   </div>
-
   <div class="panel readout" id="readout"></div>
-
-  <div class="panel notes">
-    <h3>O que observar</h3>
-    <ul>
-      <li><b>K̇ = 0 é horizontal.</b> Com custo homogêneo, a taxa de investimento depende só de q; o capital para de crescer em q* = 1+κδ, qualquer que seja K.</li>
-      <li><b>q* não depende de π nem de r.</b> Um choque permanente em π move K*, não q*: q salta e depois volta ao mesmo nível.</li>
-      <li><b>Sela.</b> det J = K*·φ′(q*)·π′(K*) &lt; 0 sempre que π′ &lt; 0. A desigualdade r+δ &gt; î só diz em que ramo do lócus q̇ = 0 estamos: perto do estado estacionário, î* = δ e a inclinação é π′(K*)/r &lt; 0. O lócus dobra em q = 1+κ(r+δ).</li>
-      <li><b>Choque anunciado.</b> Para T &gt; 0, q se move no anúncio (t = 0), a economia segue a dinâmica antiga (com π antigo) até T, e chega ao novo braço estável exatamente em T; K é contínuo em T. É o mesmo raciocínio dos eventos antecipados do deck 05.</li>
-      <li><b>κ maior</b> deixa o ajuste mais lento (|λ₋| menor) e o braço estável <i>mais íngreme</i> (inclinação λ₋κ/K*); <b>r maior</b> gira o lócus q̇ = 0 e reduz K*.</li>
-    </ul>
-  </div>
+  <div class="panel notes"><h3>Leitura dos experimentos</h3><ul>
+    <li>Choques surpresa fazem q saltar em t=0; K permanece contínuo.</li>
+    <li>Choques temporários já começam em t=0. q escolhe o salto que leva a economia de volta ao braço estável do regime de referência exatamente em T.</li>
+    <li>Mudanças anunciadas deixam o regime antigo vigente até T. q reage no anúncio e a trajetória chega ao novo braço estável na data de realização.</li>
+    <li>Crédito entra nas duas equações por x=(q+θ−1)/κ; em uma reversão de θ, q é contínuo em T, mas x pode saltar.</li>
+    <li>O ponto marcado como dobra é a interseção entre q=1−θ+κ(r+δ) e o locus q̇=0; a linha inteira não é uma dobra.</li>
+  </ul></div>
+  <pre id="autotest-summary" class="panel tests" hidden></pre>
 </div>
 
 <script>
 (function () {
-  const $ = id => document.getElementById(id);
-  const P = { kappa: 2, delta: 0.05, r: 0.08, alpha: 0.5, shock: -10, T: 0 };
-  let showField = true;
-  const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  'use strict';
+  const BASE_C=0.1405;
+  const COLORS={blue:'#0072B2',orange:'#D55E00',green:'#009E73',purple:'#7A5CFF',grey:'#8B8B82'};
+  const $=id=>document.getElementById(id);
+  const css=name=>getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const finite=(...xs)=>xs.every(Number.isFinite);
+  const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+  let showField=true;
 
-  // ---------- modelo ----------
-  function model(p, c) {
-    const { kappa, delta, r, alpha } = p;
-    const pi = K => c * Math.pow(K, -alpha);
-    const dpi = K => -alpha * c * Math.pow(K, -alpha - 1);
-    const dK = (K, q) => K * ((q - 1) / kappa - delta);
-    const dq = (K, q) => (r + delta) * q - pi(K) - (q - 1) ** 2 / (2 * kappa);
-    const qs = 1 + kappa * delta;
-    const pis = (r + delta) * qs - kappa * delta * delta / 2;
-    const Ks = Math.pow(c / pis, 1 / alpha);
-    return { pi, dpi, dK, dq, qs, Ks, c };
+  function fmt(x,digits=3){if(!Number.isFinite(x))return '—';const ax=Math.abs(x),d=ax>=100?1:ax>=10?2:digits;return x.toFixed(d).replace('.',',');}
+
+  function makeRegime(p,changes,id,label){
+    const reg={id,label,kappa:p.kappa,delta:p.delta,alpha:p.alpha,c:changes&&changes.c!==undefined?changes.c:BASE_C,r:changes&&changes.r!==undefined?changes.r:p.r,theta:changes&&changes.theta!==undefined?changes.theta:0};
+    reg.pi=K=>reg.c*Math.pow(K,-reg.alpha);
+    reg.dpi=K=>-reg.alpha*reg.c*Math.pow(K,-reg.alpha-1);
+    reg.x=q=>(q+reg.theta-1)/reg.kappa;
+    reg.flow=y=>{const K=Math.exp(y[0]),q=y[1],x=reg.x(q);return[x-reg.delta,(reg.r+reg.delta)*q-reg.pi(K)-reg.kappa*x*x/2];};
+    reg.dK=(K,q)=>K*(reg.x(q)-reg.delta);
+    reg.dq=(K,q)=>(reg.r+reg.delta)*q-reg.pi(K)-reg.kappa*reg.x(q)**2/2;
+    reg.qs=1-reg.theta+reg.kappa*reg.delta;
+    reg.pis=(reg.r+reg.delta)*reg.qs-reg.kappa*reg.delta**2/2;
+    reg.valid=reg.c>0&&reg.r>0&&reg.kappa>0&&reg.alpha>0&&reg.pis>0;
+    reg.Ks=reg.valid?Math.pow(reg.c/reg.pis,1/reg.alpha):NaN;
+    reg.qFold=1-reg.theta+reg.kappa*(reg.r+reg.delta);
+    reg.hmax=(reg.r+reg.delta)*(1-reg.theta)+reg.kappa*(reg.r+reg.delta)**2/2;
+    reg.KFold=reg.hmax>0?Math.pow(reg.c/reg.hmax,1/reg.alpha):NaN;
+    const bc=reg.valid?reg.alpha*reg.pis/reg.kappa:NaN;
+    reg.lambda=reg.valid?(reg.r-Math.sqrt(reg.r*reg.r+4*bc))/2:NaN;
+    reg.slope=reg.valid?reg.dpi(reg.Ks)/reg.r:NaN;
+    reg.qRoots=K=>{if(!(K>0))return null;const a=reg.r+reg.delta,D=reg.kappa**2*a**2+2*reg.kappa*(a*(1-reg.theta)-reg.pi(K));if(!(D>=0))return null;const mid=1-reg.theta+reg.kappa*a,s=Math.sqrt(D);return[mid-s,mid+s];};
+    return reg;
   }
-  function cBase(p) { const { kappa, delta, r } = p; return (r + delta) * (1 + kappa * delta) - kappa * delta * delta / 2; } // K* = 1
-  function rk4(f, y, h) {
-    const k1 = f(y), k2 = f([y[0] + h / 2 * k1[0], y[1] + h / 2 * k1[1]]);
-    const k3 = f([y[0] + h / 2 * k2[0], y[1] + h / 2 * k2[1]]), k4 = f([y[0] + h * k3[0], y[1] + h * k3[1]]);
-    return [y[0] + h / 6 * (k1[0] + 2 * k2[0] + 2 * k3[0] + k4[0]), y[1] + h / 6 * (k1[1] + 2 * k2[1] + 2 * k3[1] + k4[1])];
+
+  function scenarioDefinition(p){
+    const base=makeRegime(p,{},'base','referência');let alt=base,first=base,final=base,transition=null,title='Sem choque',marker0='referência',markerT='';
+    const piAlt=()=>makeRegime(p,{c:BASE_C*(1+p.piShock/100)},'alt','π alterado');
+    const rAlt=()=>makeRegime(p,{r:p.r*(1+p.rShock/100)},'alt','r alterado');
+    const thetaAlt=()=>makeRegime(p,{theta:p.theta},'alt','crédito θ');
+    switch(p.scenario){
+      case'pi_perm_surprise':alt=piAlt();first=final=alt;title='π permanente: surpresa em t=0';marker0='surpresa';break;
+      case'pi_temp_now':alt=piAlt();first=alt;final=base;transition=p.T;title='π temporário: t=0 até T';marker0='início';markerT='reversão';break;
+      case'pi_perm_announced':alt=piAlt();first=base;final=alt;transition=p.T;title='π permanente: anúncio em t=0, realização em T';marker0='anúncio';markerT='realização';break;
+      case'r_perm_surprise':alt=rAlt();first=final=alt;title='r permanente: surpresa em t=0';marker0='surpresa';break;
+      case'theta_perm_surprise':alt=thetaAlt();first=final=alt;title='crédito θ permanente: surpresa em t=0';marker0='surpresa';break;
+      case'theta_temp_now':alt=thetaAlt();first=alt;final=base;transition=p.T;title='crédito θ temporário: t=0 até T';marker0='início';markerT='reversão';break;
+      case'r_perm_announced':alt=rAlt();first=base;final=alt;transition=p.T;title='r permanente: anúncio em t=0, realização em T';marker0='anúncio';markerT='realização';break;
+      case'r_temp_now':alt=rAlt();first=alt;final=base;transition=p.T;title='r temporário: t=0 até T';marker0='início';markerT='reversão';break;
+    }
+    return{base,alt,first,final,transition,title,marker0,markerT,hasAlt:alt!==base};
   }
-  function stableVec(m, p) {
-    // J = [[0, K*/kappa], [-pi'(K*), r]]
-    const a = 0, b = m.Ks / p.kappa, c = -m.dpi(m.Ks), d = p.r;
-    const tr = a + d, det = a * d - b * c;
-    const lam = (tr - Math.sqrt(tr * tr - 4 * det)) / 2; // negativo
-    return { lam, v: [b, lam - a] }; // (J - lam I) v = 0 => primeira linha: -lam v1 + b v2 = 0
+
+  function rk4Step(f,y,h){const k1=f(y),k2=f([y[0]+h*k1[0]/2,y[1]+h*k1[1]/2]),k3=f([y[0]+h*k2[0]/2,y[1]+h*k2[1]/2]),k4=f([y[0]+h*k3[0],y[1]+h*k3[1]]);return[y[0]+h*(k1[0]+2*k2[0]+2*k3[0]+k4[0])/6,y[1]+h*(k1[1]+2*k2[1]+2*k3[1]+k4[1])/6];}
+  function validState(y){return finite(y[0],y[1])&&Math.abs(y[0])<60&&Math.abs(y[1])<1e4;}
+  function integrateState(reg,y0,duration,maxStep=.025,collect=false){
+    if(!Number.isFinite(duration)||!validState(y0)||!(maxStep>0))return{ok:false,error:'estado inicial ou horizonte inválido'};
+    if(duration===0)return{ok:true,y:[...y0],path:collect?[[0,y0[0],y0[1]]]:null,steps:0};
+    const direction=Math.sign(duration),end=Math.abs(duration),rtol=2e-8,atol=2e-10,minStep=1e-7;
+    let elapsed=0,h=Math.min(maxStep,end),y=[...y0],steps=0,out=collect?[[0,y[0],y[1]]]:null;
+    while(elapsed<end-1e-13){
+      h=Math.min(h,end-elapsed);const hs=direction*h,full=rk4Step(reg.flow,y,hs),half1=rk4Step(reg.flow,y,hs/2),half2=rk4Step(reg.flow,half1,hs/2);
+      if(!validState(full)||!validState(half2))return{ok:false,error:'trajetória não finita',at:direction*elapsed};
+      let err=0;for(let k=0;k<2;k++){const scale=atol+rtol*Math.max(Math.abs(y[k]),Math.abs(half2[k]));err=Math.max(err,Math.abs(half2[k]-full[k])/(15*scale));}
+      if(err<=1){y=[half2[0]+(half2[0]-full[0])/15,half2[1]+(half2[1]-full[1])/15];elapsed+=h;steps++;if(!validState(y))return{ok:false,error:'trajetória não finita',at:direction*elapsed};if(collect)out.push([direction*elapsed,y[0],y[1]]);}
+      const factor=err===0?4:clamp(.9*Math.pow(err,-.2),.2,4);h=Math.min(maxStep,Math.max(minStep,h*factor));
+      if(h<=minStep&&err>1)return{ok:false,error:'passo adaptativo abaixo do mínimo',at:direction*elapsed};
+      if(steps>250000)return{ok:false,error:'limite de passos excedido',at:direction*elapsed};
+    }
+    return{ok:true,y,path:out,steps};
   }
-  function saddle(m, p, box) {
-    const { v } = stableVec(m, p); const n = Math.hypot(v[0], v[1]); const u = [v[0] / n, v[1] / n];
-    const f = y => [m.dK(y[0], y[1]), m.dq(y[0], y[1])];
-    const pts = [];
-    for (const s of [1, -1]) {
-      let y = [m.Ks + s * 1e-4 * u[0], m.qs + s * 1e-4 * u[1]]; const br = [y];
-      for (let i = 0; i < 60000; i++) {
-        y = rk4(f, y, -0.01);
-        if (y[0] < box.K0 * 0.7 || y[0] > box.K1 * 1.3 || y[1] < box.q0 - 0.3 || y[1] > box.q1 + 0.3) break;
-        br.push(y);
+
+  function stableManifold(reg,logMin,logMax){
+    if(!reg.valid)return{ok:false,error:'estado estacionário inexistente'};
+    const lstar=Math.log(reg.Ks),v=[1/reg.kappa,reg.lambda],norm=Math.hypot(v[0],v[1]),u=[v[0]/norm,v[1]/norm],eps=1e-5,h=-.015,branches=[];
+    for(const sign of[1,-1]){let y=[lstar+sign*eps*u[0],reg.qs+sign*eps*u[1]];const pts=[[lstar,reg.qs],[...y]];for(let j=0;j<80000;j++){const z=integrateState(reg,y,h,Math.abs(h),false);if(!z.ok)break;y=z.y;if(!validState(y)||Math.abs(y[1])>100)break;pts.push([...y]);if(j>30&&(y[0]<logMin-.35||y[0]>logMax+.35))break;}pts.sort((a,b)=>a[0]-b[0]);branches.push(pts);}
+    function interp(branch,l){if(l<branch[0][0]-1e-10||l>branch[branch.length-1][0]+1e-10)return null;let lo=0,hi=branch.length-1;while(hi-lo>1){const m=(lo+hi)>>1;branch[m][0]<=l?lo=m:hi=m;}const den=branch[hi][0]-branch[lo][0];if(Math.abs(den)<1e-14)return branch[lo][1];const w=(l-branch[lo][0])/den;return branch[lo][1]+w*(branch[hi][1]-branch[lo][1]);}
+    function qOfK(K){if(!(K>0)||!Number.isFinite(K))return null;const l=Math.log(K),vals=branches.map(b=>interp(b,l)).filter(Number.isFinite);if(!vals.length)return null;return vals.reduce((best,z)=>Math.abs(z-reg.qs)<Math.abs(best-reg.qs)?z:best,vals[0]);}
+    const range=[Math.min(...branches.map(b=>b[0][0])),Math.max(...branches.map(b=>b[b.length-1][0]))];return{ok:true,branches,qOfK,logRange:range};
+  }
+
+  function shooting(regBefore,duration,initialLogK,targetStable,qGuess){
+    /* Parametriza o ponto em T pela variedade estável final e integra para trás.
+       Isso evita amplificar, no shooting, a direção instável do sistema pré-T. */
+    function evaluateAt(logKT,horizon,withPath=false){
+      const qT=targetStable.qOfK(Math.exp(logKT));if(!Number.isFinite(qT))return{ok:false};
+      const z=integrateState(regBefore,[logKT,qT],-horizon,.025,withPath);if(!z.ok)return{ok:false};
+      return{ok:true,residual:z.y[0]-initialLogK,q0:z.y[1],terminal:[logKT,qT],backPath:z.path};
+    }
+    const evaluate=(logKT,withPath=false)=>evaluateAt(logKT,duration,withPath);
+    const lo=targetStable.logRange[0]+1e-7,hi=targetStable.logRange[1]-1e-7,gridN=420,valid=[];
+    for(let j=0;j<=gridN;j++){const l=lo+(hi-lo)*j/gridN,e=evaluate(l);if(e.ok&&Number.isFinite(e.residual))valid.push({l,e});}
+    const exact=valid.find(z=>Math.abs(z.e.residual)<1e-10);let root=exact?{l:exact.l,e:exact.e}:null,brackets=[];
+    for(let j=1;j<valid.length;j++){const a=valid[j-1],b=valid[j];if(a.e.residual*b.e.residual<=0)brackets.push([a,b]);}
+    function continuationRoot(){
+      let l=clamp(initialLogK,lo,hi),last=null;const stages=Math.max(1,Math.ceil(duration/.2));
+      for(let s=1;s<=stages;s++){
+        const horizon=duration*s/stages;let converged=false;
+        for(let it=0;it<24;it++){
+          const e=evaluateAt(l,horizon);if(!e.ok)break;if(Math.abs(e.residual)<1e-10){last={l,e};converged=true;break;}
+          let dh=Math.min(1e-3,(hi-lo)/5000),ep=null,em=null,slope=NaN;
+          for(let k=0;k<8;k++){ep=evaluateAt(Math.min(hi,l+dh),horizon);em=evaluateAt(Math.max(lo,l-dh),horizon);if(ep.ok&&em.ok&&Math.abs(ep.residual-em.residual)>1e-14){slope=(ep.residual-em.residual)/(Math.min(hi,l+dh)-Math.max(lo,l-dh));break;}dh*=.25;}
+          if(!Number.isFinite(slope)||Math.abs(slope)<1e-12)break;
+          const raw=clamp(e.residual/slope,-.18,.18);let accepted=false;
+          for(let cut=0;cut<10;cut++){const trial=clamp(l-raw/2**cut,lo,hi),et=evaluateAt(trial,horizon);if(et.ok&&Math.abs(et.residual)<Math.abs(e.residual)){l=trial;accepted=true;break;}}
+          if(!accepted)break;
+        }
+        if(!converged){
+          let local=null;for(const span of[1e-4,5e-4,.002,.01,.05,.2,.8,2]){const vv=[];for(let j=0;j<=100;j++){const z=clamp(l-span+2*span*j/100,lo,hi),e=evaluateAt(z,horizon);if(e.ok)vv.push({l:z,e});}for(let j=1;j<vv.length;j++)if(vv[j-1].e.residual*vv[j].e.residual<=0){local=[vv[j-1],vv[j]];break;}if(local)break;}
+          if(!local)return null;let a=local[0].l,b=local[1].l,fa=local[0].e.residual,e=null,m=l;for(let it=0;it<80;it++){m=(a+b)/2;e=evaluateAt(m,horizon);if(!e.ok)return null;if(Math.abs(e.residual)<1e-10||Math.abs(b-a)<1e-11)break;if(fa*e.residual<=0)b=m;else{a=m;fa=e.residual;}}l=m;last={l,e};
+        }
       }
-      pts.push(br);
+      return last;
     }
-    const all = pts[0].slice().reverse().concat(pts[1]).sort((a, b) => a[0] - b[0]); // ordenado em K (monótono)
-    const qOf = K => { // interpolação linear
-      if (K <= all[0][0]) return all[0][1]; if (K >= all[all.length - 1][0]) return all[all.length - 1][1];
-      let lo = 0, hi = all.length - 1; while (hi - lo > 1) { const mid = (lo + hi) >> 1; (all[mid][0] <= K ? lo = mid : hi = mid); }
-      const t = (K - all[lo][0]) / (all[hi][0] - all[lo][0]); return all[lo][1] + t * (all[hi][1] - all[lo][1]);
-    };
-    return { branches: pts, qOf };
-  }
-  function qNull(m, p, K) { // raízes de (r+d) q - (q-1)^2/(2k) = pi(K)
-    const k = p.kappa, rd = p.r + p.delta; const a = -1 / (2 * k), b = rd + 1 / k, c = -1 / (2 * k) - m.pi(K);
-    const D = b * b - 4 * a * c; if (D < 0) return null;
-    const s = Math.sqrt(D); return [(-b + s) / (2 * a), (-b - s) / (2 * a)]; // [menor, maior]
+    if(!root&&!brackets.length)root=continuationRoot();
+    if(!root&&!brackets.length){const rs=valid.map(z=>z.e.residual);return{ok:false,error:'não foi possível encontrar bracket finito para o shooting reverso; '+valid.length+' avaliações finitas, resíduos em ['+(rs.length?Math.min(...rs).toExponential(3):'—')+', '+(rs.length?Math.max(...rs).toExponential(3):'—')+']'};}
+    if(!root){const bracket=brackets.reduce((best,z)=>Math.abs((z[0].e.q0+z[1].e.q0)/2-qGuess)<Math.abs((best[0].e.q0+best[1].e.q0)/2-qGuess)?z:best,brackets[0]);let a=bracket[0].l,b=bracket[1].l,fa=bracket[0].e.residual,em=null,m=(a+b)/2;for(let j=0;j<90;j++){m=(a+b)/2;em=evaluate(m);if(!em.ok||!Number.isFinite(em.residual))return{ok:false,error:'resíduo não finito dentro do bracket'};if(Math.abs(em.residual)<1e-10||Math.abs(b-a)<1e-11)break;if(fa*em.residual<=0)b=m;else{a=m;fa=em.residual;}}root={l:m,e:em};}
+    const checked=evaluate(root.l,true);if(!checked.ok||Math.abs(checked.residual)>1e-7)return{ok:false,error:'shooting reverso não convergiu',residual:checked.residual};
+    const path=checked.backPath.slice().reverse().map(z=>[duration+z[0],z[1],z[2]]);path[0]=[0,initialLogK,checked.q0];path[path.length-1]=[duration,checked.terminal[0],checked.terminal[1]];
+    return{ok:true,q0:checked.q0,terminal:checked.terminal,residual:checked.residual,path};
   }
 
-  // ---------- solução do experimento ----------
-  function solve(p) {
-    const c0 = cBase(p), c1 = c0 * (1 + p.shock / 100);
-    const m0 = model(p, c0), m1 = model(p, c1);
-    const box = { K0: Math.min(m0.Ks, m1.Ks) * 0.45, K1: Math.max(m0.Ks, m1.Ks) * 1.7, q0: Math.min(m0.qs, 1) - 0.2, q1: Math.max(m0.qs, 1 + p.kappa * (p.r + p.delta)) + 0.12 };
-    const S1 = saddle(m1, p, box), S0 = saddle(m0, p, box);
-    const Tmax = 60, h = 0.02; const path = []; let ts = [];
-    const f0 = y => [m0.dK(y[0], y[1]), m0.dq(y[0], y[1])], f1 = y => [m1.dK(y[0], y[1]), m1.dq(y[0], y[1])];
-    let q0;
-    if (p.shock === 0) { q0 = m0.qs; }
-    else if (p.T === 0) { q0 = S1.qOf(m0.Ks); }
-    else { // bisseção em q(0): integrar dinâmica antiga até T, cair no novo braço estável
-      const resid = qq => { let y = [m0.Ks, qq]; for (let t = 0; t < p.T - 1e-9; t += h) y = rk4(f0, y, h); return y[1] - S1.qOf(y[0]); };
-      let lo = m0.qs - 0.6, hi = m0.qs + 0.6;
-      if (resid(lo) > 0 || resid(hi) < 0) { lo = m0.qs - 1.5; hi = m0.qs + 1.5; }
-      for (let i = 0; i < 80; i++) { const mid = (lo + hi) / 2; (resid(mid) > 0 ? hi = mid : lo = mid); }
-      q0 = (lo + hi) / 2;
-    }
-    let y = [m0.Ks, q0]; path.push(y); ts.push(0);
-    for (let t = 0; t < Tmax; t += h) { y = rk4(t < p.T - 1e-9 ? f0 : f1, y, h); path.push(y); ts.push(t + h); }
-    return { m0, m1, S0, S1, box, path, ts, q0 };
+  function stableContinuation(reg,stable,initial,duration,step=.03){
+    function dl(z){const q=stable.qOfK(Math.exp(z));return Number.isFinite(q)?reg.x(q)-reg.delta:NaN;}
+    const z=integrateState({flow:y=>[dl(y[0]),0]},[initial[0],0],duration,step,true);if(!z.ok)return{ok:false,error:'continuação saiu do domínio da variedade estável',path:[]};const out=[];for(const p of z.path){const q=stable.qOfK(Math.exp(p[1]));if(!Number.isFinite(q))return{ok:false,error:'continuação saiu do domínio da variedade estável',path:out};out.push([p[0],p[1],q]);}return{ok:true,path:out};
   }
 
-  // ---------- desenho ----------
-  function axes(ctx, W, H, box, pad) {
-    const x = K => pad.l + (K - box.K0) / (box.K1 - box.K0) * (W - pad.l - pad.r);
-    const y = q => H - pad.b - (q - box.q0) / (box.q1 - box.q0) * (H - pad.t - pad.b);
-    ctx.strokeStyle = css('--grid'); ctx.lineWidth = 1; ctx.font = '13px system-ui'; ctx.fillStyle = css('--muted');
-    const ticks = (a, b, n) => { const s = niceStep((b - a) / n); const out = []; for (let v = Math.ceil(a / s) * s; v <= b + 1e-9; v += s) out.push(+v.toFixed(6)); return out; };
-    for (const K of ticks(box.K0, box.K1, 6)) { ctx.beginPath(); ctx.moveTo(x(K), pad.t); ctx.lineTo(x(K), H - pad.b); ctx.stroke(); ctx.textAlign = 'center'; ctx.fillText(fmt(K), x(K), H - pad.b + 18); }
-    for (const q of ticks(box.q0, box.q1, 6)) { ctx.beginPath(); ctx.moveTo(pad.l, y(q)); ctx.lineTo(W - pad.r, y(q)); ctx.stroke(); ctx.textAlign = 'right'; ctx.fillText(fmt(q), pad.l - 6, y(q) + 4); }
-    ctx.strokeStyle = css('--border'); ctx.strokeRect(pad.l, pad.t, W - pad.l - pad.r, H - pad.t - pad.b);
-    return { x, y };
-  }
-  function niceStep(raw) { const e = Math.pow(10, Math.floor(Math.log10(raw))); const m = raw / e; return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * e; }
-  const fmt = v => (Math.abs(v) >= 100 ? v.toFixed(0) : Math.abs(v) >= 10 ? v.toFixed(1) : v.toFixed(2)).replace('.', ',');
-  function line(ctx, pts, color, w, dash) { ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = w; ctx.setLineDash(dash || []); ctx.beginPath(); let first = true; for (const p of pts) { if (!p) { first = true; continue; } first ? ctx.moveTo(p[0], p[1]) : ctx.lineTo(p[0], p[1]); first = false; } ctx.stroke(); ctx.restore(); }
-
-  function drawPhase(sol, p) {
-    const cv = $('phase'), ctx = cv.getContext('2d'); const W = cv.width, H = cv.height; const pad = { l: 56, r: 16, t: 16, b: 40 };
-    ctx.clearRect(0, 0, W, H); const { box, m0, m1, S0, S1 } = sol; const { x, y } = axes(ctx, W, H, box, pad);
-    ctx.fillStyle = css('--muted'); ctx.font = '13px system-ui'; ctx.textAlign = 'center'; ctx.fillText('capital agregado K', (pad.l + W - pad.r) / 2, H - 6);
-    ctx.save(); ctx.translate(14, (pad.t + H - pad.b) / 2); ctx.rotate(-Math.PI / 2); ctx.fillText('q', 0, 0); ctx.restore();
-    // campo de direções (dinâmica pós-choque)
-    if (showField) {
-      const m = p.shock === 0 ? m0 : m1; const n = 18; ctx.strokeStyle = css('--grey'); ctx.fillStyle = css('--grey'); ctx.lineWidth = 1; ctx.globalAlpha = .55;
-      for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
-        const K = box.K0 + (i + .5) / n * (box.K1 - box.K0), q = box.q0 + (j + .5) / n * (box.q1 - box.q0);
-        let u = m.dK(K, q) / (box.K1 - box.K0), w = m.dq(K, q) / (box.q1 - box.q0); const s = Math.hypot(u, w) + 1e-12; u /= s; w /= s;
-        const L = 11, px = x(K), py = y(q), ex = px + u * L, ey = py - w * L;
-        ctx.beginPath(); ctx.moveTo(px - u * L * .3, py + w * L * .3); ctx.lineTo(ex, ey); ctx.stroke();
-        const ang = Math.atan2(-w, u); ctx.beginPath(); ctx.moveTo(ex, ey); ctx.lineTo(ex - 5 * Math.cos(ang - .5), ey - 5 * Math.sin(ang - .5)); ctx.lineTo(ex - 5 * Math.cos(ang + .5), ey - 5 * Math.sin(ang + .5)); ctx.closePath(); ctx.fill();
-      }
-      ctx.globalAlpha = 1;
-    }
-    // lócus q̇=0 (antes tracejado, depois sólido) — dois ramos
-    const nullPts = (m, which) => { const out = []; for (let i = 0; i <= 500; i++) { const K = box.K0 + i / 500 * (box.K1 - box.K0); const r = qNull(m, p, K); out.push(r ? [x(K), y(r[which])] : null); } return out; };
-    if (p.shock !== 0) { line(ctx, nullPts(m0, 0), css('--orange'), 1.5, [5, 5]); line(ctx, nullPts(m0, 1), css('--orange'), 1.5, [5, 5]); }
-    const mA = p.shock === 0 ? m0 : m1;
-    line(ctx, nullPts(mA, 0), css('--orange'), 2.4); line(ctx, nullPts(mA, 1), css('--orange'), 2.4);
-    // K̇=0 e dobra
-    line(ctx, [[pad.l, y(m0.qs)], [W - pad.r, y(m0.qs)]], css('--blue'), 2.4);
-    const qb = 1 + p.kappa * (p.r + p.delta); if (qb < box.q1) line(ctx, [[pad.l, y(qb)], [W - pad.r, y(qb)]], css('--grey'), 1, [3, 5]);
-    // braço estável (do sistema vigente após o choque)
-    const S = p.shock === 0 ? S0 : S1; for (const br of S.branches) line(ctx, br.map(pt => [x(pt[0]), y(pt[1])]), css('--green'), 2.6);
-    // trajetória
-    if (p.shock !== 0) {
-      line(ctx, sol.path.filter((_, i) => i % 2 === 0).map(pt => [x(pt[0]), y(pt[1])]), css('--ink'), 1.8);
-      // salto inicial
-      ctx.save(); ctx.strokeStyle = css('--orange'); ctx.lineWidth = 2; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(x(m0.Ks), y(m0.qs)); ctx.lineTo(x(m0.Ks), y(sol.q0)); ctx.stroke(); ctx.restore();
-      dot(ctx, x(m1.Ks), y(m1.qs), css('--ink'), 'EE novo', -12, -10);
-      dot(ctx, x(m0.Ks), y(m0.qs), css('--ink'), 'EE antigo', 8, -10);
-    } else dot(ctx, x(m0.Ks), y(m0.qs), css('--ink'), '(K*, q*)', 8, -10);
-    function dot(ctx, px, py, color, label, dx, dy) { ctx.fillStyle = color; ctx.beginPath(); ctx.arc(px, py, 4.5, 0, 7); ctx.fill(); ctx.font = '13px system-ui'; ctx.textAlign = dx < 0 ? 'right' : 'left'; ctx.fillText(label, px + dx, py + dy); }
-  }
-  function drawTime(sol, p) {
-    const cv = $('time'), ctx = cv.getContext('2d'); const W = cv.width, H = cv.height; const pad = { l: 52, r: 56, t: 16, b: 40 };
-    ctx.clearRect(0, 0, W, H); const ts = sol.ts, path = sol.path; const Tshow = 60;
-    const qs = path.map(v => v[1]), Ks = path.map(v => v[0]);
-    const qb = { lo: Math.min(...qs, sol.m0.qs) - 0.02, hi: Math.max(...qs, sol.m0.qs) + 0.02 };
-    const Kb = { lo: Math.min(...Ks) * 0.97, hi: Math.max(...Ks) * 1.03 + 1e-6 };
-    const x = t => pad.l + t / Tshow * (W - pad.l - pad.r), yq = q => H - pad.b - (q - qb.lo) / (qb.hi - qb.lo) * (H - pad.t - pad.b), yK = K => H - pad.b - (K - Kb.lo) / (Kb.hi - Kb.lo) * (H - pad.t - pad.b);
-    ctx.strokeStyle = css('--grid'); ctx.lineWidth = 1; ctx.font = '13px system-ui'; ctx.fillStyle = css('--muted');
-    for (let t = 0; t <= Tshow; t += 10) { ctx.beginPath(); ctx.moveTo(x(t), pad.t); ctx.lineTo(x(t), H - pad.b); ctx.stroke(); ctx.textAlign = 'center'; ctx.fillText(t, x(t), H - pad.b + 18); }
-    for (let i = 0; i <= 5; i++) { const q = qb.lo + i / 5 * (qb.hi - qb.lo), K = Kb.lo + i / 5 * (Kb.hi - Kb.lo); const yy = yq(q); ctx.beginPath(); ctx.moveTo(pad.l, yy); ctx.lineTo(W - pad.r, yy); ctx.stroke();
-      ctx.textAlign = 'right'; ctx.fillStyle = css('--orange'); ctx.fillText(fmt(q), pad.l - 6, yy + 4); ctx.textAlign = 'left'; ctx.fillStyle = css('--blue'); ctx.fillText(fmt(K), W - pad.r + 6, yy + 4); ctx.fillStyle = css('--muted'); }
-    ctx.strokeStyle = css('--border'); ctx.strokeRect(pad.l, pad.t, W - pad.l - pad.r, H - pad.t - pad.b);
-    ctx.textAlign = 'center'; ctx.fillText('tempo', (pad.l + W - pad.r) / 2, H - 6);
-    if (p.T > 0 && p.shock !== 0) line(ctx, [[x(p.T), pad.t], [x(p.T), H - pad.b]], css('--grey'), 1, [4, 4]);
-    line(ctx, [[pad.l, yq(sol.m0.qs)], [W - pad.r, yq(sol.m0.qs)]], css('--orange'), 1, [2, 4]);
-    const step = 3; line(ctx, path.filter((_, i) => i % step === 0).map((v, i) => [x(ts[i * step]), yq(v[1])]), css('--orange'), 2.2);
-    line(ctx, path.filter((_, i) => i % step === 0).map((v, i) => [x(ts[i * step]), yK(v[0])]), css('--blue'), 2.2);
-  }
-  function readout(sol, p) {
-    const { m0, m1 } = sol; const slope = m0.dpi(m0.Ks) / p.r; const { lam } = stableVec(m0, p);
-    const rows = [
-      ['q* = 1+κδ', fmt(m0.qs) + ' (não muda com o choque)'],
-      ['K* antes → depois', fmt(m0.Ks) + ' → ' + fmt(m1.Ks)],
-      ['π(K*) no estado estacionário (invariante ao choque)', fmt(m0.pi(m0.Ks))],
-      ['c antes → depois', fmt(m0.c) + ' → ' + fmt(m1.c)],
-      ['inclinação de q̇ = 0 no EE, π′(K*)/r', fmt(slope)],
-      ['autovalor estável λ₋', fmt(lam) + ' (meia-vida ≈ ' + fmt(Math.log(2) / -lam) + ')'],
-      ['dobra de q̇ = 0 em q = 1+κ(r+δ)', fmt(1 + p.kappa * (p.r + p.delta))],
-      ['q(0) após o anúncio', p.shock === 0 ? '—' : fmt(sol.q0) + (p.T > 0 ? ' (chega ao novo braço em T = ' + fmt(p.T) + ')' : ' (salta para o novo braço)')],
-    ];
-    $('readout').innerHTML = rows.map(r => '<div>' + r[0] + ': <b>' + r[1] + '</b></div>').join('');
+  function solveScenario(p){
+    const def=scenarioDefinition(p),regs=[def.base,def.alt];if(!regs.every(z=>z.valid))return{ok:false,error:'algum regime não possui estado estacionário interior'};
+    const Krefs=regs.flatMap(z=>[z.Ks,z.KFold]).filter(z=>z>0&&Number.isFinite(z)),logMin=Math.log(Math.min(...Krefs))-Math.log(25),logMax=Math.log(Math.max(...Krefs))+Math.log(25);
+    const stableBase=stableManifold(def.base,logMin,logMax),stableAlt=def.hasAlt?stableManifold(def.alt,logMin,logMax):stableBase;if(!stableBase.ok||!stableAlt.ok)return{ok:false,error:'falha ao construir variedade estável'};
+    const stableFor=reg=>reg.id==='alt'?stableAlt:stableBase,l0=Math.log(def.base.Ks),qPre=def.base.qs;let q0=qPre,shoot=null,terminal=[l0,qPre];
+    if(p.scenario!=='none'&&def.transition===null){q0=stableFor(def.final).qOfK(def.base.Ks);if(!Number.isFinite(q0))return{ok:false,error:'K inicial fora do domínio do novo braço estável'};terminal=[l0,q0];}
+    else if(def.transition!==null){shoot=shooting(def.first,def.transition,l0,stableFor(def.final),qPre);if(!shoot.ok)return{ok:false,error:shoot.error,residual:shoot.residual};q0=shoot.q0;terminal=shoot.terminal;}
+    const half=Math.log(2)/(-def.final.lambda),after=clamp(6*half,28,85),total=(def.transition||0)+after,pre=Math.max(.8,.035*total),points=[];
+    points.push({t:-pre,l:l0,q:qPre,reg:def.base},{t:0,l:l0,q:qPre,reg:def.base},{t:0,l:l0,q:q0,reg:def.first});
+    if(def.transition!==null){for(let j=1;j<shoot.path.length;j++)points.push({t:shoot.path[j][0],l:shoot.path[j][1],q:shoot.path[j][2],reg:def.first});terminal=shoot.terminal;points.push({t:def.transition,l:terminal[0],q:terminal[1],reg:def.final});}
+    const startTime=def.transition||0,cont=stableContinuation(def.final,stableFor(def.final),terminal,after,.03);if(!cont.ok)return{ok:false,error:cont.error};for(let j=1;j<cont.path.length;j++)points.push({t:startTime+cont.path[j][0],l:cont.path[j][1],q:cont.path[j][2],reg:def.final});for(const z of points){z.K=Math.exp(z.l);z.x=z.reg.x(z.q);}return{ok:true,p,def,stableBase,stableAlt,stableFor,points,q0,matchResidual:def.transition===null?0:shoot.residual,total,pre,half};
   }
 
-  function render() {
-    for (const k of ['kappa', 'delta', 'r', 'alpha', 'shock', 'T']) { P[k] = parseFloat($(k).value); }
-    $('v-kappa').textContent = fmt(P.kappa); $('v-delta').textContent = fmt(P.delta); $('v-r').textContent = fmt(P.r); $('v-alpha').textContent = fmt(P.alpha);
-    $('v-shock').textContent = (P.shock > 0 ? '+' : '') + P.shock + '%'; $('v-T').textContent = P.T === 0 ? 'não antecipado' : fmt(P.T);
-    const sol = solve(P); drawPhase(sol, P); drawTime(sol, P); readout(sol, P);
+  function axisBox(vals,pad=.08){const good=vals.filter(Number.isFinite);let lo=Math.min(...good),hi=Math.max(...good);if(!(hi>lo)){const d=Math.max(1,Math.abs(lo))*.05;lo-=d;hi+=d;}const d=(hi-lo)*pad;return{lo:lo-d,hi:hi+d};}
+  function axes(ctx,W,H,xb,yb,pad,xlabel,ylabel){const X=z=>pad.l+(z-xb.lo)/(xb.hi-xb.lo)*(W-pad.l-pad.r),Y=z=>H-pad.b-(z-yb.lo)/(yb.hi-yb.lo)*(H-pad.t-pad.b);ctx.font='12px system-ui';ctx.strokeStyle=css('--grid');ctx.fillStyle=css('--muted');ctx.lineWidth=1;function ticks(a,b,n){const raw=(b-a)/n,e=10**Math.floor(Math.log10(raw)),m=raw/e,s=(m<1.5?1:m<3.5?2:m<7.5?5:10)*e,out=[];for(let z=Math.ceil(a/s)*s;z<=b+1e-10;z+=s)out.push(+z.toFixed(10));return out;}for(const z of ticks(xb.lo,xb.hi,6)){ctx.beginPath();ctx.moveTo(X(z),pad.t);ctx.lineTo(X(z),H-pad.b);ctx.stroke();ctx.textAlign='center';ctx.fillText(fmt(z,2),X(z),H-pad.b+18);}for(const z of ticks(yb.lo,yb.hi,6)){ctx.beginPath();ctx.moveTo(pad.l,Y(z));ctx.lineTo(W-pad.r,Y(z));ctx.stroke();ctx.textAlign='right';ctx.fillText(fmt(z,2),pad.l-6,Y(z)+4);}ctx.strokeStyle=css('--border');ctx.strokeRect(pad.l,pad.t,W-pad.l-pad.r,H-pad.t-pad.b);ctx.textAlign='center';ctx.fillStyle=css('--muted');ctx.fillText(xlabel,(pad.l+W-pad.r)/2,H-6);ctx.save();ctx.translate(14,(pad.t+H-pad.b)/2);ctx.rotate(-Math.PI/2);ctx.fillText(ylabel,0,0);ctx.restore();return{X,Y};}
+  function polyline(ctx,pts,color,width=2,dash=[]){ctx.save();ctx.strokeStyle=color;ctx.lineWidth=width;ctx.setLineDash(dash);ctx.beginPath();let open=false;for(const p of pts){if(!p||!finite(p[0],p[1])){open=false;continue;}if(!open){ctx.moveTo(p[0],p[1]);open=true;}else ctx.lineTo(p[0],p[1]);}ctx.stroke();ctx.restore();}
+  // Dois pontos no mesmo instante são lados distintos de um evento. Não os ligamos
+  // como se a trajetória fosse contínua: a ligação tracejada é o salto.
+  function splitTrajectory(points,project){const pieces=[],jumps=[];let piece=[],prev=null,prevPoint=null;for(const point of points){const p=project(point);if(!p||!finite(p[0],p[1]))continue;const isJump=prevPoint&&Math.abs(point.t-prevPoint.t)<1e-10&&Math.hypot(p[0]-prev[0],p[1]-prev[1])>.01;if(isJump){if(piece.length)pieces.push(piece);jumps.push({from:prev,to:p,t:point.t});piece=[p];}else piece.push(p);prev=p;prevPoint=point;}if(piece.length)pieces.push(piece);return{pieces,jumps};}
+  function drawJump(ctx,jump,color,label=''){const{from,to}=jump;ctx.save();ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.setLineDash([7,5]);ctx.beginPath();ctx.moveTo(from[0],from[1]);ctx.lineTo(to[0],to[1]);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=css('--surface');for(const p of[from,to]){ctx.beginPath();ctx.arc(p[0],p[1],4.1,0,Math.PI*2);ctx.fill();ctx.stroke();}if(label){ctx.font='12px system-ui';ctx.fillStyle=color;ctx.textAlign='left';ctx.fillText(label,Math.max(from[0],to[0])+7,(from[1]+to[1])/2-5);}ctx.restore();}
+  function dot(ctx,x,y,color,label,dx=7,dy=-7){ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,4.3,0,Math.PI*2);ctx.fill();if(label){ctx.font='12px system-ui';ctx.textAlign=dx<0?'right':'left';ctx.fillText(label,x+dx,y+dy);}}
+  function fieldRegime(sol){if(sol.p.field==='base')return sol.def.base;if(sol.p.field==='alt')return sol.def.alt;return sol.def.first;}
+
+  function drawPhase(sol){
+    const cv=$('phase'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height,pad={l:58,r:17,t:18,b:42};ctx.clearRect(0,0,W,H);const d=sol.def,path=sol.points;
+    const kvals=path.map(z=>z.K).concat([d.base.Ks,d.alt.Ks,d.base.KFold,d.alt.KFold]).filter(z=>z>0&&Number.isFinite(z));let kb=axisBox(kvals,.14);kb.lo=Math.max(1e-5,kb.lo);const qvals=path.map(z=>z.q).concat([d.base.qs,d.alt.qs,d.base.qFold,d.alt.qFold]),qb=axisBox(qvals,.13),a=axes(ctx,W,H,kb,qb,pad,'capital agregado K','q'),freg=fieldRegime(sol);$('field-label').textContent=freg.label;$('phase-sub').textContent='Setas: '+freg.label+'. Preto contínuo: trajetória. Preto tracejado com círculos vazios: salto instantâneo de q; K não salta.';
+    if(showField){const n=18;ctx.save();ctx.strokeStyle=css('--grey');ctx.fillStyle=css('--grey');ctx.globalAlpha=.55;ctx.lineWidth=1;for(let i=0;i<n;i++)for(let j=0;j<n;j++){const K=kb.lo+(i+.5)/n*(kb.hi-kb.lo),q=qb.lo+(j+.5)/n*(qb.hi-qb.lo);let u=freg.dK(K,q)/(kb.hi-kb.lo),v=freg.dq(K,q)/(qb.hi-qb.lo),s=Math.hypot(u,v)+1e-14;u/=s;v/=s;const L=10,px=a.X(K),py=a.Y(q),ex=px+u*L,ey=py-v*L,ang=Math.atan2(-v,u);ctx.beginPath();ctx.moveTo(px-u*L*.25,py+v*L*.25);ctx.lineTo(ex,ey);ctx.stroke();ctx.beginPath();ctx.moveTo(ex,ey);ctx.lineTo(ex-4*Math.cos(ang-.52),ey-4*Math.sin(ang-.52));ctx.lineTo(ex-4*Math.cos(ang+.52),ey-4*Math.sin(ang+.52));ctx.closePath();ctx.fill();}ctx.restore();}
+    function drawRegime(reg,color,dash,labelPrefix){const lower=[],upper=[];for(let i=0;i<=550;i++){const K=kb.lo+i/550*(kb.hi-kb.lo),rr=reg.qRoots(K);lower.push(rr?[a.X(K),a.Y(rr[0])]:null);upper.push(rr?[a.X(K),a.Y(rr[1])]:null);}polyline(ctx,lower,color,2,dash);polyline(ctx,upper,color,2,dash);polyline(ctx,[[a.X(kb.lo),a.Y(reg.qs)],[a.X(kb.hi),a.Y(reg.qs)]],COLORS.blue,1.8,dash);if(reg.KFold>=kb.lo&&reg.KFold<=kb.hi&&reg.qFold>=qb.lo&&reg.qFold<=qb.hi)dot(ctx,a.X(reg.KFold),a.Y(reg.qFold),color,'dobra '+labelPrefix,6,-7);}
+    if(d.hasAlt){drawRegime(d.base,COLORS.orange,[5,5],'base');drawRegime(d.alt,COLORS.orange,[],'alterada');}else drawRegime(d.base,COLORS.orange,[],"");
+    const stable=sol.stableFor(d.final);for(const br of stable.branches){const pts=br.filter(z=>Math.exp(z[0])>=kb.lo&&Math.exp(z[0])<=kb.hi&&z[1]>=qb.lo&&z[1]<=qb.hi).map(z=>[a.X(Math.exp(z[0])),a.Y(z[1])]);polyline(ctx,pts,COLORS.green,2.6);}const trajectory=splitTrajectory(path,z=>[a.X(z.K),a.Y(z.q)]);for(const piece of trajectory.pieces)polyline(ctx,piece,css('--ink'),2);trajectory.jumps.forEach((jump,j)=>drawJump(ctx,jump,css('--ink'),j===0?'salto de q':'salto'));dot(ctx,a.X(d.base.Ks),a.Y(d.base.qs),css('--ink'),'EE base',7,-8);if(d.hasAlt)dot(ctx,a.X(d.alt.Ks),a.Y(d.alt.qs),COLORS.purple,'EE alterado',7,14);
+    const leg=['<span style="--c:var(--green)">variedade estável final ('+d.final.label+')</span>','<span style="--c:var(--ink)">trajetória contínua</span>'];if(trajectory.jumps.length)leg.push('<span class="dash" style="--c:var(--ink)">salto instantâneo de q (K contínuo)</span>');if(d.hasAlt){leg.push('<span class="dash" style="--c:var(--orange)">q̇=0, referência</span>','<span style="--c:var(--orange)">q̇=0, alterado</span>','<span class="dash" style="--c:var(--blue)">K̇=0, referência</span>','<span style="--c:var(--blue)">K̇=0, alterado</span>');}else leg.push('<span style="--c:var(--orange)">q̇=0</span>','<span style="--c:var(--blue)">K̇=0</span>');$('phase-legend').innerHTML=leg.join('');
   }
-  for (const k of ['kappa', 'delta', 'r', 'alpha', 'shock', 'T']) $(k).addEventListener('input', render);
-  $('reset').addEventListener('click', () => { $('kappa').value = 2; $('delta').value = 0.05; $('r').value = 0.08; $('alpha').value = 0.5; $('shock').value = -10; $('T').value = 0; render(); });
-  $('toggleField').addEventListener('click', () => { showField = !showField; $('toggleField').textContent = 'Campo de direções: ' + (showField ? 'on' : 'off'); render(); });
-  if (window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
-  render();
+
+  function eventMarkers(ctx,a,Ytop,Ybot,sol){const marks=[{t:0,label:sol.def.marker0}];if(sol.def.transition!==null)marks.push({t:sol.def.transition,label:sol.def.markerT});ctx.save();ctx.font='12px system-ui';ctx.textAlign='left';for(const m of marks){const x=a.X(m.t);ctx.strokeStyle=COLORS.grey;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(x,Ytop);ctx.lineTo(x,Ybot);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=COLORS.grey;ctx.fillText(m.label,x+4,Ytop+13);}ctx.restore();}
+  function drawTime(sol){const cv=$('time'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height,pad={l:54,r:58,t:18,b:42};ctx.clearRect(0,0,W,H);const xb={lo:-sol.pre,hi:sol.total},qbox=axisBox(sol.points.map(z=>z.q),.12),kbox=axisBox(sol.points.map(z=>z.K),.1),a=axes(ctx,W,H,xb,qbox,pad,'tempo','q'),YK=z=>H-pad.b-(z-kbox.lo)/(kbox.hi-kbox.lo)*(H-pad.t-pad.b),qPath=splitTrajectory(sol.points,z=>[a.X(z.t),a.Y(z.q)]);for(const piece of qPath.pieces)polyline(ctx,piece,COLORS.orange,2.2);qPath.jumps.forEach((jump,j)=>drawJump(ctx,jump,COLORS.orange,j===0?'salto de q':''));polyline(ctx,sol.points.map(z=>[a.X(z.t),YK(z.K)]),COLORS.blue,2.2);ctx.fillStyle=COLORS.blue;ctx.font='12px system-ui';ctx.textAlign='left';for(let j=0;j<=5;j++){const K=kbox.lo+j/5*(kbox.hi-kbox.lo),yy=YK(K);ctx.fillText(fmt(K,2),W-pad.r+5,yy+4);}eventMarkers(ctx,a,pad.t,H-pad.b,sol);}
+  function crossings(points,delta){const out=[];for(let j=1;j<points.length;j++){const a=points[j-1],b=points[j],fa=a.x-delta,fb=b.x-delta;if(!finite(fa,fb)||(fa===0&&fb===0))continue;if(fa===0)out.push({t:a.t,x:delta});else if(fa*fb<0||fb===0){const w=fa/(fa-fb);out.push({t:a.t+w*(b.t-a.t),x:delta});}}return out.filter((z,j)=>j===0||Math.abs(z.t-out[j-1].t)>1e-3);}
+  function drawInvestment(sol){const cv=$('investment'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height,pad={l:58,r:18,t:18,b:42};ctx.clearRect(0,0,W,H);const xb={lo:-sol.pre,hi:sol.total},yb=axisBox(sol.points.map(z=>z.x).concat([sol.p.delta]),.16),a=axes(ctx,W,H,xb,yb,pad,'tempo','taxa de investimento x'),xPath=splitTrajectory(sol.points,z=>[a.X(z.t),a.Y(z.x)]);polyline(ctx,[[a.X(xb.lo),a.Y(sol.p.delta)],[a.X(xb.hi),a.Y(sol.p.delta)]],COLORS.grey,1.3,[5,5]);for(const piece of xPath.pieces)polyline(ctx,piece,COLORS.purple,2.4);xPath.jumps.forEach((jump,j)=>drawJump(ctx,jump,COLORS.purple,j===0?'salto de x':''));for(const z of crossings(sol.points,sol.p.delta))dot(ctx,a.X(z.t),a.Y(sol.p.delta),COLORS.green,'x=δ',6,-8);eventMarkers(ctx,a,pad.t,H-pad.b,sol);}
+
+  function renderReadout(sol){const d=sol.def,b=d.base,a=d.alt,rows=[['experimento',d.title],['c fixo de referência',fmt(BASE_C,4)],['q* base → alterado',fmt(b.qs)+' → '+fmt(a.qs)],['K* base → alterado',fmt(b.Ks)+' → '+fmt(a.Ks)],['π(K*) base → alterado',fmt(b.pis,4)+' → '+fmt(a.pis,4)],['inclinação q̇=0 no EE',fmt(b.slope)+' → '+fmt(a.slope)],['λ− base → alterado',fmt(b.lambda,4)+' → '+fmt(a.lambda,4)],['dobra K base → alterado',fmt(b.KFold)+' → '+fmt(a.KFold)],['q(0) após notícia/choque',fmt(sol.q0,5)],['x(0) após notícia/choque',fmt(d.first.x(sol.q0),5)],['regime final',d.final.label],['resíduo da condição de contorno',fmt(sol.matchResidual,8)]];$('readout').innerHTML=rows.map(z=>'<div>'+z[0]+': <b>'+z[1]+'</b></div>').join('');}
+  function readParams(){return{scenario:$('scenario').value,field:$('field').value,kappa:+$('kappa').value,delta:+$('delta').value,r:+$('r').value,alpha:+$('alpha').value,piShock:+$('pishock').value,rShock:+$('rshock').value,theta:+$('theta').value,T:+$('T').value};}
+  function updateLabels(p){$('v-kappa').textContent=fmt(p.kappa,2);$('v-delta').textContent=fmt(p.delta,3);$('v-r').textContent=fmt(p.r,3);$('v-alpha').textContent=fmt(p.alpha,2);$('v-pishock').textContent=(p.piShock>0?'+':'')+fmt(p.piShock,0)+'%';$('v-rshock').textContent=(p.rShock>0?'+':'')+fmt(p.rShock,0)+'%';$('v-theta').textContent=fmt(p.theta,2);$('v-T').textContent=fmt(p.T,1);$('scenario-short').textContent=$('scenario').selectedOptions[0].textContent;}
+  function render(){const p=readParams();updateLabels(p);const sol=solveScenario(p),status=$('status');if(!sol.ok){status.className='panel status error';status.textContent='Falha numérica: '+sol.error+(Number.isFinite(sol.residual)?' (resíduo '+fmt(sol.residual,8)+')':'');$('readout').innerHTML='';for(const id of['phase','time','investment']){const c=$(id),x=c.getContext('2d');x.clearRect(0,0,c.width,c.height);}return;}status.className='panel status';status.textContent=sol.def.title+'. Campo exibido: '+fieldRegime(sol).label+'. c permanece fixo quando κ, δ, r ou α mudam.';drawPhase(sol);drawTime(sol);drawInvestment(sol);renderReadout(sol);}
+
+  function selfTests(){
+    const base={scenario:'none',field:'auto',kappa:2,delta:.05,r:.08,alpha:.5,piShock:-10,rShock:-25,theta:.1,T:8},results=[];
+    function test(name,fn){try{const detail=fn()||{};results.push({name,pass:true,...detail});}catch(e){results.push({name,pass:false,error:e.message});}}
+    function assert(ok,msg){if(!ok)throw new Error(msg);}function near(x,y,tol=1e-8){return Number.isFinite(x)&&Math.abs(x-y)<=tol;}
+    test('estado estacionário base',()=>{const r=makeRegime(base,{},'base','base'),e1=r.dK(r.Ks,r.qs),e2=r.dq(r.Ks,r.qs);assert(near(e1,0,1e-10)&&near(e2,0,1e-10),'resíduo do EE');return{residual:Math.max(Math.abs(e1),Math.abs(e2))};});
+    test('theta entra em Kdot e qdot por x',()=>{const r=makeRegime(base,{theta:.17},'alt','theta'),K=1.2,q=1.08,x=(q+.17-1)/2;assert(near(r.x(q),x),'x');assert(near(r.dK(K,q),K*(x-.05)),'Kdot');assert(near(r.dq(K,q),(.08+.05)*q-r.pi(K)-2*x*x/2),'qdot');return{residual:0};});
+    test('raízes do locus qdot=0',()=>{const r=makeRegime(base,{theta:.12,r:.11},'alt','teste'),K=r.Ks*1.15,roots=r.qRoots(K);assert(roots&&roots.length===2,'raízes inexistentes');const z=Math.max(...roots.map(q=>Math.abs(r.dq(K,q))));assert(z<1e-9,'resíduo das raízes');return{residual:z};});
+    test('c não é recalibrado pelos sliders',()=>{for(const p of[{...base,kappa:6},{...base,delta:.15},{...base,r:.2},{...base,alpha:2}])assert(makeRegime(p,{},'base','base').c===BASE_C,'c mudou');return{residual:0};});
+    test('qOf não extrapola',()=>{const r=makeRegime(base,{},'base','base'),s=stableManifold(r,Math.log(r.Ks)-2,Math.log(r.Ks)+2);assert(s.ok,'variedade');assert(s.qOfK(Math.exp(s.logRange[0]-1))===null,'extrapolação inferior');assert(s.qOfK(Math.exp(s.logRange[1]+1))===null,'extrapolação superior');return{residual:0};});
+    for(const key of['none','pi_perm_surprise','pi_temp_now','r_perm_surprise','theta_perm_surprise','theta_temp_now','pi_perm_announced','r_perm_announced','r_temp_now'])test('cenário padrão: '+key,()=>{const s=solveScenario({...base,scenario:key});assert(s.ok,s.error||'falha');assert(s.points.every(z=>finite(z.K,z.q,z.x)&&z.K>0),'trajetória inválida');assert(Math.abs(s.matchResidual)<1e-6,'matching');return{residual:Math.abs(s.matchResidual),q0:s.q0};});
+    const extremes=[{...base,scenario:'pi_perm_announced',kappa:.5,delta:.01,r:.2,alpha:2,piShock:-30,T:15},{...base,scenario:'theta_temp_now',kappa:6,delta:.15,r:.01,alpha:.2,theta:.35,T:20},{...base,scenario:'r_temp_now',kappa:6,delta:.01,r:.01,alpha:2,rShock:-75,T:20},{...base,scenario:'pi_temp_now',kappa:.5,delta:.15,r:.2,alpha:.2,piShock:30,T:20}];
+    extremes.forEach((p,j)=>test('extremo '+(j+1)+': '+p.scenario,()=>{const s=solveScenario(p);assert(s.ok,s.error||'falha');assert(s.points.every(z=>finite(z.K,z.q,z.x)&&z.K>0),'trajetória inválida');assert(Math.abs(s.matchResidual)<1e-6,'matching');return{residual:Math.abs(s.matchResidual),q0:s.q0};}));
+    return{pass:results.every(z=>z.pass),passed:results.filter(z=>z.pass).length,total:results.length,results};
+  }
+
+  window.__qArtifactTests=selfTests;
+  function showTestsIfRequested(){if(new URLSearchParams(location.search).get('tests')!=='1')return;const out=selfTests(),pre=$('autotest-summary');pre.hidden=false;pre.textContent=(out.pass?'PASS':'FAIL')+' — '+out.passed+'/'+out.total+' testes\n'+out.results.map(z=>(z.pass?'✓ ':'✗ ')+z.name+(z.residual!==undefined?' | resíduo='+z.residual:'')+(z.error?' | '+z.error:'')).join('\n');document.body.dataset.tests=out.pass?'pass':'fail';document.body.dataset.testCount=out.total;}
+  for(const id of['scenario','field','kappa','delta','r','alpha','pishock','rshock','theta','T'])$(id).addEventListener(id==='scenario'||id==='field'?'change':'input',render);
+  $('reset').addEventListener('click',()=>{const vals={scenario:'pi_perm_surprise',field:'auto',kappa:2,delta:.05,r:.08,alpha:.5,pishock:-10,rshock:-25,theta:.1,T:8};for(const[k,v]of Object.entries(vals))$(k).value=v;render();});
+  $('toggleField').addEventListener('click',()=>{showField=!showField;$('toggleField').textContent='Campo: '+(showField?'on':'off');render();});
+  if(window.matchMedia)window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',render);
+  render();showTestsIfRequested();
 })();
 </script>
 </body>
